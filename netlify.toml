@@ -1,0 +1,19 @@
+[build]
+base = "ortofrutta"
+command = "npm run build"
+functions = "netlify/functions"
+publish = "dist"
+
+[dev]
+command = "npm run dev"
+framework = "vite"
+port = 3000
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
+
+[env]
+[env.production]
+VITE_NETLIFY_FUNCTIONS_URL = "https://ortofruttabrescia.netlify.app/.netlify/functions"

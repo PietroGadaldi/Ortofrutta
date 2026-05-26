@@ -68,7 +68,12 @@ ALTER TABLE public.dettagli_ordine ENABLE ROW LEVEL SECURITY;
 -- Specifica cosa può fare l'applicazione tramite la chiave pubblica (anon)
 -- =========================================================================
 
--- Tabella Profili: Nessuna politica (Accesso esclusivo alla service_role key)
+-- Tabella Profili: Utenti autenticati possono leggere il proprio profilo
+CREATE POLICY "Utenti leggono il proprio profilo"
+ON public.profili
+FOR SELECT
+TO authenticated
+USING (id = auth.uid());
 
 -- Tabella Prodotti: Visibile a chiunque in sola lettura
 CREATE POLICY "Prodotti visibili a tutti" 
