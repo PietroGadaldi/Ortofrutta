@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import * as authService from '../services/authService'
@@ -13,11 +13,12 @@ export function Login() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  // Redirect if already logged in
-  if (!loading && user) {
-    navigate('/')
-    return null
-  }
+  // Redirect if already logged in - use useEffect to avoid render issues
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/')
+    }
+  }, [user, loading, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -48,9 +49,13 @@ export function Login() {
       if (loggedInUser) {
         // Get user profile to determine redirect
         const { role } = await authService.getCurrentUserProfile(loggedInUser)
+        
+        // Log role
         if (role === RUOLI.TITOLARE) {
+          console.log('✅ Login effettuato come Titolare')
           navigate('/admin')
         } else {
+          console.log('✅ Login effettuato come Cliente')
           navigate('/dashboard')
         }
       }

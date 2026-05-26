@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { RUOLI } from '../utils/constants'
@@ -6,15 +7,16 @@ export function Landing() {
   const navigate = useNavigate()
   const { user, role, loading } = useAuth()
 
-  // Redirect if already logged in
-  if (!loading && user) {
-    if (role === RUOLI.TITOLARE) {
-      navigate('/admin')
-    } else {
-      navigate('/dashboard')
+  // Redirect if already logged in - use useEffect to avoid render issues
+  useEffect(() => {
+    if (!loading && user) {
+      if (role === RUOLI.TITOLARE) {
+        navigate('/admin')
+      } else {
+        navigate('/dashboard')
+      }
     }
-    return null
-  }
+  }, [user, role, loading, navigate])
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-verde-orto-50 to-white px-4">
