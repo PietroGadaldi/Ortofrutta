@@ -1,8 +1,8 @@
 [build]
 base = "ortofrutta"
 command = "npm run build"
-functions = "ortofrutta/netlify/functions"
-publish = "ortofrutta/dist"
+functions = "netlify/functions"
+publish = "dist"
 
 [dev]
 command = "npm run dev"
