@@ -15,7 +15,7 @@ import { verifyAuth, verifyUserRole, errorResponse, successResponse } from './au
 // Initialize Supabase Admin client with service_role key (server-side secret)
 const supabaseAdmin = createClient(
   process.env.VITE_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.VITE_SERVICE_ROLE_KEY
 )
 
 export async function handler(event) {

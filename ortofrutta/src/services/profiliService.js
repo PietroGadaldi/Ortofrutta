@@ -80,17 +80,39 @@ export const updateProfile = async (userId, updates) => {
 
 /**
  * Get all client profiles (for titolare)
- * Now uses RLS policies instead of Function
+ * Uses server-side function with service_role key to bypass RLS
  * @returns {Promise<{data, error}>}
  */
 export const getClientList = async () => {
-  const { data, error } = await supabase
-    .from('profili')
-    .select('id, nome, ruolo')
-    .eq('ruolo', 'cliente')
-    .order('nome', { ascending: true })
+  try {
+    const response = await fetch(
+      import.meta.env.VITE_NETLIFY_FUNCTIONS_URL + '/list-clients',
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await getAuthToken()}`,
+        },
+      }
+    )
 
-  return { data, error }
+    const data = await response.json()
+
+    if (!response.ok) {
+      return { data: null, error: { message: data.error || 'Errore nel caricamento clienti' } }
+    }
+
+    return { data: data.clients || [], error: null }
+  } catch (err) {
+    console.error('getClientList error:', err)
+    return { data: null, error: { message: err.message } }
+  }
+}
+
+// Helper to get auth token
+const getAuthToken = async () => {
+  const { data } = await supabase.auth.getSession()
+  return data.session?.access_token || ''
 }
 
 export default {
