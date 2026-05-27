@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { supabase } from '../services/supabaseClient'
+import { getClientList } from '../services/profiliService'
 
 export function AdminDashboard() {
   const [stats, setStats] = useState({ ordini: 0, clienti: 0, prodotti: 0 })
@@ -9,18 +10,19 @@ export function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [ordiniRes, clientiRes, prodottiRes] = await Promise.all([
-          supabase.from('ordini').select('id', { count: 'exact' }),
-          supabase
-            .from('profili')
-            .select('id', { count: 'exact' })
-            .eq('ruolo', 'cliente'),
-          supabase.from('prodotti').select('id', { count: 'exact' }),
-        ])
+        // Fetch ordini count
+        const ordiniRes = await supabase.from('ordini').select('id', { count: 'exact' })
+
+        // Fetch prodotti count
+        const prodottiRes = await supabase.from('prodotti').select('id', { count: 'exact' })
+
+        // Fetch clienti using the new RLS policy
+        const { data: clientiData, error: clientiError } = await getClientList()
+        const clientiCount = clientiError ? 0 : (clientiData || []).length
 
         setStats({
           ordini: ordiniRes.count || 0,
-          clienti: clientiRes.count || 0,
+          clienti: clientiCount,
           prodotti: prodottiRes.count || 0,
         })
       } catch (err) {

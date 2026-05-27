@@ -78,10 +78,26 @@ export const updateProfile = async (userId, updates) => {
   return { data, error }
 }
 
+/**
+ * Get all client profiles (for titolare)
+ * Now uses RLS policies instead of Function
+ * @returns {Promise<{data, error}>}
+ */
+export const getClientList = async () => {
+  const { data, error } = await supabase
+    .from('profili')
+    .select('id, nome, ruolo')
+    .eq('ruolo', 'cliente')
+    .order('nome', { ascending: true })
+
+  return { data, error }
+}
+
 export default {
   getProfile,
   getAllProfiles,
   getAllClientProfiles,
   createProfile,
   updateProfile,
+  getClientList,
 }
