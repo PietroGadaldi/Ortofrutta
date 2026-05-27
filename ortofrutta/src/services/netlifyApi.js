@@ -26,15 +26,22 @@ export const callFunction = async (functionName, method = 'POST', body = {}) => 
     // Build URL
     const url = `${FUNCTIONS_URL}/${functionName}`
 
-    // Call function
-    const response = await fetch(url, {
+    // Build fetch options
+    const fetchOptions = {
       method,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: body ? JSON.stringify(body) : undefined,
-    })
+    }
+
+    // Only add body for non-GET/HEAD requests
+    if (!['GET', 'HEAD'].includes(method.toUpperCase()) && body) {
+      fetchOptions.body = JSON.stringify(body)
+    }
+
+    // Call function
+    const response = await fetch(url, fetchOptions)
 
     const data = await response.json()
 
@@ -103,9 +110,20 @@ export const deleteProduct = async (productId) => {
   return { data, error }
 }
 
+/**
+ * Get list of all client profiles
+ * @returns {Promise<{data, error}>}
+ */
+export const listClients = async () => {
+  const { data, error } = await callFunction('list-clients', 'GET')
+
+  return { data, error }
+}
+
 export default {
   callFunction,
   createUser,
   updateOrderStatus,
   deleteProduct,
+  listClients,
 }

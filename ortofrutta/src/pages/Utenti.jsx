@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { validateEmail } from '../utils/validators'
+import { getClientList } from '../services/profiliService'
 
 export function Utenti() {
   const [nome, setNome] = useState('')
@@ -9,6 +10,36 @@ export function Utenti() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  
+  // Clients list state
+  const [clienti, setClienti] = useState([])
+  const [loadingClienti, setLoadingClienti] = useState(true)
+  const [errorClienti, setErrorClienti] = useState('')
+
+  // Load clients on mount
+  useEffect(() => {
+    fetchClienti()
+  }, [])
+
+  // Helper to fetch clients
+  const fetchClienti = async () => {
+    setLoadingClienti(true)
+    setErrorClienti('')
+    try {
+      const { data, error } = await getClientList()
+      if (error) {
+        setErrorClienti(error.message)
+        setClienti([])
+      } else {
+        setClienti(data || [])
+      }
+    } catch (err) {
+      setErrorClienti('Errore nel caricamento dei clienti')
+      console.error(err)
+    } finally {
+      setLoadingClienti(false)
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -63,6 +94,9 @@ export function Utenti() {
       setEmail('')
       setPassword('')
       setRuolo('cliente')
+      
+      // Refresh clients list
+      await fetchClienti()
     } catch (err) {
       setError(err.message)
       console.error(err)
@@ -85,79 +119,125 @@ export function Utenti() {
         <p className="text-gray-600 mt-2">Crea nuovi account per clienti e titolari.</p>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6 max-w-md">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">➕ Crea Nuovo Account</h2>
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Form */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">➕ Crea Nuovo Account</h2>
 
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error}
-          </div>
-        )}
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
 
-        {success && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-            {success}
-          </div>
-        )}
+          {success && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+              {success}
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nome</label>
-            <input
-              type="text"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none"
-              placeholder="Nome completo"
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Nome</label>
+              <input
+                type="text"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
+                placeholder="Nome completo"
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
+                placeholder="email@example.com"
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
+                placeholder="Min. 6 caratteri"
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Ruolo</label>
+              <select
+                value={ruolo}
+                onChange={(e) => setRuolo(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
+                disabled={isSubmitting}
+              >
+                <option value="cliente">Cliente</option>
+                <option value="titolare">Titolare</option>
+              </select>
+            </div>
+
+            <button
+              type="submit"
               disabled={isSubmitting}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none"
-              placeholder="email@example.com"
-              disabled={isSubmitting}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none"
-              placeholder="Min. 6 caratteri"
-              disabled={isSubmitting}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Ruolo</label>
-            <select
-              value={ruolo}
-              onChange={(e) => setRuolo(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none"
-              disabled={isSubmitting}
+              className="w-full px-4 py-2 bg-verde-orto-600 text-white rounded-lg font-semibold hover:bg-verde-orto-700 transition disabled:opacity-50"
             >
-              <option value="cliente">Cliente</option>
-              <option value="titolare">Titolare</option>
-            </select>
+              {isSubmitting ? 'Creazione in corso...' : 'Crea Account'}
+            </button>
+          </form>
+        </div>
+
+        {/* Clients List */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-gray-900">📋 Clienti ({clienti.length})</h2>
+            <button
+              onClick={fetchClienti}
+              disabled={loadingClienti}
+              className="px-3 py-1 text-sm bg-verde-orto-100 text-verde-orto-700 rounded hover:bg-verde-orto-200 transition disabled:opacity-50"
+            >
+              🔄 Aggiorna
+            </button>
           </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full px-4 py-2 bg-verde-orto-600 text-white rounded-lg font-semibold hover:bg-verde-orto-700 transition disabled:opacity-50"
-          >
-            {isSubmitting ? 'Creazione in corso...' : 'Crea Account'}
-          </button>
-        </form>
+          {errorClienti && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm mb-4">
+              {errorClienti}
+            </div>
+          )}
+
+          {loadingClienti ? (
+            <div className="text-gray-500 text-sm">Caricamento...</div>
+          ) : clienti.length === 0 ? (
+            <div className="text-gray-500 text-sm">Nessun cliente creato ancora</div>
+          ) : (
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {clienti.map((cliente) => (
+                <div
+                  key={cliente.id}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                >
+                  <div>
+                    <p className="font-medium text-gray-900">{cliente.nome}</p>
+                    <p className="text-xs text-gray-500">{cliente.id}</p>
+                  </div>
+                  <span className="px-2 py-1 text-xs bg-verde-orto-100 text-verde-orto-700 rounded">
+                    {cliente.ruolo}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

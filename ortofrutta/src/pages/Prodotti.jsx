@@ -107,7 +107,7 @@ export function Prodotti() {
                 type="text"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
                 placeholder="es. Pomodori"
                 disabled={isSubmitting}
               />
@@ -121,7 +121,7 @@ export function Prodotti() {
                 type="text"
                 value={tipologie}
                 onChange={(e) => setTipologie(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
                 placeholder="es. kg;pezzo;cassetta"
                 disabled={isSubmitting}
               />

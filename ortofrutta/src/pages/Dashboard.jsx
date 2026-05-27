@@ -148,7 +148,7 @@ export function Dashboard() {
                   setSelectedProdotto(e.target.value)
                   setSelectedTipologia('')
                 }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
               >
                 <option value="">-- Seleziona un prodotto --</option>
                 {prodotti.map((p) => (
@@ -168,7 +168,7 @@ export function Dashboard() {
                 <select
                   value={selectedTipologia}
                   onChange={(e) => setSelectedTipologia(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
                 >
                   <option value="">-- Seleziona tipologia --</option>
                   {prodotti
@@ -194,7 +194,7 @@ export function Dashboard() {
                 min="0"
                 value={quantita}
                 onChange={(e) => setQuantita(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
                 placeholder="Inserisci quantità"
               />
             </div>
