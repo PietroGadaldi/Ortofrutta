@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { format, parseISO, isSameDay } from 'date-fns'
+import { format, parseISO, isSameDay, isAfter, startOfDay } from 'date-fns'
 import { it } from 'date-fns/locale'
 
 /**
@@ -16,6 +16,18 @@ export function OrdersHistory({ ordini = [], onEditOrder, onDeleteOrder, isLoadi
 
   const toggleExpanded = (ordineId) => {
     setExpandedOrderId(expandedOrderId === ordineId ? null : ordineId)
+  }
+
+  // Check if order can be edited (only if data_ordine is today or in the future)
+  const isOrderEditable = (data_ordine) => {
+    try {
+      const ordineDate = startOfDay(parseISO(data_ordine))
+      const today = startOfDay(new Date())
+      // Can edit only if ordine date is today or in the future
+      return isAfter(ordineDate, today) || isSameDay(ordineDate, today)
+    } catch {
+      return false
+    }
   }
 
   // Filter orders by data_ordine
@@ -132,32 +144,43 @@ export function OrdersHistory({ ordini = [], onEditOrder, onDeleteOrder, isLoadi
                   </ul>
                 </div>
 
-                {/* Action buttons (only if not completed) */}
+                {/* Action buttons (only if not completed and still editable) */}
                 {!ordine.completato && (
-                  <div className="flex gap-2 border-t border-blue-200 pt-4 mt-4">
-                    <button
-                      onClick={() => onEditOrder(ordine)}
-                      disabled={isLoading}
-                      className="flex-1 py-2 px-3 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
-                    >
-                      ✏️ Modifica
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            'Sei sicuro di voler cancellare questo ordine?'
-                          )
-                        ) {
-                          onDeleteOrder(ordine.id)
-                        }
-                      }}
-                      disabled={isLoading}
-                      className="flex-1 py-2 px-3 bg-red-100 text-red-700 text-sm font-semibold rounded-lg hover:bg-red-200 disabled:bg-gray-300 transition-colors"
-                    >
-                      🗑️ Cancella
-                    </button>
-                  </div>
+                  <>
+                    {!isOrderEditable(ordine.data_ordine) && (
+                      <div className="p-3 bg-yellow-50 border border-yellow-300 rounded-lg mb-3">
+                        <p className="text-xs text-yellow-800">
+                          ⏱️ La data di questo ordine è passata. Non puoi più modificarlo o eliminarlo, ma puoi visualizzarne i dettagli.
+                        </p>
+                      </div>
+                    )}
+                    <div className="flex gap-2 border-t border-blue-200 pt-4 mt-4">
+                      <button
+                        onClick={() => onEditOrder(ordine)}
+                        disabled={isLoading || !isOrderEditable(ordine.data_ordine)}
+                        title={!isOrderEditable(ordine.data_ordine) ? 'Non puoi modificare ordini con data passata' : 'Modifica questo ordine'}
+                        className="flex-1 py-2 px-3 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                      >
+                        ✏️ Modifica
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              'Sei sicuro di voler cancellare questo ordine?'
+                            )
+                          ) {
+                            onDeleteOrder(ordine.id)
+                          }
+                        }}
+                        disabled={isLoading || !isOrderEditable(ordine.data_ordine)}
+                        title={!isOrderEditable(ordine.data_ordine) ? 'Non puoi eliminare ordini con data passata' : 'Elimina questo ordine'}
+                        className="flex-1 py-2 px-3 bg-red-100 text-red-700 text-sm font-semibold rounded-lg hover:bg-red-200 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                      >
+                        🗑️ Cancella
+                      </button>
+                    </div>
+                  </>
                 )}
               </div>
             )}
