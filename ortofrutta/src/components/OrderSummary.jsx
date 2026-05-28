@@ -20,8 +20,8 @@ export function OrderSummary({
 }) {
   if (items.length === 0) {
     return (
-      <div className="bg-green-50 border border-green-300 rounded-lg p-6 text-center">
-        <p className="text-green-700">
+      <div className="bg-gradient-to-br from-green-50 to-white border-2 border-green-300 rounded-xl p-6 text-center shadow-lg">
+        <p className="text-green-900 font-semibold">
           📋 Aggiungi prodotti dal modulo a sinistra per creare un ordine
         </p>
       </div>
@@ -29,12 +29,15 @@ export function OrderSummary({
   }
 
   return (
-    <div className="bg-white border border-green-200 rounded-lg p-4 shadow-sm">
-      <h3 className="text-lg font-bold text-green-800 mb-4">
-        ✅ Riepilogo Ordine ({items.length} {items.length === 1 ? 'prodotto' : 'prodotti'})
+    <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl p-6 shadow-lg">
+      <h3 className="text-xl font-bold text-green-900 mb-6 flex items-center gap-2">
+        <span className="text-2xl">✅</span> Riepilogo Ordine
+        <span className="ml-auto bg-green-200 text-green-900 px-3 py-1 rounded-full text-sm font-bold">
+          {items.length} {items.length === 1 ? 'prodotto' : 'prodotti'}
+        </span>
       </h3>
 
-      <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
+      <div className="space-y-3 mb-5 max-h-72 overflow-y-auto pr-2">
         {items.map((item, index) => (
           <OrderItemCard
             key={index}
@@ -47,18 +50,18 @@ export function OrderSummary({
       </div>
 
       {/* Summary stats */}
-      <div className="border-t border-green-200 pt-3 mb-4">
-        <div className="text-sm text-green-700">
-          <span className="font-semibold">Totale prodotti:</span> {items.length}
+      <div className="border-t-2 border-green-300 pt-4 mb-5">
+        <div className="text-sm text-green-900 font-semibold">
+          Total items: {items.length}
         </div>
       </div>
 
       {/* Action buttons */}
-      <div className="flex gap-2">
+      <div className="flex gap-3">
         <button
           onClick={onConfirmOrder}
           disabled={isLoading || items.length === 0}
-          className="flex-1 py-2 px-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          className="flex-1 py-3 px-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-lg hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
         >
           {isLoading ? '⏳ Creazione in corso...' : '🚀 Conferma e Crea Ordine'}
         </button>
@@ -69,7 +72,7 @@ export function OrderSummary({
             }
           }}
           disabled={isLoading}
-          className="py-2 px-4 bg-red-100 text-red-700 font-semibold rounded-lg hover:bg-red-200 disabled:bg-gray-300 disabled:text-gray-500 transition-colors"
+          className="py-3 px-4 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 disabled:bg-gray-400 disabled:text-gray-500 transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
           title="Cancella riepilogo"
         >
           🗑️

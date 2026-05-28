@@ -28,23 +28,23 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
 
   const renderHeader = () => {
     return (
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6 px-2">
         <button
           onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-          className="p-2 hover:bg-green-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-green-200 rounded-lg transition-all hover:scale-110"
           title="Mese precedente"
         >
-          <span className="text-green-700 font-bold">←</span>
+          <span className="text-green-700 font-bold text-lg">←</span>
         </button>
-        <h2 className="text-lg font-bold text-green-800">
+        <h2 className="text-xl font-bold text-green-900">
           {format(currentMonth, 'MMMM yyyy', { locale: it })}
         </h2>
         <button
           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-          className="p-2 hover:bg-green-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-green-200 rounded-lg transition-all hover:scale-110"
           title="Mese prossimo"
         >
-          <span className="text-green-700 font-bold">→</span>
+          <span className="text-green-700 font-bold text-lg">→</span>
         </button>
       </div>
     )
@@ -53,11 +53,11 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
   const renderDays = () => {
     const days = ['Lu', 'Ma', 'Me', 'Gi', 'Ve', 'Sa', 'Do']
     return (
-      <div className="grid grid-cols-7 gap-1 mb-2">
+      <div className="grid grid-cols-7 gap-2 mb-3">
         {days.map((day) => (
           <div
             key={day}
-            className="text-center text-sm font-semibold text-green-700 py-2"
+            className="text-center text-sm font-bold text-green-700 py-2 bg-green-100 rounded-lg"
           >
             {day}
           </div>
@@ -122,17 +122,19 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
   }
 
   return (
-    <div className="bg-white border border-green-200 rounded-lg p-4 shadow-sm">
-      <h3 className="text-base font-bold text-green-800 mb-3">
-        📅 Seleziona Data Ordine
+    <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl p-6 shadow-lg">
+      <h3 className="text-xl font-bold text-green-900 mb-4 flex items-center gap-2">
+        <span className="text-2xl">📅</span> Seleziona Data Ordine
       </h3>
       {renderHeader()}
       {renderDays()}
       {renderCells()}
       {selectedDate && (
-        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-center">
-          <p className="text-sm text-green-700">
-            <span className="font-bold">Data selezionata:</span>{' '}
+        <div className="mt-6 p-4 bg-gradient-to-r from-green-100 to-green-50 border-l-4 border-green-500 rounded-lg">
+          <p className="text-sm text-green-900 font-semibold">
+            Data selezionata:
+          </p>
+          <p className="text-lg text-green-700 font-bold mt-1">
             {format(selectedDate, 'EEEE, dd MMMM yyyy', { locale: it })}
           </p>
         </div>

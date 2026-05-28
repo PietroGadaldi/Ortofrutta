@@ -196,34 +196,36 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-12">
+      <div className="flex justify-center items-center py-24">
         <div className="text-center">
-          <div className="animate-spin mb-4">
-            <div className="h-12 w-12 border-4 border-green-600 border-t-transparent rounded-full mx-auto"></div>
+          <div className="inline-block mb-6">
+            <div className="animate-spin">
+              <div className="h-16 w-16 border-4 border-green-300 border-t-green-600 rounded-full"></div>
+            </div>
           </div>
-          <p className="text-green-600">Caricamento dashboard...</p>
+          <p className="text-green-700 font-bold text-lg">Caricamento dashboard...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-4xl font-bold text-green-900">📦 Dashboard Ordini</h1>
-        <p className="text-green-700 mt-2">Benvenuto! Crea o modifica i tuoi ordini.</p>
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-8 shadow-xl">
+        <h1 className="text-4xl font-black mb-2">📦 Gestione Ordini</h1>
+        <p className="text-green-100 text-lg font-semibold">Crea, modifica e visualizza i tuoi ordini in modo semplice e intuitivo</p>
       </div>
 
       {/* Error alert */}
       {error && (
-        <div className="p-4 bg-red-50 border border-red-300 rounded-lg text-red-700">
-          ⚠️ {error}
+        <div className="p-5 bg-red-100 border-l-4 border-red-500 rounded-lg shadow-md">
+          <p className="text-red-900 font-bold">⚠️ {error}</p>
         </div>
       )}
 
       {/* Calendar Picker Section */}
-      <div className="bg-gradient-to-br from-green-50 to-white rounded-lg border border-green-200 p-6 shadow-sm">
+      <div>
         <CalendarPicker
           selectedDate={selectedDate}
           onSelectDate={setSelectedDate}
@@ -231,7 +233,7 @@ export function Dashboard() {
       </div>
 
       {/* Form + Summary Section (Grid layout) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* AddProductForm (left, col-span 2) */}
         <div className="lg:col-span-2">
           <AddProductForm
@@ -259,13 +261,15 @@ export function Dashboard() {
       </div>
 
       {editingOrderId && (
-        <div className="p-4 bg-blue-50 border border-blue-300 rounded-lg text-blue-700 text-sm">
-          ℹ️ Stai modificando un ordine. Clicca "Conferma e Crea Ordine" per salvare le modifiche.
+        <div className="p-5 bg-blue-100 border-l-4 border-blue-500 rounded-lg shadow-md">
+          <p className="text-blue-900 font-bold">
+            ℹ️ Stai modificando un ordine. Clicca "Conferma e Crea Ordine" per salvare le modifiche.
+          </p>
         </div>
       )}
 
       {/* Orders History Section */}
-      <div className="bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-200 p-6 shadow-sm">
+      <div>
         <OrdersHistory
           ordini={ordini}
           onEditOrder={handleEditOrder}

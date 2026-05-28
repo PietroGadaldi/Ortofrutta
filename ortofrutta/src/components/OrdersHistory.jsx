@@ -72,21 +72,23 @@ export function OrdersHistory({ ordini = [], onEditOrder, onDeleteOrder, isLoadi
   }
 
   return (
-    <div className="bg-white border border-blue-200 rounded-lg p-4 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-blue-800">📜 Cronologia Ordini</h3>
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-semibold text-blue-700">Filtra per data:</label>
+    <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl p-6 shadow-lg">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-bold text-blue-900 flex items-center gap-2">
+          <span className="text-2xl">📜</span> Cronologia Ordini
+        </h3>
+        <div className="flex items-center gap-3">
+          <label className="text-sm font-bold text-blue-900">Filtra per data:</label>
           <input
             type="date"
             value={filterDate}
             onChange={(e) => setFilterDate(e.target.value)}
-            className="px-3 py-1 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-black"
+            className="px-4 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-black font-semibold"
           />
           {filterDate && (
             <button
               onClick={() => setFilterDate('')}
-              className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+              className="px-3 py-2 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-bold"
             >
               ✕ Azzera
             </button>
@@ -95,8 +97,8 @@ export function OrdersHistory({ ordini = [], onEditOrder, onDeleteOrder, isLoadi
       </div>
 
       {filteredOrdini.length === 0 && filterDate && (
-        <div className="p-4 bg-yellow-50 border border-yellow-300 rounded-lg text-center">
-          <p className="text-sm text-yellow-700">❌ Nessun ordine trovato per la data {formatDateShort(filterDate)}</p>
+        <div className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg mb-4">
+          <p className="text-sm text-yellow-900 font-semibold">❌ Nessun ordine trovato per la data {formatDateShort(filterDate)}</p>
         </div>
       )}
 
@@ -104,38 +106,42 @@ export function OrdersHistory({ ordini = [], onEditOrder, onDeleteOrder, isLoadi
         {filteredOrdini.map((ordine) => (
           <div
             key={ordine.id}
-            className="bg-gradient-to-r from-blue-50 to-white border border-blue-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+            className="bg-gradient-to-r from-blue-50 to-white border-2 border-blue-300 rounded-xl overflow-hidden hover:shadow-lg hover:border-blue-400 transition-all"
           >
             {/* Order header (always visible) */}
             <button
               onClick={() => toggleExpanded(ordine.id)}
-              className="w-full flex items-center justify-between p-4 hover:bg-blue-100 transition-colors"
+              className="w-full flex items-center justify-between p-5 hover:bg-blue-100 transition-all active:scale-95"
             >
-              <div className="text-left">
-                <div className="font-bold text-blue-900 text-sm">
+              <div className="text-left flex-1">
+                <div className="font-bold text-blue-900 text-lg">
                   📅 {formatDate(ordine.data_ordine)}
                 </div>
-                <div className="text-xs text-blue-600 mt-1">
+                <div className="text-xs text-blue-700 mt-2 font-semibold">
                   Creato il {formatDate(ordine.data_creazione)}
                 </div>
               </div>
-              <span className="text-blue-600 text-lg ml-2">
+              <span className="text-blue-600 text-2xl ml-4">
                 {expandedOrderId === ordine.id ? '▲' : '▼'}
               </span>
             </button>
 
             {/* Order details (expandable) */}
             {expandedOrderId === ordine.id && (
-              <div className="border-t border-blue-200 p-4 bg-blue-50">
+              <div className="border-t-2 border-blue-300 p-5 bg-gradient-to-br from-blue-50 to-white">
                 {/* Products list */}
-                <div className="mb-4">
-                  <h4 className="font-bold text-blue-900 text-sm mb-3">📦 Prodotti ordinati:</h4>
-                  <ul className="space-y-2 ml-3">
+                <div className="mb-5">
+                  <h4 className="font-bold text-blue-900 text-sm mb-4 flex items-center gap-2">
+                    <span>📦</span> Prodotti ordinati:
+                  </h4>
+                  <ul className="space-y-3 ml-2">
                     {ordine.dettagli_ordine && ordine.dettagli_ordine.length > 0 ? (
                       ordine.dettagli_ordine.map((dettaglio) => (
-                        <li key={dettaglio.id} className="text-sm text-blue-800 bg-white px-2 py-1 rounded border-l-4 border-blue-400">
-                          <span className="font-semibold">{dettaglio.prodotti?.nome}</span>
-                          <span className="text-blue-600 ml-2">({dettaglio.quantita} {dettaglio.tipologia})</span>
+                        <li key={dettaglio.id} className="text-sm text-blue-900 bg-white px-4 py-3 rounded-lg border-l-4 border-blue-500 shadow-sm font-semibold text-left">
+                          <span className="font-bold block">{dettaglio.prodotti?.nome}</span>
+                          <span className="text-blue-700 text-xs mt-1 block">
+                            {dettaglio.quantita} {dettaglio.tipologia}
+                          </span>
                         </li>
                       ))
                     ) : (
@@ -148,18 +154,18 @@ export function OrdersHistory({ ordini = [], onEditOrder, onDeleteOrder, isLoadi
                 {!ordine.completato && (
                   <>
                     {!isOrderEditable(ordine.data_ordine) && (
-                      <div className="p-3 bg-yellow-50 border border-yellow-300 rounded-lg mb-3">
-                        <p className="text-xs text-yellow-800">
+                      <div className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg mb-4">
+                        <p className="text-xs text-yellow-900 font-semibold">
                           ⏱️ La data di questo ordine è passata. Non puoi più modificarlo o eliminarlo, ma puoi visualizzarne i dettagli.
                         </p>
                       </div>
                     )}
-                    <div className="flex gap-2 border-t border-blue-200 pt-4 mt-4">
+                    <div className="flex gap-3 border-t-2 border-blue-300 pt-5 mt-5">
                       <button
                         onClick={() => onEditOrder(ordine)}
                         disabled={isLoading || !isOrderEditable(ordine.data_ordine)}
                         title={!isOrderEditable(ordine.data_ordine) ? 'Non puoi modificare ordini con data passata' : 'Modifica questo ordine'}
-                        className="flex-1 py-2 px-3 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                        className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-bold rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
                       >
                         ✏️ Modifica
                       </button>
@@ -175,7 +181,7 @@ export function OrdersHistory({ ordini = [], onEditOrder, onDeleteOrder, isLoadi
                         }}
                         disabled={isLoading || !isOrderEditable(ordine.data_ordine)}
                         title={!isOrderEditable(ordine.data_ordine) ? 'Non puoi eliminare ordini con data passata' : 'Elimina questo ordine'}
-                        className="flex-1 py-2 px-3 bg-red-100 text-red-700 text-sm font-semibold rounded-lg hover:bg-red-200 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                        className="flex-1 py-3 px-4 bg-red-500 text-white text-sm font-bold rounded-lg hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
                       >
                         🗑️ Cancella
                       </button>
