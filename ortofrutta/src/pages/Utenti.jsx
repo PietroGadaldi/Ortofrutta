@@ -113,125 +113,130 @@ export function Utenti() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">👤 Utenti</h1>
-        <p className="text-gray-600 mt-2">Crea nuovi account per clienti e titolari.</p>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-8 shadow-xl">
+        <h1 className="text-4xl font-black mb-2">👤 Gestione Utenti</h1>
+        <p className="text-blue-100 text-lg font-semibold">Crea nuovi account per clienti e titolari</p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-8">
         {/* Form */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">➕ Crea Nuovo Account</h2>
+        <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-black mb-6 flex items-center gap-2">
+            <span className="text-3xl">➕</span> Crea Nuovo Account
+          </h2>
 
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
+            <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-900 text-sm font-semibold">
+              ⚠️ {error}
             </div>
           )}
 
           {success && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-              {success}
+            <div className="mb-6 p-4 bg-green-100 border-l-4 border-green-500 rounded-lg text-green-900 text-sm font-semibold">
+              ✅ {success}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Nome</label>
+              <label className="block text-sm font-bold text-black mb-2 text-left">👤 Nome</label>
               <input
                 type="text"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
+                className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold"
                 placeholder="Nome completo"
                 disabled={isSubmitting}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <label className="block text-sm font-bold text-black mb-2 text-left">📧 Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
+                className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold"
                 placeholder="email@example.com"
                 disabled={isSubmitting}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <label className="block text-sm font-bold text-black mb-2 text-left">🔐 Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
+                className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold"
                 placeholder="Min. 6 caratteri"
                 disabled={isSubmitting}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Ruolo</label>
+              <label className="block text-sm font-bold text-black mb-2 text-left">👑 Ruolo</label>
               <select
                 value={ruolo}
                 onChange={(e) => setRuolo(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
+                className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold"
                 disabled={isSubmitting}
               >
-                <option value="cliente">Cliente</option>
-                <option value="titolare">Titolare</option>
+                <option value="cliente">👤 Cliente</option>
+                <option value="titolare">🏪 Titolare</option>
               </select>
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full px-4 py-2 bg-verde-orto-600 text-white rounded-lg font-semibold hover:bg-verde-orto-700 transition disabled:opacity-50"
+              className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100 text-lg"
             >
-              {isSubmitting ? 'Creazione in corso...' : 'Crea Account'}
+              {isSubmitting ? '⏳ Creazione in corso...' : '✅ Crea Account'}
             </button>
           </form>
         </div>
 
         {/* Clients List */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-gray-900">📋 Clienti ({clienti.length})</h2>
+        <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-black flex items-center gap-2">
+              <span className="text-3xl">📋</span> Clienti ({clienti.length})
+            </h2>
             <button
               onClick={fetchClienti}
               disabled={loadingClienti}
-              className="px-3 py-1 text-sm bg-verde-orto-100 text-verde-orto-700 rounded hover:bg-verde-orto-200 transition disabled:opacity-50"
+              className="px-4 py-2 text-sm bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100"
             >
               🔄 Aggiorna
             </button>
           </div>
 
           {errorClienti && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm mb-4">
-              {errorClienti}
+            <div className="p-4 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-900 text-sm mb-4 font-semibold">
+              ⚠️ {errorClienti}
             </div>
           )}
 
           {loadingClienti ? (
-            <div className="text-gray-500 text-sm">Caricamento...</div>
+            <div className="text-black font-semibold">⏳ Caricamento...</div>
           ) : clienti.length === 0 ? (
-            <div className="text-gray-500 text-sm">Nessun cliente creato ancora</div>
+            <div className="text-black font-semibold italic">❌ Nessun cliente creato ancora</div>
           ) : (
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="space-y-3 max-h-96 overflow-y-auto">
               {clienti.map((cliente) => (
                 <div
                   key={cliente.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                  className="flex items-center justify-between p-4 bg-white border-2 border-green-300 rounded-lg shadow-sm hover:shadow-md hover:border-green-400 transition"
                 >
-                  <div>
-                    <p className="font-medium text-gray-900">{cliente.nome}</p>
-                    <p className="text-xs text-gray-500">{cliente.id}</p>
+                  <div className="flex-1">
+                    <p className="font-bold text-black text-left">{cliente.nome}</p>
+                    <p className="text-xs text-green-700 mt-1 font-semibold text-left">{cliente.id}</p>
                   </div>
-                  <span className="px-2 py-1 text-xs bg-verde-orto-100 text-verde-orto-700 rounded">
-                    {cliente.ruolo}
+                  <span className="ml-4 px-3 py-1 text-xs bg-gradient-to-r from-green-200 to-green-100 text-green-900 rounded-full font-bold">
+                    {cliente.ruolo === 'cliente' ? '👤 Cliente' : '🏪 Titolare'}
                   </span>
                 </div>
               ))}

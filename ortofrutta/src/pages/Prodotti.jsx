@@ -148,53 +148,61 @@ export function Prodotti() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-8 shadow-xl">
+        <h1 className="text-4xl font-black mb-2">🛒 Gestione Prodotti</h1>
+        <p className="text-green-100 text-lg font-semibold">Aggiungi, modifica o elimina i prodotti del tuo catalogo</p>
+      </div>
+
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
+        <div className="p-5 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-900 text-sm font-semibold">
+          ⚠️ {error}
         </div>
       )}
 
       {success && (
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-          {success}
+        <div className="p-5 bg-green-100 border-l-4 border-green-500 rounded-lg text-green-900 text-sm font-semibold">
+          ✅ {success}
         </div>
       )}
 
       {/* Layout Bicolonna */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-8">
         {/* Sezione Sinistra: Form sempre visibile */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-gray-900">➕ Aggiungi Prodotto</h2>
+        <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-black flex items-center gap-2">
+              <span className="text-3xl">➕</span> Aggiungi Prodotto
+            </h2>
             <button
               type="submit"
               form="form-nuovo-prodotto"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-verde-orto-600 text-white rounded-lg font-semibold hover:bg-verde-orto-700 transition disabled:opacity-50"
+              className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 transition-all shadow-md hover:scale-105 disabled:hover:scale-100"
             >
-              {isSubmitting ? 'Salvando...' : isModifying ? 'Modifica Prodotto' : 'Aggiungi Prodotto'}
+              {isSubmitting ? '⏳ Salvando...' : isModifying ? '📝 Modifica' : '✅ Aggiungi'}
             </button>
           </div>
 
-          <form id="form-nuovo-prodotto" onSubmit={handleSubmit} className="space-y-4">
+          <form id="form-nuovo-prodotto" onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nome Prodotto
+              <label className="block text-sm font-bold text-black mb-2 text-left">
+                📦 Nome Prodotto
               </label>
               <input
                 type="text"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
+                className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none text-black font-semibold"
                 placeholder="es. Pomodori"
                 disabled={isSubmitting}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tipologia
+              <label className="block text-sm font-bold text-black mb-2 text-left">
+                🏷️ Tipologia
               </label>
               <div className="flex gap-2">
                 <input
@@ -207,7 +215,7 @@ export function Prodotti() {
                       handleAggiungiTipologia()
                     }
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
+                  className="flex-1 px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none text-black font-semibold"
                   placeholder="es. kg"
                   disabled={isSubmitting}
                 />
@@ -215,9 +223,9 @@ export function Prodotti() {
                   type="button"
                   onClick={handleAggiungiTipologia}
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-verde-orto-600 text-white rounded-lg font-semibold hover:bg-verde-orto-700 transition disabled:opacity-50 whitespace-nowrap"
+                  className="px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition disabled:from-gray-400 disabled:to-gray-500 whitespace-nowrap shadow-md hover:scale-105 disabled:hover:scale-100"
                 >
-                  Aggiungi
+                  ➕
                 </button>
               </div>
             </div>
@@ -225,23 +233,23 @@ export function Prodotti() {
             {/* Lista Tipologie Aggiunte */}
             {tipologieArray.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tipologie Aggiunte ({tipologieArray.length})
+                <label className="block text-sm font-bold text-black mb-3 text-left">
+                  ✅ Tipologie ({tipologieArray.length})
                 </label>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {tipologieArray.map((tip, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-2 bg-verde-orto-50 border border-verde-orto-200 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-white border-2 border-green-300 rounded-lg shadow-sm hover:shadow-md transition"
                     >
-                      <span className="text-sm text-gray-900">{capitalize(tip)}</span>
+                      <span className="text-sm text-black font-bold">{capitalize(tip)}</span>
                       <button
                         type="button"
                         onClick={() => handleRimuoviTipologia(index)}
                         disabled={isSubmitting}
-                        className="px-2 py-1 bg-red-100 text-red-600 rounded text-xs font-semibold hover:bg-red-200 transition disabled:opacity-50"
+                        className="px-3 py-1 bg-red-500 text-white rounded text-sm font-bold hover:bg-red-600 transition disabled:bg-gray-400 hover:scale-110"
                       >
-                        ❌
+                        ✕
                       </button>
                     </div>
                   ))}
@@ -252,22 +260,24 @@ export function Prodotti() {
         </div>
 
         {/* Sezione Destra: Lista Prodotti */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-gray-900">📦 Prodotti ({prodotti.length})</h2>
+        <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl shadow-lg p-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-black flex items-center gap-2">
+              <span className="text-3xl">📦</span> Prodotti ({prodotti.length})
+            </h2>
             <button
               onClick={fetchProdotti}
               disabled={loading}
-              className="px-3 py-1 text-sm bg-verde-orto-100 text-verde-orto-700 rounded hover:bg-verde-orto-200 transition disabled:opacity-50"
+              className="px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100"
             >
               🔄 Aggiorna
             </button>
           </div>
 
           {loading ? (
-            <div className="text-gray-500 text-sm">Caricamento...</div>
+            <div className="text-black font-semibold">⏳ Caricamento...</div>
           ) : prodotti.length === 0 ? (
-            <div className="text-gray-500 text-sm">Nessun prodotto presente</div>
+            <div className="text-black font-semibold italic">❌ Nessun prodotto presente</div>
           ) : (
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {prodotti.map((p) => (
