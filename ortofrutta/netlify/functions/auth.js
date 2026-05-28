@@ -78,6 +78,18 @@ export function checkRole(userRole, requiredRole) {
 }
 
 /**
+ * CORS headers for development
+ * @returns {object}
+ */
+export function getCorsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  }
+}
+
+/**
  * Return error response
  * @param {number} statusCode
  * @param {string} error
@@ -87,7 +99,10 @@ export function errorResponse(statusCode, error) {
   return {
     statusCode,
     body: JSON.stringify({ error }),
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...getCorsHeaders(),
+    },
   }
 }
 
@@ -101,6 +116,9 @@ export function successResponse(statusCode, data) {
   return {
     statusCode,
     body: JSON.stringify(data),
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...getCorsHeaders(),
+    },
   }
 }

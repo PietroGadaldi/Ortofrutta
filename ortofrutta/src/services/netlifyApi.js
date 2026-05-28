@@ -1,6 +1,8 @@
 import { supabase } from './supabaseClient'
 
-const FUNCTIONS_URL = import.meta.env.VITE_NETLIFY_FUNCTIONS_URL
+// Use relative URL for Netlify functions (works on localhost and production)
+// For dev with Netlify CLI, can override with VITE_NETLIFY_FUNCTIONS_URL
+const FUNCTIONS_URL = import.meta.env.VITE_NETLIFY_FUNCTIONS_URL || '/.netlify/functions'
 
 /**
  * Call a Netlify Function with automatic auth token
@@ -83,6 +85,21 @@ export const createUser = async (email, password, nome, ruolo) => {
 }
 
 /**
+ * Create new product via Netlify Function
+ * @param {string} nome
+ * @param {string} tipologie_possibili
+ * @returns {Promise<{data, error}>}
+ */
+export const createProduct = async (nome, tipologie_possibili) => {
+  const { data, error } = await callFunction('create-product', 'POST', {
+    nome,
+    tipologie_possibili,
+  })
+
+  return { data, error }
+}
+
+/**
  * Update order status via Netlify Function
  * @param {string} ordineId
  * @param {boolean} completato
@@ -123,6 +140,7 @@ export const listClients = async () => {
 export default {
   callFunction,
   createUser,
+  createProduct,
   updateOrderStatus,
   deleteProduct,
   listClients,

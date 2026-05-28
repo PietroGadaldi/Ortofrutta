@@ -17,6 +17,18 @@ const supabaseAdmin = createClient(
 )
 
 export async function handler(event) {
+  // Handle CORS preflight request
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    }
+  }
+
   if (event.httpMethod !== 'GET') {
     return errorResponse(405, 'Method not allowed')
   }

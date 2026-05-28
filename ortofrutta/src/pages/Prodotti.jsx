@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../services/supabaseClient'
+import { createProdotto } from '../services/prodottiService'
 
 export function Prodotti() {
   const [prodotti, setProdotti] = useState([])
@@ -37,10 +38,7 @@ export function Prodotti() {
 
     setIsSubmitting(true)
     try {
-      const { error: err } = await supabase.from('prodotti').insert({
-        nome: nome.trim(),
-        tipologie_possibili: tipologie,
-      })
+      const { error: err } = await createProdotto(nome.trim(), tipologie)
 
       if (err) throw err
 
