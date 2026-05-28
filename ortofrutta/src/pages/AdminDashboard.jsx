@@ -1,17 +1,20 @@
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { startOfDay } from 'date-fns'
 import { supabase } from '../services/supabaseClient'
 import { getClientList } from '../services/profiliService'
+import { getOrdiniCountByDate } from '../services/ordiniService'
 
 export function AdminDashboard() {
   const [stats, setStats] = useState({ ordini: 0, clienti: 0, prodotti: 0 })
   const [loading, setLoading] = useState(true)
+  const [todayDate, setTodayDate] = useState(startOfDay(new Date()))
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch ordini count
-        const ordiniRes = await supabase.from('ordini').select('id', { count: 'exact' })
+        // Fetch ordini count for today
+        const { count: ordiniCount, error: ordiniError } = await getOrdiniCountByDate(todayDate)
 
         // Fetch prodotti count
         const prodottiRes = await supabase.from('prodotti').select('id', { count: 'exact' })
@@ -21,7 +24,7 @@ export function AdminDashboard() {
         const clientiCount = clientiError ? 0 : (clientiData || []).length
 
         setStats({
-          ordini: ordiniRes.count || 0,
+          ordini: ordiniError ? 0 : (ordiniCount || 0),
           clienti: clientiCount,
           prodotti: prodottiRes.count || 0,
         })
@@ -33,69 +36,72 @@ export function AdminDashboard() {
     }
 
     fetchStats()
-  }, [])
+  }, [todayDate])
 
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">🔧 Pannello Amministrativo</h1>
-        <p className="text-gray-600 mt-2">Gestisci ordini, prodotti e utenti.</p>
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-8 shadow-xl">
+        <h1 className="text-4xl font-black mb-2">🔧 Pannello Amministrativo</h1>
+        <p className="text-green-100 text-lg font-semibold">Gestisci ordini, prodotti e utenti del tuo negozio</p>
       </div>
 
       {/* Combined Stats and Navigation */}
       {!loading && (
         <div className="grid md:grid-cols-3 gap-6">
           {/* Sinistra: Ordini */}
-          <div className="flex flex-col">
-            <div className="bg-white rounded-lg shadow p-6 border-l-4 border-verde-orto-600 flex-grow">
-              <div className="text-4xl text-verde-orto-600 mb-2">📦</div>
-              <p className="text-gray-600 text-sm">Ordini Totali</p>
-              <p className="text-3xl font-bold text-gray-900">{stats.ordini}</p>
+          <Link
+            to="/ordini"
+            className="group bg-gradient-to-br from-white to-amber-50 border-2 border-amber-300 rounded-xl p-8 shadow-lg hover:shadow-xl hover:border-amber-400 transition-all transform hover:scale-105"
+          >
+            <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">📦</div>
+            <h3 className="text-2xl font-bold text-black mb-2">Ordini</h3>
+            <p className="text-sm text-black font-semibold mb-6">
+              Ordini per oggi
+            </p>
+            <div className="inline-block bg-gradient-to-r from-amber-600 to-amber-700 text-white px-6 py-3 rounded-lg font-black text-3xl">
+              {stats.ordini}
             </div>
-            <Link
-              to="/ordini"
-              className="block bg-white rounded-lg shadow p-6 hover:shadow-lg transition hover:border-l-4 hover:border-verde-orto-600 mt-4"
-            >
-              <div className="text-4xl mb-3">📋</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">Ordini</h3>
-              <p className="text-gray-600 text-sm">Visualizza e gestisci gli ordini ricevuti.</p>
-            </Link>
-          </div>
+            <p className="text-xs text-amber-800 mt-4 font-semibold">
+              📅 Clicca per gestire gli ordini
+            </p>
+          </Link>
 
           {/* Centro: Prodotti */}
-          <div className="flex flex-col">
-            <div className="bg-white rounded-lg shadow p-6 border-l-4 border-verde-orto-600 flex-grow">
-              <div className="text-4xl text-verde-orto-600 mb-2">🥬</div>
-              <p className="text-gray-600 text-sm">Prodotti</p>
-              <p className="text-3xl font-bold text-gray-900">{stats.prodotti}</p>
+          <Link
+            to="/prodotti"
+            className="group bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl p-8 shadow-lg hover:shadow-xl hover:border-green-400 transition-all transform hover:scale-105"
+          >
+            <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">🥬</div>
+            <h3 className="text-2xl font-bold text-black mb-2">Prodotti</h3>
+            <p className="text-sm text-black font-semibold mb-6">
+              Catalogo disponibile
+            </p>
+            <div className="inline-block bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-lg font-black text-3xl">
+              {stats.prodotti}
             </div>
-            <Link
-              to="/prodotti"
-              className="block bg-white rounded-lg shadow p-6 hover:shadow-lg transition hover:border-l-4 hover:border-verde-orto-600 mt-4"
-            >
-              <div className="text-4xl mb-3">🛒</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">Prodotti</h3>
-              <p className="text-gray-600 text-sm">Aggiungi, modifica o elimina prodotti.</p>
-            </Link>
-          </div>
+            <p className="text-xs text-green-800 mt-4 font-semibold">
+              📝 Clicca per gestire i prodotti
+            </p>
+          </Link>
 
           {/* Destra: Clienti */}
-          <div className="flex flex-col">
-            <div className="bg-white rounded-lg shadow p-6 border-l-4 border-verde-orto-600 flex-grow">
-              <div className="text-4xl text-verde-orto-600 mb-2">👥</div>
-              <p className="text-gray-600 text-sm">Clienti</p>
-              <p className="text-3xl font-bold text-gray-900">{stats.clienti}</p>
+          <Link
+            to="/utenti"
+            className="group bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl p-8 shadow-lg hover:shadow-xl hover:border-blue-400 transition-all transform hover:scale-105"
+          >
+            <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">👥</div>
+            <h3 className="text-2xl font-bold text-black mb-2">Clienti</h3>
+            <p className="text-sm text-black font-semibold mb-6">
+              Clienti registrati
+            </p>
+            <div className="inline-block bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-black text-3xl">
+              {stats.clienti}
             </div>
-            <Link
-              to="/utenti"
-              className="block bg-white rounded-lg shadow p-6 hover:shadow-lg transition hover:border-l-4 hover:border-verde-orto-600 mt-4"
-            >
-              <div className="text-4xl mb-3">👤</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">Utenti</h3>
-              <p className="text-gray-600 text-sm">Crea nuovi account per clienti e titolari.</p>
-            </Link>
-          </div>
+            <p className="text-xs text-blue-800 mt-4 font-semibold">
+              👤 Clicca per gestire gli utenti
+            </p>
+          </Link>
         </div>
       )}
     </div>

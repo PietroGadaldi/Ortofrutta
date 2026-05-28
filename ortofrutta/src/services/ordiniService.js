@@ -139,10 +139,93 @@ export const updateOrdineDettagli = async (ordineId, dettagli) => {
   }
 }
 
+/**
+ * Get all ordini for a specific date (for titolare view)
+ * @param {Date} dataOrdine - Date to fetch orders for
+ * @returns {Promise<{data, error}>}
+ */
+export const getOrdiniByDate = async (dataOrdine) => {
+  const { data, error } = await supabase
+    .from('ordini')
+    .select(`
+      id,
+      data_creazione,
+      data_ordine,
+      completato,
+      cliente_id,
+      profili (nome),
+      dettagli_ordine (
+        id,
+        quantita,
+        tipologia,
+        prodotto_id,
+        prodotti (nome)
+      )
+    `)
+    .eq('data_ordine', dataOrdine.toISOString().split('T')[0])
+    .order('data_creazione', { ascending: false })
+
+  return { data, error }
+}
+
+/**
+ * Get count of ordini for a specific date
+ * @param {Date} dataOrdine - Date to count orders for
+ * @returns {Promise<{count, error}>}
+ */
+export const getOrdiniCountByDate = async (dataOrdine) => {
+  const { count, error } = await supabase
+    .from('ordini')
+    .select('id', { count: 'exact', head: true })
+    .eq('data_ordine', dataOrdine.toISOString().split('T')[0])
+
+  return { count, error }
+}
+
+/**
+ * Get count of ordini for multiple dates (for calendar display)
+ * @param {Array<Date>} dates - Array of dates to count orders for
+ * @returns {Promise<{data: {date: string, count: number}[], error}>}
+ */
+export const getOrdiniCountsByDates = async (dates) => {
+  try {
+    const dateStrings = dates.map((d) => d.toISOString().split('T')[0])
+
+    const { data, error } = await supabase
+      .from('ordini')
+      .select('data_ordine')
+      .in('data_ordine', dateStrings)
+
+    if (error) throw error
+
+    // Count occurrences per date
+    const countsByDate = {}
+    dateStrings.forEach((d) => {
+      countsByDate[d] = 0
+    })
+
+    data.forEach((order) => {
+      countsByDate[order.data_ordine]++
+    })
+
+    const result = Object.entries(countsByDate).map(([date, count]) => ({
+      date,
+      count,
+    }))
+
+    return { data: result, error: null }
+  } catch (err) {
+    return { data: null, error: err }
+  }
+}
+
 export default {
   getAllOrdini,
   createOrdine,
   updateOrdineStatus,
   deleteOrdine,
   updateOrdineDettagli,
+  getOrdiniByDate,
+  getOrdiniCountByDate,
+  getOrdiniCountsByDates,
 }
