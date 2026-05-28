@@ -1,3 +1,4 @@
+import { format } from 'date-fns'
 import { supabase } from './supabaseClient'
 
 /**
@@ -162,7 +163,7 @@ export const getOrdiniByDate = async (dataOrdine) => {
         prodotti (nome)
       )
     `)
-    .eq('data_ordine', dataOrdine.toISOString().split('T')[0])
+    .eq('data_ordine', format(dataOrdine, 'yyyy-MM-dd'))
     .order('data_creazione', { ascending: false })
 
   return { data, error }
@@ -177,7 +178,7 @@ export const getOrdiniCountByDate = async (dataOrdine) => {
   const { count, error } = await supabase
     .from('ordini')
     .select('id', { count: 'exact', head: true })
-    .eq('data_ordine', dataOrdine.toISOString().split('T')[0])
+    .eq('data_ordine', format(dataOrdine, 'yyyy-MM-dd'))
 
   return { count, error }
 }
@@ -189,7 +190,7 @@ export const getOrdiniCountByDate = async (dataOrdine) => {
  */
 export const getOrdiniCountsByDates = async (dates) => {
   try {
-    const dateStrings = dates.map((d) => d.toISOString().split('T')[0])
+    const dateStrings = dates.map((d) => format(d, 'yyyy-MM-dd'))
 
     const { data, error } = await supabase
       .from('ordini')
