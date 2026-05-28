@@ -43,56 +43,61 @@ export function AdminDashboard() {
         <p className="text-gray-600 mt-2">Gestisci ordini, prodotti e utenti.</p>
       </div>
 
-      {/* Stats */}
+      {/* Combined Stats and Navigation */}
       {!loading && (
         <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-verde-orto-600">
-            <div className="text-4xl text-verde-orto-600 mb-2">📦</div>
-            <p className="text-gray-600 text-sm">Ordini Totali</p>
-            <p className="text-3xl font-bold text-gray-900">{stats.ordini}</p>
+          {/* Sinistra: Ordini */}
+          <div className="flex flex-col">
+            <div className="bg-white rounded-lg shadow p-6 border-l-4 border-verde-orto-600 flex-grow">
+              <div className="text-4xl text-verde-orto-600 mb-2">📦</div>
+              <p className="text-gray-600 text-sm">Ordini Totali</p>
+              <p className="text-3xl font-bold text-gray-900">{stats.ordini}</p>
+            </div>
+            <Link
+              to="/ordini"
+              className="block bg-white rounded-lg shadow p-6 hover:shadow-lg transition hover:border-l-4 hover:border-verde-orto-600 mt-4"
+            >
+              <div className="text-4xl mb-3">📋</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Ordini</h3>
+              <p className="text-gray-600 text-sm">Visualizza e gestisci gli ordini ricevuti.</p>
+            </Link>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-verde-orto-600">
-            <div className="text-4xl text-verde-orto-600 mb-2">👥</div>
-            <p className="text-gray-600 text-sm">Clienti</p>
-            <p className="text-3xl font-bold text-gray-900">{stats.clienti}</p>
+
+          {/* Centro: Prodotti */}
+          <div className="flex flex-col">
+            <div className="bg-white rounded-lg shadow p-6 border-l-4 border-verde-orto-600 flex-grow">
+              <div className="text-4xl text-verde-orto-600 mb-2">🥬</div>
+              <p className="text-gray-600 text-sm">Prodotti</p>
+              <p className="text-3xl font-bold text-gray-900">{stats.prodotti}</p>
+            </div>
+            <Link
+              to="/prodotti"
+              className="block bg-white rounded-lg shadow p-6 hover:shadow-lg transition hover:border-l-4 hover:border-verde-orto-600 mt-4"
+            >
+              <div className="text-4xl mb-3">🛒</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Prodotti</h3>
+              <p className="text-gray-600 text-sm">Aggiungi, modifica o elimina prodotti.</p>
+            </Link>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-verde-orto-600">
-            <div className="text-4xl text-verde-orto-600 mb-2">🥬</div>
-            <p className="text-gray-600 text-sm">Prodotti</p>
-            <p className="text-3xl font-bold text-gray-900">{stats.prodotti}</p>
+
+          {/* Destra: Clienti */}
+          <div className="flex flex-col">
+            <div className="bg-white rounded-lg shadow p-6 border-l-4 border-verde-orto-600 flex-grow">
+              <div className="text-4xl text-verde-orto-600 mb-2">👥</div>
+              <p className="text-gray-600 text-sm">Clienti</p>
+              <p className="text-3xl font-bold text-gray-900">{stats.clienti}</p>
+            </div>
+            <Link
+              to="/utenti"
+              className="block bg-white rounded-lg shadow p-6 hover:shadow-lg transition hover:border-l-4 hover:border-verde-orto-600 mt-4"
+            >
+              <div className="text-4xl mb-3">👤</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Utenti</h3>
+              <p className="text-gray-600 text-sm">Crea nuovi account per clienti e titolari.</p>
+            </Link>
           </div>
         </div>
       )}
-
-      {/* Menu */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <Link
-          to="/ordini"
-          className="block bg-white rounded-lg shadow p-6 hover:shadow-lg transition hover:border-l-4 hover:border-verde-orto-600"
-        >
-          <div className="text-4xl mb-3">📋</div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">Ordini</h3>
-          <p className="text-gray-600 text-sm">Visualizza e gestisci gli ordini ricevuti.</p>
-        </Link>
-
-        <Link
-          to="/prodotti"
-          className="block bg-white rounded-lg shadow p-6 hover:shadow-lg transition hover:border-l-4 hover:border-verde-orto-600"
-        >
-          <div className="text-4xl mb-3">🛒</div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">Prodotti</h3>
-          <p className="text-gray-600 text-sm">Aggiungi, modifica o elimina prodotti.</p>
-        </Link>
-
-        <Link
-          to="/utenti"
-          className="block bg-white rounded-lg shadow p-6 hover:shadow-lg transition hover:border-l-4 hover:border-verde-orto-600"
-        >
-          <div className="text-4xl mb-3">👤</div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">Utenti</h3>
-          <p className="text-gray-600 text-sm">Crea nuovi account per clienti e titolari.</p>
-        </Link>
-      </div>
     </div>
   )
 }

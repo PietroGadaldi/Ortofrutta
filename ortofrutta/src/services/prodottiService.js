@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient'
-import { createProduct } from './netlifyApi'
+import { createProduct, updateProduct } from './netlifyApi'
 import { parseTipologie } from '../utils/constants'
 
 /**
@@ -27,18 +27,14 @@ export const createProdotto = async (nome, tipologiePossibili) => {
 }
 
 /**
- * Update prodotto
+ * Update prodotto via Netlify Function
  * @param {string} prodottoId
- * @param {object} updates - {nome?, tipologie_possibili?}
+ * @param {string} nome
+ * @param {string} tipologie_possibili
  * @returns {Promise<{data, error}>}
  */
-export const updateProdotto = async (prodottoId, updates) => {
-  const { data, error } = await supabase
-    .from('prodotti')
-    .update(updates)
-    .eq('id', prodottoId)
-    .select()
-
+export const updateProdotto = async (prodottoId, nome, tipologie_possibili) => {
+  const { data, error } = await updateProduct(prodottoId, nome, tipologie_possibili)
   return { data, error }
 }
 
