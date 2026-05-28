@@ -113,7 +113,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
             value={quantita}
             onChange={(e) => setQuantita(e.target.value)}
             placeholder="0"
-            className="w-full px-4 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black"
             disabled={!selectedProduct}
           />
         </div>
@@ -126,7 +126,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
           <select
             value={tipologia}
             onChange={(e) => setTipologia(e.target.value)}
-            className="w-full px-4 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
+            className="w-full px-4 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-black"
             disabled={!selectedProduct}
           >
             <option value="">-- Seleziona tipologia --</option>
