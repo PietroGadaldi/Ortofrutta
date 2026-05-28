@@ -25,7 +25,11 @@ export function OrderItemCard({ item, onEdit, onDelete, index }) {
           ✏️
         </button>
         <button
-          onClick={() => onDelete(index)}
+          onClick={() => {
+            if (window.confirm(`Sei sicuro di voler eliminare "${item.prodotto_nome}" dall\'ordine?`)) {
+              onDelete(index)
+            }
+          }}
           className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
           title="Rimuovi prodotto"
         >

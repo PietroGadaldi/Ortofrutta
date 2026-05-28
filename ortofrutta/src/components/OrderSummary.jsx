@@ -63,7 +63,11 @@ export function OrderSummary({
           {isLoading ? '⏳ Creazione in corso...' : '🚀 Conferma e Crea Ordine'}
         </button>
         <button
-          onClick={onClearOrder}
+          onClick={() => {
+            if (window.confirm('Sei sicuro di voler cancellare tutto l\'ordine?')) {
+              onClearOrder()
+            }
+          }}
           disabled={isLoading}
           className="py-2 px-4 bg-red-100 text-red-700 font-semibold rounded-lg hover:bg-red-200 disabled:bg-gray-300 disabled:text-gray-500 transition-colors"
           title="Cancella riepilogo"
