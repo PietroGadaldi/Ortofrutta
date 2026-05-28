@@ -10,6 +10,7 @@ export const getAllOrdini = async (userId, role) => {
   let query = supabase.from('ordini').select(`
     id,
     data_creazione,
+    data_ordine,
     completato,
     cliente_id,
     profili (nome),
@@ -37,15 +38,16 @@ export const getAllOrdini = async (userId, role) => {
 /**
  * Create new ordine
  * @param {string} clienteId
+ * @param {Date} dataOrdine - Data for which order is being placed
  * @param {Array} dettagli - Array of {prodotto_id, quantita, tipologia}
  * @returns {Promise<{data, error}>}
  */
-export const createOrdine = async (clienteId, dettagli) => {
+export const createOrdine = async (clienteId, dataOrdine, dettagli) => {
   try {
     // Create ordine
     const { data: ordineData, error: ordineError } = await supabase
       .from('ordini')
-      .insert({ cliente_id: clienteId })
+      .insert({ cliente_id: clienteId, data_ordine: dataOrdine })
       .select()
 
     if (ordineError) throw ordineError
@@ -100,9 +102,47 @@ export const deleteOrdine = async (ordineId) => {
   return { error }
 }
 
+/**
+ * Update ordine dettagli (modify products in existing order)
+ * @param {string} ordineId
+ * @param {Array} dettagli - Array of {prodotto_id, quantita, tipologia}
+ * @returns {Promise<{data, error}>}
+ */
+export const updateOrdineDettagli = async (ordineId, dettagli) => {
+  try {
+    // Delete existing dettagli_ordine for this ordine
+    const { error: deleteError } = await supabase
+      .from('dettagli_ordine')
+      .delete()
+      .eq('ordine_id', ordineId)
+
+    if (deleteError) throw deleteError
+
+    // Insert new dettagli_ordine
+    const dettagliRecords = dettagli.map((d) => ({
+      ordine_id: ordineId,
+      prodotto_id: d.prodotto_id,
+      quantita: d.quantita,
+      tipologia: d.tipologia,
+    }))
+
+    const { data: dettagliData, error: dettagliError } = await supabase
+      .from('dettagli_ordine')
+      .insert(dettagliRecords)
+      .select()
+
+    if (dettagliError) throw dettagliError
+
+    return { data: dettagliData, error: null }
+  } catch (err) {
+    return { data: null, error: err }
+  }
+}
+
 export default {
   getAllOrdini,
   createOrdine,
   updateOrdineStatus,
   deleteOrdine,
+  updateOrdineDettagli,
 }

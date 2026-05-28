@@ -1,19 +1,28 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../services/supabaseClient'
 import { useAuth } from '../hooks/useAuth'
-import { formatDate, formatTipologieList } from '../utils/formatters'
-import { parseTipologie } from '../utils/constants'
+import { CalendarPicker } from '../components/CalendarPicker'
+import { AddProductForm } from '../components/AddProductForm'
+import { OrderSummary } from '../components/OrderSummary'
+import { OrdersHistory } from '../components/OrdersHistory'
+import { createOrdine, updateOrdineDettagli, updateOrdineStatus, deleteOrdine, getAllOrdini } from '../services/ordiniService'
+import { format } from 'date-fns'
 
 export function Dashboard() {
   const { user } = useAuth()
+  
+  // State for orders and products
   const [ordini, setOrdini] = useState([])
   const [prodotti, setProdotti] = useState([])
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
-  const [showNewOrderForm, setShowNewOrderForm] = useState(false)
-  const [selectedProdotto, setSelectedProdotto] = useState(null)
-  const [selectedTipologia, setSelectedTipologia] = useState('')
-  const [quantita, setQuantita] = useState('')
+  
+  // State for new/editing order
+  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [productsInOrder, setProductsInOrder] = useState([])
+  const [editingOrderId, setEditingOrderId] = useState(null)
+  const [editingItemIndex, setEditingItemIndex] = useState(null)
 
   // Fetch user ordini and prodotti on mount
   useEffect(() => {
@@ -29,6 +38,7 @@ export function Dashboard() {
       const { data: prodData, error: prodError } = await supabase
         .from('prodotti')
         .select('*')
+        .order('nome', { ascending: true })
 
       if (prodError) throw prodError
       setProdotti(prodData || [])
@@ -40,6 +50,7 @@ export function Dashboard() {
           `
           id,
           data_creazione,
+          data_ordine,
           completato,
           dettagli_ordine (
             id,
@@ -63,222 +74,204 @@ export function Dashboard() {
     }
   }
 
-  const handleCreateOrder = async (e) => {
-    e.preventDefault()
+  // Add product to order summary
+  const handleAddProduct = (product) => {
+    if (editingItemIndex !== null) {
+      // Edit existing item
+      const updated = [...productsInOrder]
+      updated[editingItemIndex] = product
+      setProductsInOrder(updated)
+      setEditingItemIndex(null)
+    } else {
+      // Add new item
+      setProductsInOrder([...productsInOrder, product])
+    }
+    setError(null)
+  }
 
-    if (!selectedProdotto || !selectedTipologia || !quantita) {
-      alert('Compila tutti i campi')
+  // Edit product in order summary
+  const handleEditItem = (index) => {
+    setEditingItemIndex(index)
+  }
+
+  // Delete product from order summary
+  const handleDeleteItem = (index) => {
+    setProductsInOrder(productsInOrder.filter((_, i) => i !== index))
+  }
+
+  // Clear all products from order
+  const handleClearOrder = () => {
+    setProductsInOrder([])
+    setEditingOrderId(null)
+    setEditingItemIndex(null)
+    setSelectedDate(new Date())
+  }
+
+  // Create or update order
+  const handleConfirmOrder = async () => {
+    if (productsInOrder.length === 0) {
+      setError('Aggiungi almeno un prodotto prima di confermare')
       return
     }
 
+    setSubmitting(true)
+    setError(null)
+
     try {
-      // Create ordine
-      const { data: ordineData, error: ordineError } = await supabase
-        .from('ordini')
-        .insert({ cliente_id: user.id })
-        .select()
+      // Format date as YYYY-MM-DD string for database
+      const dateString = format(selectedDate, 'yyyy-MM-dd')
+      
+      if (editingOrderId) {
+        // Update existing order
+        const { error: updateError } = await updateOrdineDettagli(
+          editingOrderId,
+          productsInOrder
+        )
+        if (updateError) throw updateError
+        
+        setEditingOrderId(null)
+      } else {
+        // Create new order
+        const { data: newOrdine, error: createError } = await createOrdine(
+          user.id,
+          dateString,
+          productsInOrder
+        )
+        if (createError) throw createError
+      }
 
-      if (ordineError) throw ordineError
-
-      const ordineId = ordineData[0].id
-
-      // Create dettagli_ordine
-      const { error: dettagliError } = await supabase
-        .from('dettagli_ordine')
-        .insert({
-          ordine_id: ordineId,
-          prodotto_id: selectedProdotto,
-          quantita: Number(quantita),
-          tipologia: selectedTipologia,
-        })
-
-      if (dettagliError) throw dettagliError
-
-      // Reset form and refresh
-      setSelectedProdotto(null)
-      setSelectedTipologia('')
-      setQuantita('')
-      setShowNewOrderForm(false)
+      // Reset and refresh
+      handleClearOrder()
       await fetchData()
-      alert('Ordine creato con successo!')
+      setSubmitting(false)
     } catch (err) {
-      alert('Errore: ' + err.message)
+      setError('Errore durante il salvataggio: ' + err.message)
       console.error(err)
+      setSubmitting(false)
+    }
+  }
+
+  // Load order for editing
+  const handleEditOrder = (ordine) => {
+    setEditingOrderId(ordine.id)
+    
+    // Parse date from ordine
+    try {
+      const date = new Date(ordine.data_ordine)
+      setSelectedDate(date)
+    } catch {
+      setSelectedDate(new Date())
+    }
+
+    // Load products from dettagli_ordine
+    const items = ordine.dettagli_ordine.map((dettaglio) => ({
+      prodotto_id: dettaglio.prodotto_id,
+      prodotto_nome: dettaglio.prodotti.nome,
+      quantita: dettaglio.quantita,
+      tipologia: dettaglio.tipologia,
+    }))
+    
+    setProductsInOrder(items)
+    setEditingItemIndex(null)
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // Delete order
+  const handleDeleteOrder = async (ordineId) => {
+    setSubmitting(true)
+    try {
+      const { error: deleteError } = await deleteOrdine(ordineId)
+      if (deleteError) throw deleteError
+      
+      await fetchData()
+      setSubmitting(false)
+    } catch (err) {
+      setError('Errore durante la cancellazione: ' + err.message)
+      console.error(err)
+      setSubmitting(false)
     }
   }
 
   if (loading) {
     return (
-      <div className="flex justify-center py-12">
-        <div className="animate-spin">
-          <div className="h-12 w-12 border-4 border-verde-orto-600 border-t-transparent rounded-full"></div>
+      <div className="flex justify-center items-center py-12">
+        <div className="text-center">
+          <div className="animate-spin mb-4">
+            <div className="h-12 w-12 border-4 border-green-600 border-t-transparent rounded-full mx-auto"></div>
+          </div>
+          <p className="text-green-600">Caricamento dashboard...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard Ordini</h1>
-        <p className="text-gray-600 mt-2">Benvenuto! Gestisci i tuoi ordini.</p>
+        <h1 className="text-4xl font-bold text-green-900">📦 Dashboard Ordini</h1>
+        <p className="text-green-700 mt-2">Benvenuto! Crea o modifica i tuoi ordini.</p>
       </div>
 
+      {/* Error alert */}
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          {error}
+        <div className="p-4 bg-red-50 border border-red-300 rounded-lg text-red-700">
+          ⚠️ {error}
         </div>
       )}
 
-      {/* Nuovo Ordine Section */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">📦 Crea Nuovo Ordine</h2>
-
-        {showNewOrderForm ? (
-          <form onSubmit={handleCreateOrder} className="space-y-4">
-            {/* Prodotto select */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Prodotto
-              </label>
-              <select
-                value={selectedProdotto || ''}
-                onChange={(e) => {
-                  setSelectedProdotto(e.target.value)
-                  setSelectedTipologia('')
-                }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
-              >
-                <option value="">-- Seleziona un prodotto --</option>
-                {prodotti.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nome}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Tipologia select */}
-            {selectedProdotto && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tipologia
-                </label>
-                <select
-                  value={selectedTipologia}
-                  onChange={(e) => setSelectedTipologia(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
-                >
-                  <option value="">-- Seleziona tipologia --</option>
-                  {prodotti
-                    .find((p) => p.id === selectedProdotto)
-                    ?.tipologie_possibili.split(';')
-                    .map((t) => (
-                      <option key={t} value={t.trim()}>
-                        {t.trim()}
-                      </option>
-                    ))}
-                </select>
-              </div>
-            )}
-
-            {/* Quantita input */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Quantità
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={quantita}
-                onChange={(e) => setQuantita(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 outline-none text-black"
-                placeholder="Inserisci quantità"
-              />
-            </div>
-
-            {/* Buttons */}
-            <div className="flex gap-4">
-              <button
-                type="submit"
-                className="flex-1 px-4 py-2 bg-verde-orto-600 text-white rounded-lg font-semibold hover:bg-verde-orto-700 transition"
-              >
-                Aggiungi all'ordine
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowNewOrderForm(false)
-                  setSelectedProdotto(null)
-                  setSelectedTipologia('')
-                  setQuantita('')
-                }}
-                className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400 transition"
-              >
-                Annulla
-              </button>
-            </div>
-          </form>
-        ) : (
-          <button
-            onClick={() => setShowNewOrderForm(true)}
-            className="px-6 py-3 bg-verde-orto-600 text-white rounded-lg font-semibold hover:bg-verde-orto-700 transition"
-          >
-            ➕ Nuovo Ordine
-          </button>
-        )}
+      {/* Calendar Picker Section */}
+      <div className="bg-gradient-to-br from-green-50 to-white rounded-lg border border-green-200 p-6 shadow-sm">
+        <CalendarPicker
+          selectedDate={selectedDate}
+          onSelectDate={setSelectedDate}
+        />
       </div>
 
-      {/* Cronologia Ordini Section */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">📋 Cronologia Ordini</h2>
+      {/* Form + Summary Section (Grid layout) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* AddProductForm (left, col-span 2) */}
+        <div className="lg:col-span-2">
+          <AddProductForm
+            prodotti={prodotti}
+            onAddProduct={handleAddProduct}
+            editingItem={
+              editingItemIndex !== null
+                ? productsInOrder[editingItemIndex]
+                : null
+            }
+          />
+        </div>
 
-        {ordini.length === 0 ? (
-          <p className="text-gray-600">Nessun ordine ancora.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Data
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Prodotti
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Stato
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {ordini.map((ordine) => (
-                  <tr key={ordine.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-3 text-sm text-gray-900">
-                      {formatDate(ordine.data_creazione)}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-gray-600">
-                      {ordine.dettagli_ordine?.length || 0} prodotto/i
-                    </td>
-                    <td className="px-6 py-3 text-sm">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          ordine.completato
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}
-                      >
-                        {ordine.completato ? '✅ Completato' : '⏳ In Sospeso'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        {/* OrderSummary (right, col-span 1) */}
+        <div className="lg:col-span-1">
+          <OrderSummary
+            items={productsInOrder}
+            onEditItem={handleEditItem}
+            onDeleteItem={handleDeleteItem}
+            onConfirmOrder={handleConfirmOrder}
+            onClearOrder={handleClearOrder}
+            isLoading={submitting}
+          />
+        </div>
+      </div>
+
+      {editingOrderId && (
+        <div className="p-4 bg-blue-50 border border-blue-300 rounded-lg text-blue-700 text-sm">
+          ℹ️ Stai modificando un ordine. Clicca "Conferma e Crea Ordine" per salvare le modifiche.
+        </div>
+      )}
+
+      {/* Orders History Section */}
+      <div className="bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-200 p-6 shadow-sm">
+        <OrdersHistory
+          ordini={ordini}
+          onEditOrder={handleEditOrder}
+          onDeleteOrder={handleDeleteOrder}
+          isLoading={submitting}
+        />
       </div>
     </div>
   )

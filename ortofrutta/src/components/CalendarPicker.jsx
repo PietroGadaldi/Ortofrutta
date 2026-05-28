@@ -1,0 +1,142 @@
+import { useState } from 'react'
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  addDays,
+  addMonths,
+  subMonths,
+  isSameMonth,
+  isSameDay,
+  isToday,
+  isBefore,
+  startOfDay,
+} from 'date-fns'
+import { it } from 'date-fns/locale'
+
+/**
+ * CalendarPicker component
+ * Interactive calendar for selecting order dates
+ * @param {Date} selectedDate - Currently selected date
+ * @param {Function} onSelectDate - Callback when date is selected
+ * @param {Array<Date>} disabledDates - Dates that cannot be selected (optional)
+ */
+export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] }) {
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+
+  const renderHeader = () => {
+    return (
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+          className="p-2 hover:bg-green-100 rounded-lg transition-colors"
+          title="Mese precedente"
+        >
+          <span className="text-green-700 font-bold">←</span>
+        </button>
+        <h2 className="text-lg font-bold text-green-800">
+          {format(currentMonth, 'MMMM yyyy', { locale: it })}
+        </h2>
+        <button
+          onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+          className="p-2 hover:bg-green-100 rounded-lg transition-colors"
+          title="Mese prossimo"
+        >
+          <span className="text-green-700 font-bold">→</span>
+        </button>
+      </div>
+    )
+  }
+
+  const renderDays = () => {
+    const days = ['Lu', 'Ma', 'Me', 'Gi', 'Ve', 'Sa', 'Do']
+    return (
+      <div className="grid grid-cols-7 gap-1 mb-2">
+        {days.map((day) => (
+          <div
+            key={day}
+            className="text-center text-sm font-semibold text-green-700 py-2"
+          >
+            {day}
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  const renderCells = () => {
+    const monthStart = startOfMonth(currentMonth)
+    const monthEnd = endOfMonth(monthStart)
+    const startDate = startOfWeek(monthStart)
+    const endDate = endOfWeek(monthEnd)
+
+    const rows = []
+    let days = []
+    let day = startDate
+
+    while (day <= endDate) {
+      for (let i = 0; i < 7; i++) {
+        const formattedDate = format(day, 'd')
+        const cloneDay = day
+
+        // Check if date is disabled or in the past
+        const isPast = isBefore(startOfDay(cloneDay), startOfDay(new Date()))
+        const isDisabled =
+          !isSameMonth(day, monthStart) ||
+          isPast ||
+          disabledDates.some((d) => isSameDay(d, cloneDay))
+
+        const isSelected = selectedDate && isSameDay(cloneDay, selectedDate)
+        const isTodayDate = isToday(cloneDay)
+
+        days.push(
+          <button
+            key={day}
+            onClick={() => !isDisabled && onSelectDate(cloneDay)}
+            disabled={isDisabled}
+            className={`
+              p-2 text-sm font-semibold rounded-lg transition-colors
+              ${!isSameMonth(day, monthStart) ? 'text-gray-300' : ''}
+              ${isDisabled && isSameMonth(day, monthStart) ? 'text-gray-400 cursor-not-allowed' : ''}
+              ${isSelected ? 'bg-green-600 text-white' : ''}
+              ${!isDisabled && !isSelected && isSameMonth(day, monthStart) ? 'hover:bg-green-100 text-green-800 cursor-pointer' : ''}
+              ${isTodayDate && !isSelected ? 'ring-2 ring-green-400' : ''}
+            `}
+          >
+            {formattedDate}
+          </button>
+        )
+        day = addDays(day, 1)
+      }
+      rows.push(
+        <div key={day} className="grid grid-cols-7 gap-1 mb-1">
+          {days}
+        </div>
+      )
+      days = []
+    }
+
+    return <div>{rows}</div>
+  }
+
+  return (
+    <div className="bg-white border border-green-200 rounded-lg p-4 shadow-sm">
+      <h3 className="text-base font-bold text-green-800 mb-3">
+        📅 Seleziona Data Ordine
+      </h3>
+      {renderHeader()}
+      {renderDays()}
+      {renderCells()}
+      {selectedDate && (
+        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-center">
+          <p className="text-sm text-green-700">
+            <span className="font-bold">Data selezionata:</span>{' '}
+            {format(selectedDate, 'EEEE, dd MMMM yyyy', { locale: it })}
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
