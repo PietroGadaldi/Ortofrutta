@@ -6,7 +6,14 @@
  * Body: { productId }
  */
 
-import { verifyAuth, errorResponse, successResponse } from './auth.js'
+import { createClient } from '@supabase/supabase-js'
+import { verifyAuth, verifyUserRole, errorResponse, successResponse } from './auth.js'
+
+// Initialize Supabase Admin client with service_role key (server-side secret)
+const supabaseAdmin = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.VITE_SERVICE_ROLE_KEY
+)
 
 export async function handler(event) {
   // Handle CORS preflight request
@@ -26,13 +33,24 @@ export async function handler(event) {
   }
 
   try {
-    // Verify auth
+    // Verify auth - ensure user is logged in
     const { userId, error: authError } = await verifyAuth(
       event.headers.authorization
     )
 
     if (authError) {
       return errorResponse(401, authError)
+    }
+
+    // Verify user is titolare
+    const { hasRole, error: roleError } = await verifyUserRole(
+      supabaseAdmin,
+      userId,
+      'titolare'
+    )
+
+    if (roleError || !hasRole) {
+      return errorResponse(403, 'Solo i titolari possono eliminare i prodotti')
     }
 
     // Parse body
@@ -42,11 +60,15 @@ export async function handler(event) {
       return errorResponse(400, 'Missing productId')
     }
 
-    // TODO: Use Supabase to delete product
-    // const { error } = await supabase
-    //   .from('prodotti')
-    //   .delete()
-    //   .eq('id', productId)
+    // Use Supabase Admin client to delete product
+    const { error } = await supabaseAdmin
+      .from('prodotti')
+      .delete()
+      .eq('id', productId)
+
+    if (error) {
+      return errorResponse(500, error.message || 'Failed to delete product')
+    }
 
     return successResponse(200, {
       message: 'Product deleted successfully',

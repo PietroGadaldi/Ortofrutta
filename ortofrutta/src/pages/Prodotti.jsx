@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../services/supabaseClient'
-import { createProdotto, updateProdotto } from '../services/prodottiService'
+import { createProdotto, updateProdotto, deleteProdotto } from '../services/prodottiService'
 import { parseTipologie, capitalize } from '../utils/constants'
 
 export function Prodotti() {
@@ -124,10 +124,7 @@ export function Prodotti() {
     if (!window.confirm('Sei sicuro di voler eliminare questo prodotto?')) return
 
     try {
-      const { error: err } = await supabase
-        .from('prodotti')
-        .delete()
-        .eq('id', prodottoId)
+      const { error: err } = await deleteProdotto(prodottoId)
 
       if (err) throw err
       setSuccess('Prodotto eliminato!')

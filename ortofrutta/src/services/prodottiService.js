@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient'
-import { createProduct, updateProduct } from './netlifyApi'
+import { createProduct, updateProduct, deleteProduct } from './netlifyApi'
 import { parseTipologie } from '../utils/constants'
 
 /**
@@ -39,17 +39,13 @@ export const updateProdotto = async (prodottoId, nome, tipologie_possibili) => {
 }
 
 /**
- * Delete prodotto
+ * Delete prodotto via Netlify Function
  * @param {string} prodottoId
  * @returns {Promise<{error}>}
  */
 export const deleteProdotto = async (prodottoId) => {
-  const { error } = await supabase
-    .from('prodotti')
-    .delete()
-    .eq('id', prodottoId)
-
-  return { error }
+  const { data, error } = await deleteProduct(prodottoId)
+  return { data, error }
 }
 
 /**
