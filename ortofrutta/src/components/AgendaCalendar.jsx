@@ -55,7 +55,7 @@ export function AgendaCalendar({ selectedDate, onSelectDate }) {
     onSelectDate(addDays(selectedDate, 14))
   }
 
-  const getDateKey = (date) => date.toISOString().split('T')[0]
+  const getDateKey = (date) => format(date, 'yyyy-MM-dd')
 
   return (
     <div className="bg-gradient-to-br from-white to-amber-50 border-2 border-amber-300 rounded-xl p-6 shadow-lg">
