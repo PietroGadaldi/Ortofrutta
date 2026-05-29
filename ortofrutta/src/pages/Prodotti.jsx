@@ -287,7 +287,7 @@ export function Prodotti() {
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-900">{capitalize(p.nome)}</p>
+                      <p className="font-semibold text-gray-900 text-left">{capitalize(p.nome)}</p>
                       <div className="flex flex-wrap gap-1 mt-2">
                         {parseTipologie(p.tipologie_possibili).map((tip, idx) => (
                           <span
