@@ -1,6 +1,8 @@
 import { supabase } from './supabaseClient'
 
-const FUNCTIONS_URL = import.meta.env.VITE_NETLIFY_FUNCTIONS_URL
+// Use relative URL for Netlify functions (works on localhost and production)
+// For dev with Netlify CLI, can override with VITE_NETLIFY_FUNCTIONS_URL
+const FUNCTIONS_URL = import.meta.env.VITE_NETLIFY_FUNCTIONS_URL || '/.netlify/functions'
 
 /**
  * Call a Netlify Function with automatic auth token
@@ -26,15 +28,22 @@ export const callFunction = async (functionName, method = 'POST', body = {}) => 
     // Build URL
     const url = `${FUNCTIONS_URL}/${functionName}`
 
-    // Call function
-    const response = await fetch(url, {
+    // Build fetch options
+    const fetchOptions = {
       method,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: body ? JSON.stringify(body) : undefined,
-    })
+    }
+
+    // Only add body for non-GET/HEAD requests
+    if (!['GET', 'HEAD'].includes(method.toUpperCase()) && body) {
+      fetchOptions.body = JSON.stringify(body)
+    }
+
+    // Call function
+    const response = await fetch(url, fetchOptions)
 
     const data = await response.json()
 
@@ -76,6 +85,38 @@ export const createUser = async (email, password, nome, ruolo) => {
 }
 
 /**
+ * Create new product via Netlify Function
+ * @param {string} nome
+ * @param {string} tipologie_possibili
+ * @returns {Promise<{data, error}>}
+ */
+export const createProduct = async (nome, tipologie_possibili) => {
+  const { data, error } = await callFunction('create-product', 'POST', {
+    nome,
+    tipologie_possibili,
+  })
+
+  return { data, error }
+}
+
+/**
+ * Update product via Netlify Function
+ * @param {string} productId
+ * @param {string} nome
+ * @param {string} tipologie_possibili
+ * @returns {Promise<{data, error}>}
+ */
+export const updateProduct = async (productId, nome, tipologie_possibili) => {
+  const { data, error } = await callFunction('update-product', 'PATCH', {
+    productId,
+    nome,
+    tipologie_possibili,
+  })
+
+  return { data, error }
+}
+
+/**
  * Update order status via Netlify Function
  * @param {string} ordineId
  * @param {boolean} completato
@@ -103,9 +144,22 @@ export const deleteProduct = async (productId) => {
   return { data, error }
 }
 
+/**
+ * Get list of all client profiles
+ * @returns {Promise<{data, error}>}
+ */
+export const listClients = async () => {
+  const { data, error } = await callFunction('list-clients', 'GET')
+
+  return { data, error }
+}
+
 export default {
   callFunction,
   createUser,
+  createProduct,
+  updateProduct,
   updateOrderStatus,
   deleteProduct,
+  listClients,
 }

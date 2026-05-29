@@ -9,7 +9,7 @@ import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import AdminDashboard from './pages/AdminDashboard'
-import Ordini from './pages/Ordini'
+import AdminOrdersPage from './pages/AdminOrdersPage'
 import Prodotti from './pages/Prodotti'
 import Utenti from './pages/Utenti'
 import NotFound from './pages/NotFound'
@@ -49,7 +49,7 @@ export default function App() {
                 path="/ordini"
                 element={
                   <ProtectedRoute requiredRole={RUOLI.TITOLARE}>
-                    <Ordini />
+                    <AdminOrdersPage />
                   </ProtectedRoute>
                 }
               />

@@ -16,4 +16,5 @@ status = 200
 
 [env]
 [env.production]
-VITE_NETLIFY_FUNCTIONS_URL = "https://ortofruttabrescia.netlify.app/.netlify/functions"
+# Use relative URL for production - Netlify serves functions at /.netlify/functions
+VITE_NETLIFY_FUNCTIONS_URL = "/.netlify/functions"

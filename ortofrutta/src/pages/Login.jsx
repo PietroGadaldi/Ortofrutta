@@ -67,37 +67,37 @@ export function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-verde-orto-50 to-white px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-600 via-green-50 to-white px-4 py-8">
       <div className="w-full max-w-md">
         {/* Card */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="text-4xl mb-3">🥬</div>
-            <h1 className="text-3xl font-bold text-gray-900">Ortofrutta Brescia</h1>
-            <p className="text-gray-600 mt-2">Accedi al tuo account</p>
+            <div className="text-6xl mb-3 animate-bounce">🥬</div>
+            <h1 className="text-4xl font-black text-black">Ortofrutta Brescia</h1>
+            <p className="text-green-900 mt-2 font-semibold">Accedi al tuo account</p>
           </div>
 
           {/* Error message */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
+            <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-900 text-sm font-semibold">
+              ⚠️ {error}
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email
+              <label htmlFor="email" className="block text-sm font-bold text-black mb-2 text-left">
+                📧 Email
               </label>
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 focus:border-transparent outline-none transition"
+                className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition text-black font-semibold"
                 placeholder="tuo@email.com"
                 disabled={isLoading}
               />
@@ -105,15 +105,15 @@ export function Login() {
 
             {/* Password field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
+              <label htmlFor="password" className="block text-sm font-bold text-black mb-2 text-left">
+                🔐 Password
               </label>
               <input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-orto-500 focus:border-transparent outline-none transition"
+                className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition text-black font-semibold"
                 placeholder="••••••"
                 disabled={isLoading}
               />
@@ -123,17 +123,17 @@ export function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-2 px-4 bg-verde-orto-600 text-white rounded-lg font-semibold hover:bg-verde-orto-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100 text-lg"
             >
-              {isLoading ? 'Accesso in corso...' : 'Accedi'}
+              {isLoading ? '⏳ Accesso in corso...' : '✅ Accedi'}
             </button>
           </form>
 
           {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600">
+          <div className="mt-8 pt-6 border-t-2 border-green-300 text-center text-sm text-black font-semibold">
             <p>
               Non hai un account?{' '}
-              <span className="text-gray-500">
+              <span className="text-green-700">
                 Contatta il titolare per registrarti.
               </span>
             </p>
@@ -141,7 +141,7 @@ export function Login() {
 
           {/* Link back */}
           <div className="mt-6 text-center">
-            <Link to="/" className="text-verde-orto-600 hover:text-verde-orto-700 font-semibold">
+            <Link to="/" className="text-green-700 hover:text-green-900 font-bold hover:underline">
               ← Torna alla home
             </Link>
           </div>

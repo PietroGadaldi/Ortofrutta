@@ -78,10 +78,48 @@ export const updateProfile = async (userId, updates) => {
   return { data, error }
 }
 
+/**
+ * Get all client profiles (for titolare)
+ * Uses server-side function with service_role key to bypass RLS
+ * @returns {Promise<{data, error}>}
+ */
+export const getClientList = async () => {
+  try {
+    const response = await fetch(
+      import.meta.env.VITE_NETLIFY_FUNCTIONS_URL + '/list-clients',
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await getAuthToken()}`,
+        },
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      return { data: null, error: { message: data.error || 'Errore nel caricamento clienti' } }
+    }
+
+    return { data: data.clients || [], error: null }
+  } catch (err) {
+    console.error('getClientList error:', err)
+    return { data: null, error: { message: err.message } }
+  }
+}
+
+// Helper to get auth token
+const getAuthToken = async () => {
+  const { data } = await supabase.auth.getSession()
+  return data.session?.access_token || ''
+}
+
 export default {
   getProfile,
   getAllProfiles,
   getAllClientProfiles,
   createProfile,
   updateProfile,
+  getClientList,
 }
