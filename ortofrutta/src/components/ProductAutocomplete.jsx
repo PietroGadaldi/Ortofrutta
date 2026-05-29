@@ -60,7 +60,6 @@ export function ProductAutocomplete({
 
   const handleSelectProduct = (product) => {
     onSelectProduct(product)
-    onInputChange('')
     setIsOpen(false)
   }
 

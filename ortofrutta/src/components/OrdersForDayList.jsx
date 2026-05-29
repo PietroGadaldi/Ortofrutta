@@ -55,7 +55,7 @@ export function OrdersForDayList({
         </div>
       ) : (
         /* Orders List */
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-72 overflow-y-auto">
           {ordini.map((ordine) => (
             <AdminOrderCard
               key={ordine.id}
