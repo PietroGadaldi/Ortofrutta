@@ -147,7 +147,7 @@ export function Prodotti() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-8 shadow-xl">
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-4 shadow-xl">
         <h1 className="text-4xl font-black mb-2">🛒 Gestione Prodotti</h1>
         <p className="text-green-100 text-lg font-semibold">Aggiungi, modifica o elimina i prodotti del tuo catalogo</p>
       </div>

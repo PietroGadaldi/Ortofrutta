@@ -115,7 +115,7 @@ export function Utenti() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-8 shadow-xl">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-4 shadow-xl">
         <h1 className="text-4xl font-black mb-2">👤 Gestione Utenti</h1>
         <p className="text-blue-100 text-lg font-semibold">Crea nuovi account per clienti e titolari</p>
       </div>
