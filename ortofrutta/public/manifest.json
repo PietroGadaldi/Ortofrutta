@@ -1,0 +1,66 @@
+{
+  "name": "Ortofrutta Brescia",
+  "short_name": "Ortofrutta",
+  "description": "Gestisci i tuoi ordini di frutta e verdura fresca con facilità",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f0f1e",
+  "theme_color": "#22c55e",
+  "icons": [
+    {
+      "src": "/Ortofrutta.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/Ortofrutta.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/Ortofrutta.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/Ortofrutta.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["shopping", "productivity"],
+  "screenshots": [
+    {
+      "src": "/Ortofrutta.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/Ortofrutta.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "I miei Ordini",
+      "short_name": "Ordini",
+      "description": "Accedi velocemente ai tuoi ordini",
+      "url": "/ordini",
+      "icons": [
+        {
+          "src": "/Ortofrutta.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

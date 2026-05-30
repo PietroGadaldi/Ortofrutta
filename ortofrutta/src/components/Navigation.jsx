@@ -20,7 +20,8 @@ export function Navigation() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-white">🥬 Ortofrutta Brescia</span>
+            <img src="/Ortofrutta.png" alt="Ortofrutta Logo" className="h-12 w-12 rounded-lg shadow-md" />
+            <span className="text-2xl font-bold text-white hidden sm:inline">Ortofrutta Brescia</span>
           </Link>
 
           {/* Menu */}
