@@ -24,7 +24,7 @@ export function Landing() {
         {/* Header Card */}
         <div className="mb-12 bg-gradient-to-r from-verde-orto-600 to-verde-orto-700 text-white rounded-2xl p-12 shadow-2xl">
           {/* Logo */}
-          <div className="mb-6 text-7xl">🥬</div>
+          <img src="/Ortofrutta.png" alt="Ortofrutta Logo" className="h-24 w-24 mx-auto mb-6 rounded-lg shadow-lg" />
 
           {/* Title */}
           <h1 className="text-5xl md:text-6xl font-black mb-6 leading-tight">
