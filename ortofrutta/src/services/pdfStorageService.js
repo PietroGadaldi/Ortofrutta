@@ -13,6 +13,9 @@ export async function uploadOrderPDF(clienteId, ordineId, pdfBlob) {
       throw new Error('Missing required parameters')
     }
 
+    console.log(`[PDF Upload] Starting upload for clienteId: ${clienteId}, ordineId: ${ordineId}`)
+    console.log(`[PDF Upload] PDF Blob size: ${pdfBlob.size} bytes`)
+
     // Create bucket if it doesn't exist (optional - usually done via dashboard)
     // Path: ordini/cliente_id/ordine_id.pdf
     const filePath = `ordini/${clienteId}/${ordineId}.pdf`
@@ -26,14 +29,18 @@ export async function uploadOrderPDF(clienteId, ordineId, pdfBlob) {
       })
 
     if (error) {
-      console.error('Error uploading PDF to Storage:', error)
+      console.error(`[PDF Upload] Error uploading to ${filePath}:`, error)
       return { success: false, error: error.message }
     }
+
+    console.log(`[PDF Upload] Successfully uploaded to ${filePath}`, data)
 
     // Get public URL
     const {
       data: { publicUrl },
     } = supabase.storage.from('ordini').getPublicUrl(filePath)
+
+    console.log(`[PDF Upload] Public URL:`, publicUrl)
 
     return {
       success: true,
@@ -41,7 +48,7 @@ export async function uploadOrderPDF(clienteId, ordineId, pdfBlob) {
       filePath,
     }
   } catch (error) {
-    console.error('Error in uploadOrderPDF:', error)
+    console.error('[PDF Upload] Error in uploadOrderPDF:', error)
     return { success: false, error: error.message }
   }
 }

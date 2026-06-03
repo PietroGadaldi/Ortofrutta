@@ -53,13 +53,6 @@ export function generateOrderPDF(order) {
     pdf.text(order.profili?.nome || 'N/A', margin + 25, yPosition)
     yPosition += 7
 
-    // Order ID
-    pdf.setFont(undefined, 'bold')
-    pdf.text('Ordine #:', margin, yPosition)
-    pdf.setFont(undefined, 'normal')
-    pdf.text(order.id, margin + 25, yPosition)
-    yPosition += 7
-
     // Order date (data_ordine)
     pdf.setFont(undefined, 'bold')
     pdf.text('Data ordine:', margin, yPosition)
@@ -91,8 +84,9 @@ export function generateOrderPDF(order) {
     pdf.setFillColor(240, 240, 240)
     pdf.rect(margin, yPosition - 5, contentWidth, 6, 'F')
     pdf.text('Prodotto', margin + 2, yPosition)
-    pdf.text('Quantità', margin + 100, yPosition)
-    pdf.text('Unità', margin + 140, yPosition)
+    pdf.text('Quantità', margin + 85, yPosition)
+    pdf.text('Unità', margin + 120, yPosition)
+    pdf.text('Peso Effettivo', margin + 155, yPosition)
     yPosition += 8
 
     // Products list
@@ -113,8 +107,9 @@ export function generateOrderPDF(order) {
 
       // Product row
       pdf.text(productName, margin + 2, productYPosition)
-      pdf.text(quantity.toString(), margin + 100, productYPosition, { align: 'right' })
-      pdf.text(tipologia, margin + 140, productYPosition)
+      pdf.text(quantity.toString(), margin + 85, productYPosition, { align: 'right' })
+      pdf.text(tipologia, margin + 120, productYPosition)
+      // Peso Effettivo column is left blank for manual entry
       productYPosition += 6
     })
 
