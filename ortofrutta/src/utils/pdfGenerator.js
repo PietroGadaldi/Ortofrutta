@@ -32,66 +32,68 @@ export function generateOrderPDF(order) {
     let yPosition = margin
 
     // Header - Title
-    pdf.setFontSize(18)
+    pdf.setFontSize(22)
     pdf.setFont(undefined, 'bold')
     pdf.text('RICEVUTA ORDINE', pageWidth / 2, yPosition, { align: 'center' })
-    yPosition += 10
+    yPosition += 12
 
     // Divider
-    pdf.setDrawColor(150)
+    pdf.setDrawColor(100)
+    pdf.setLineWidth(0.5)
     pdf.line(margin, yPosition, pageWidth - margin, yPosition)
-    yPosition += 8
+    yPosition += 10
 
     // Order info section
-    pdf.setFontSize(11)
+    pdf.setFontSize(12)
     pdf.setFont(undefined, 'normal')
 
-    // Client name
+    // Client name - label and value on same line
     pdf.setFont(undefined, 'bold')
     pdf.text('Cliente:', margin, yPosition)
     pdf.setFont(undefined, 'normal')
-    pdf.text(order.profili?.nome || 'N/A', margin + 25, yPosition)
-    yPosition += 7
+    pdf.text(order.profili?.nome || 'N/A', margin + 28, yPosition)
+    yPosition += 9
 
-    // Order date (data_ordine)
+    // Order date (data_ordine) - label and value on same line
     pdf.setFont(undefined, 'bold')
     pdf.text('Data ordine:', margin, yPosition)
     pdf.setFont(undefined, 'normal')
     const formattedOrderDate = format(new Date(order.data_ordine), 'dd/MM/yyyy', {
       locale: it,
     })
-    pdf.text(formattedOrderDate, margin + 25, yPosition)
-    yPosition += 7
+    pdf.text(formattedOrderDate, margin + 40, yPosition)
+    yPosition += 9
 
-    // Creation date (data_creazione)
+    // Creation date (data_creazione) - label and value on separate positions
     pdf.setFont(undefined, 'bold')
     pdf.text('Data sottomissione:', margin, yPosition)
     pdf.setFont(undefined, 'normal')
     const formattedCreationDate = format(new Date(order.data_creazione), 'dd/MM/yyyy HH:mm', {
       locale: it,
     })
-    pdf.text(formattedCreationDate, margin + 25, yPosition)
-    yPosition += 10
+    pdf.text(formattedCreationDate, margin + 40, yPosition)
+    yPosition += 12
 
     // Divider
-    pdf.setDrawColor(150)
+    pdf.setDrawColor(100)
+    pdf.setLineWidth(0.5)
     pdf.line(margin, yPosition, pageWidth - margin, yPosition)
-    yPosition += 8
+    yPosition += 10
 
     // Products table header
-    pdf.setFontSize(10)
+    pdf.setFontSize(11)
     pdf.setFont(undefined, 'bold')
-    pdf.setFillColor(240, 240, 240)
-    pdf.rect(margin, yPosition - 5, contentWidth, 6, 'F')
-    pdf.text('Prodotto', margin + 2, yPosition)
-    pdf.text('Quantità', margin + 85, yPosition)
-    pdf.text('Unità', margin + 120, yPosition)
+    pdf.setFillColor(220, 220, 220)
+    pdf.rect(margin, yPosition - 6, contentWidth, 8, 'F')
+    pdf.text('Prodotto', margin + 3, yPosition)
+    pdf.text('Quantità', margin + 80, yPosition)
+    pdf.text('Unità', margin + 115, yPosition)
     pdf.text('Peso Effettivo', margin + 155, yPosition)
-    yPosition += 8
+    yPosition += 10
 
     // Products list
     pdf.setFont(undefined, 'normal')
-    pdf.setFontSize(9)
+    pdf.setFontSize(11)
     let productYPosition = yPosition
 
     order.dettagli_ordine.forEach((item, index) => {
@@ -100,23 +102,24 @@ export function generateOrderPDF(order) {
       const tipologia = item.tipologia || 'N/A'
 
       // Check if we need a new page
-      if (productYPosition > pageHeight - 30) {
+      if (productYPosition > pageHeight - 35) {
         pdf.addPage()
-        productYPosition = margin
+        productYPosition = margin + 10
       }
 
-      // Product row
-      pdf.text(productName, margin + 2, productYPosition)
-      pdf.text(quantity.toString(), margin + 85, productYPosition, { align: 'right' })
-      pdf.text(tipologia, margin + 120, productYPosition)
+      // Product row with better spacing
+      pdf.text(productName, margin + 3, productYPosition)
+      pdf.text(quantity.toString(), margin + 90, productYPosition, { align: 'right' })
+      pdf.text(tipologia, margin + 115, productYPosition)
       // Peso Effettivo column is left blank for manual entry
-      productYPosition += 6
+      productYPosition += 8
     })
 
     yPosition = productYPosition + 5
 
     // Divider before footer
-    pdf.setDrawColor(150)
+    pdf.setDrawColor(100)
+    pdf.setLineWidth(0.5)
     pdf.line(margin, yPosition, pageWidth - margin, yPosition)
     yPosition += 8
 
