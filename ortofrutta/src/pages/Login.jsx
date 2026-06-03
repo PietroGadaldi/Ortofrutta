@@ -73,7 +73,7 @@ export function Login() {
         <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="text-6xl mb-3 animate-bounce">🥬</div>
+            <img src="/Ortofrutta.png" alt="Ortofrutta Logo" className="h-24 w-24 mx-auto mb-3 rounded-lg shadow-lg" />
             <h1 className="text-4xl font-black text-black">Ortofrutta Brescia</h1>
             <p className="text-green-900 mt-2 font-semibold">Accedi al tuo account</p>
           </div>

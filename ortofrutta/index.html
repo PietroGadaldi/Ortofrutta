@@ -2,12 +2,64 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ortofrutta</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="icon" type="image/png" href="/Ortofrutta.png?t=20260530" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Ortofrutta Brescia</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Theme Colors -->
+    <meta name="theme-color" content="#22c55e" />
+    <meta name="msapplication-TileColor" content="#22c55e" />
+    <meta name="msapplication-TileImage" content="/Ortofrutta.png" />
+
+    <!-- Apple Web App Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Ortofrutta" />
+    <link rel="apple-touch-icon" href="/Ortofrutta.png" />
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Ortofrutta Brescia" />
+    <meta property="og:description" content="Gestisci i tuoi ordini di frutta e verdura fresca con facilità" />
+    <meta property="og:image" content="/Ortofrutta.png" />
+    <meta property="og:url" content="https://ortofrutta.netlify.app" />
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Ortofrutta Brescia" />
+    <meta name="twitter:description" content="Gestisci i tuoi ordini di frutta e verdura fresca con facilità" />
+    <meta name="twitter:image" content="/Ortofrutta.png" />
+
+    <!-- Additional PWA Meta Tags -->
+    <meta name="description" content="Gestisci i tuoi ordini di frutta e verdura fresca con facilità" />
+    <meta name="application-name" content="Ortofrutta" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker
+            .register('/sw.js')
+            .then((registration) => {
+              console.log('[PWA] Service Worker registrato con successo:', registration);
+            })
+            .catch((error) => {
+              console.error('[PWA] Errore nella registrazione del Service Worker:', error);
+            });
+        });
+      } else {
+        console.warn('[PWA] Browser non supporta Service Workers');
+      }
+    </script>
   </body>
 </html>

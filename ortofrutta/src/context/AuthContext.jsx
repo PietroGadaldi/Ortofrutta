@@ -9,6 +9,7 @@ export const AuthContext = createContext({
   user: null,
   role: null,
   profile: null,
+  token: null,
   loading: true,
   error: null,
 })
@@ -20,6 +21,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [role, setRole] = useState(null)
   const [profile, setProfile] = useState(null)
+  const [token, setToken] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -37,6 +39,7 @@ export function AuthProvider({ children }) {
 
         if (session?.user) {
           setUser(session.user)
+          setToken(session.access_token)
           const { profile: prof, role: r } = await authService.getCurrentUserProfile(
             session.user
           )
@@ -53,15 +56,17 @@ export function AuthProvider({ children }) {
     initializeAuth()
 
     // Subscribe to auth state changes
-    const unsubscribe = authService.onAuthStateChange(async ({ user: u }) => {
+    const unsubscribe = authService.onAuthStateChange(async ({ user: u, session: s }) => {
       if (u) {
         setUser(u)
+        setToken(s?.access_token || null)
         const { profile: prof, role: r } = await authService.getCurrentUserProfile(u)
         setProfile(prof)
         setRole(r)
         setError(null)
       } else {
         setUser(null)
+        setToken(null)
         setRole(null)
         setProfile(null)
       }
@@ -74,6 +79,7 @@ export function AuthProvider({ children }) {
 
   const value = {
     user,
+    token,
     role,
     profile,
     loading,

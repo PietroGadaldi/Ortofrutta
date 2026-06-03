@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../services/supabaseClient'
-import { createProdotto, updateProdotto } from '../services/prodottiService'
+import { createProdotto, updateProdotto, deleteProdotto } from '../services/prodottiService'
 import { parseTipologie, capitalize } from '../utils/constants'
 
 export function Prodotti() {
@@ -124,10 +124,7 @@ export function Prodotti() {
     if (!window.confirm('Sei sicuro di voler eliminare questo prodotto?')) return
 
     try {
-      const { error: err } = await supabase
-        .from('prodotti')
-        .delete()
-        .eq('id', prodottoId)
+      const { error: err } = await deleteProdotto(prodottoId)
 
       if (err) throw err
       setSuccess('Prodotto eliminato!')
@@ -150,7 +147,7 @@ export function Prodotti() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-8 shadow-xl">
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-4 shadow-xl">
         <h1 className="text-4xl font-black mb-2">🛒 Gestione Prodotti</h1>
         <p className="text-green-100 text-lg font-semibold">Aggiungi, modifica o elimina i prodotti del tuo catalogo</p>
       </div>
@@ -287,7 +284,7 @@ export function Prodotti() {
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-900">{capitalize(p.nome)}</p>
+                      <p className="font-semibold text-gray-900 text-left">{capitalize(p.nome)}</p>
                       <div className="flex flex-wrap gap-1 mt-2">
                         {parseTipologie(p.tipologie_possibili).map((tip, idx) => (
                           <span

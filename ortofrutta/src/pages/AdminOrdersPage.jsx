@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
-import { startOfDay } from 'date-fns'
-import { AgendaCalendar } from '../components/AgendaCalendar'
+import { startOfDay, format } from 'date-fns'
+import { HorizontalWeekSelector } from '../components/HorizontalWeekSelector'
 import { OrdersForDayList } from '../components/OrdersForDayList'
-import { getOrdiniByDate, updateOrdineStatus, deleteOrdine } from '../services/ordiniService'
+import { updateOrdineStatus, deleteOrdine } from '../services/ordiniService'
+import { useAuth } from '../hooks/useAuth'
 
 /**
  * AdminOrdersPage component
  * Main page for titolare to view and manage orders by date
  */
 export function AdminOrdersPage() {
+  const { token } = useAuth()
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()))
   const [ordini, setOrdini] = useState([])
   const [loading, setLoading] = useState(false)
@@ -24,9 +26,28 @@ export function AdminOrdersPage() {
     setLoading(true)
     setError('')
     try {
-      const { data, error: fetchError } = await getOrdiniByDate(selectedDate)
-      if (fetchError) throw fetchError
-      setOrdini(data || [])
+      if (!token) {
+        throw new Error('Token di autenticazione non disponibile')
+      }
+
+      // Call Netlify function with service role key
+      const formattedDate = format(selectedDate, 'yyyy-MM-dd')
+      const response = await fetch(
+        `/.netlify/functions/list-clients?type=orders&date=${formattedDate}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Errore nella richiesta')
+      }
+
+      const result = await response.json()
+      setOrdini(result.data || [])
     } catch (err) {
       console.error('Error fetching orders:', err)
       setError('Errore nel caricamento degli ordini')
@@ -88,7 +109,7 @@ export function AdminOrdersPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-xl p-8 shadow-xl">
+      <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-xl p-4 shadow-xl">
         <h1 className="text-4xl font-black mb-2">🏪 Gestione Ordini (Titolare)</h1>
         <p className="text-amber-100 text-lg font-semibold">Visualizza e gestisci gli ordini dei tuoi clienti</p>
       </div>
@@ -100,24 +121,19 @@ export function AdminOrdersPage() {
         </div>
       )}
 
-      {/* Main Content: Calendar + Orders */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Calendar (Sidebar) */}
-        <div className="lg:col-span-1">
-          <AgendaCalendar selectedDate={selectedDate} onSelectDate={setSelectedDate} />
-        </div>
+      {/* Horizontal Week Selector */}
+      <HorizontalWeekSelector selectedDate={selectedDate} onSelectDate={setSelectedDate} />
 
-        {/* Orders List (Main) */}
-        <div className="lg:col-span-3">
-          <OrdersForDayList
-            selectedDate={selectedDate}
-            ordini={ordini}
-            onStatusChange={handleStatusChange}
-            onDeleteOrder={handleDeleteOrder}
-            isLoading={isUpdating}
-            isEmpty={ordini.length === 0 && !loading}
-          />
-        </div>
+      {/* Orders List */}
+      <div>
+        <OrdersForDayList
+          selectedDate={selectedDate}
+          ordini={ordini}
+          onStatusChange={handleStatusChange}
+          onDeleteOrder={handleDeleteOrder}
+          isLoading={isUpdating}
+          isEmpty={ordini.length === 0 && !loading}
+        />
       </div>
     </div>
   )

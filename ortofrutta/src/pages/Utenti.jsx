@@ -115,31 +115,31 @@ export function Utenti() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-8 shadow-xl">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-4 shadow-xl">
         <h1 className="text-4xl font-black mb-2">👤 Gestione Utenti</h1>
         <p className="text-blue-100 text-lg font-semibold">Crea nuovi account per clienti e titolari</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
         {/* Form */}
-        <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-black mb-6 flex items-center gap-2">
+        <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-black mb-4 flex items-center gap-2">
             <span className="text-3xl">➕</span> Crea Nuovo Account
           </h2>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-900 text-sm font-semibold">
+            <div className="mb-3 p-3 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-900 text-xs font-semibold">
               ⚠️ {error}
             </div>
           )}
 
           {success && (
-            <div className="mb-6 p-4 bg-green-100 border-l-4 border-green-500 rounded-lg text-green-900 text-sm font-semibold">
+            <div className="mb-3 p-3 bg-green-100 border-l-4 border-green-500 rounded-lg text-green-900 text-xs font-semibold">
               ✅ {success}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <label className="block text-sm font-bold text-black mb-2 text-left">👤 Nome</label>
               <input
@@ -200,8 +200,8 @@ export function Utenti() {
         </div>
 
         {/* Clients List */}
-        <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-8">
-          <div className="flex justify-between items-center mb-6">
+        <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-6">
+          <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-black flex items-center gap-2">
               <span className="text-3xl">📋</span> Clienti ({clienti.length})
             </h2>
@@ -225,7 +225,7 @@ export function Utenti() {
           ) : clienti.length === 0 ? (
             <div className="text-black font-semibold italic">❌ Nessun cliente creato ancora</div>
           ) : (
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="space-y-2">
               {clienti.map((cliente) => (
                 <div
                   key={cliente.id}
