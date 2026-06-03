@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
-import { startOfDay } from 'date-fns'
+import { startOfDay, format } from 'date-fns'
 import { HorizontalWeekSelector } from '../components/HorizontalWeekSelector'
 import { OrdersForDayList } from '../components/OrdersForDayList'
-import { getOrdiniByDate, updateOrdineStatus, deleteOrdine } from '../services/ordiniService'
+import { updateOrdineStatus, deleteOrdine } from '../services/ordiniService'
+import { useAuth } from '../hooks/useAuth'
 
 /**
  * AdminOrdersPage component
  * Main page for titolare to view and manage orders by date
  */
 export function AdminOrdersPage() {
+  const { token } = useAuth()
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()))
   const [ordini, setOrdini] = useState([])
   const [loading, setLoading] = useState(false)
@@ -24,9 +26,28 @@ export function AdminOrdersPage() {
     setLoading(true)
     setError('')
     try {
-      const { data, error: fetchError } = await getOrdiniByDate(selectedDate)
-      if (fetchError) throw fetchError
-      setOrdini(data || [])
+      if (!token) {
+        throw new Error('Token di autenticazione non disponibile')
+      }
+
+      // Call Netlify function with service role key
+      const formattedDate = format(selectedDate, 'yyyy-MM-dd')
+      const response = await fetch(
+        `/.netlify/functions/list-clients?type=orders&date=${formattedDate}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Errore nella richiesta')
+      }
+
+      const result = await response.json()
+      setOrdini(result.data || [])
     } catch (err) {
       console.error('Error fetching orders:', err)
       setError('Errore nel caricamento degli ordini')
