@@ -6,6 +6,8 @@ import { AddProductForm } from '../components/AddProductForm'
 import { OrderSummary } from '../components/OrderSummary'
 import { OrdersHistory } from '../components/OrdersHistory'
 import { createOrdine, updateOrdineDettagli, updateOrdineStatus, deleteOrdine, getAllOrdini } from '../services/ordiniService'
+import { generateOrderPDF } from '../utils/pdfGenerator'
+import { uploadOrderPDF } from '../services/pdfStorageService'
 import { format } from 'date-fns'
 
 export function Dashboard() {
@@ -138,6 +140,44 @@ export function Dashboard() {
           productsInOrder
         )
         if (createError) throw createError
+
+        // Generate and upload PDF (non-blocking, error doesn't interrupt flow)
+        if (newOrdine && user) {
+          try {
+            // Fetch fresh order data with client info
+            const { data: orderWithClient } = await supabase
+              .from('ordini')
+              .select(
+                `
+                id,
+                data_creazione,
+                data_ordine,
+                completato,
+                profili (nome),
+                dettagli_ordine (
+                  id,
+                  quantita,
+                  tipologia,
+                  prodotto_id,
+                  prodotti (nome)
+                )
+              `
+              )
+              .eq('id', newOrdine.id)
+              .single()
+
+            if (orderWithClient) {
+              const pdfBlob = generateOrderPDF(orderWithClient)
+              const uploadResult = await uploadOrderPDF(user.id, newOrdine.id, pdfBlob)
+              if (!uploadResult.success) {
+                console.warn('PDF upload warning:', uploadResult.error)
+              }
+            }
+          } catch (pdfError) {
+            console.warn('PDF generation warning (non-blocking):', pdfError.message)
+            // Don't throw - order already created successfully
+          }
+        }
       }
 
       // Reset and refresh

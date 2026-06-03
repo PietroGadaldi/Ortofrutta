@@ -11,6 +11,7 @@ import { AdminOrderCard } from './AdminOrderCard'
  * @param {Function} onDeleteOrder - Callback when order is deleted
  * @param {boolean} isLoading - Loading state
  * @param {boolean} isEmpty - Whether there are no orders
+ * @param {boolean} showAsReceiptCards - If true, show orders as receipt cards (non-expandable)
  */
 export function OrdersForDayList({
   selectedDate,
@@ -19,6 +20,7 @@ export function OrdersForDayList({
   onDeleteOrder,
   isLoading = false,
   isEmpty = false,
+  showAsReceiptCards = false,
 }) {
   const formatDate = (date) => {
     try {
@@ -63,6 +65,7 @@ export function OrdersForDayList({
               onStatusChange={onStatusChange}
               onDeleteOrder={onDeleteOrder}
               isLoading={isLoading}
+              showAsReceiptCards={showAsReceiptCards}
             />
           ))}
         </div>

@@ -133,6 +133,7 @@ export function AdminOrdersPage() {
           onDeleteOrder={handleDeleteOrder}
           isLoading={isUpdating}
           isEmpty={ordini.length === 0 && !loading}
+          showAsReceiptCards={true}
         />
       </div>
     </div>
