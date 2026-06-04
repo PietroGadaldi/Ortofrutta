@@ -9,8 +9,11 @@ import { downloadPDFBlob } from '../utils/pdfGenerator'
  * @param {string} fileName - Name for the downloaded file (without extension)
  * @param {Function} onClose - Callback to close modal
  * @param {boolean} isOpen - Whether modal is open
+ * @param {string} ordineId - Order ID for status update
+ * @param {Function} onStatusChange - Callback to update order status
+ * @param {boolean} isCompletato - Whether order is already completed
  */
-export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpen = false }) {
+export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpen = false, ordineId, onStatusChange, isCompletato = false }) {
   const [iframeUrl, setIframeUrl] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -47,13 +50,22 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
 
   if (!isOpen || !pdfData) return null
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     if (iframeUrl) {
       const iframe = document.getElementById('pdf-iframe')
       if (iframe && iframe.contentWindow) {
         iframe.contentWindow.print()
       } else {
         window.print()
+      }
+    }
+    
+    // Auto-complete order when printing
+    if (ordineId && onStatusChange && !isCompletato) {
+      try {
+        await onStatusChange(ordineId, true)
+      } catch (err) {
+        console.error('Error updating order status:', err)
       }
     }
   }

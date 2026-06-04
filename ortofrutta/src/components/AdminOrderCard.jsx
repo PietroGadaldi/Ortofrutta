@@ -68,11 +68,6 @@ export function AdminOrderCard({
       }
 
       setShowPDFModal(true)
-      
-      // Auto-complete order when viewing PDF (stampa)
-      if (!ordine.completato) {
-        await onStatusChange(ordine.id, true)
-      }
     } catch (error) {
       console.error('Error loading PDF:', error)
       setPdfError('Errore nel caricamento del PDF')
@@ -170,6 +165,9 @@ export function AdminOrderCard({
           fileName={`Ricevuta_${ordine.id}`}
           isOpen={showPDFModal}
           onClose={() => setShowPDFModal(false)}
+          ordineId={ordine.id}
+          onStatusChange={onStatusChange}
+          isCompletato={ordine.completato}
         />
       </>
     )
