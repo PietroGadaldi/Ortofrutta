@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { AdminOrderCard } from './AdminOrderCard'
@@ -11,6 +12,7 @@ import { AdminOrderCard } from './AdminOrderCard'
  * @param {Function} onDeleteOrder - Callback when order is deleted
  * @param {boolean} isLoading - Loading state
  * @param {boolean} isEmpty - Whether there are no orders
+ * @param {boolean} showAsReceiptCards - If true, show orders as receipt cards (non-expandable)
  */
 export function OrdersForDayList({
   selectedDate,
@@ -19,7 +21,10 @@ export function OrdersForDayList({
   onDeleteOrder,
   isLoading = false,
   isEmpty = false,
+  showAsReceiptCards = false,
 }) {
+  const [filterName, setFilterName] = useState('')
+  
   const formatDate = (date) => {
     try {
       return format(parseISO(date), 'dd MMMM yyyy', { locale: it })
@@ -30,6 +35,14 @@ export function OrdersForDayList({
 
   const dayName = format(selectedDate, 'EEEE', { locale: it }).toUpperCase()
   const totalOrders = ordini.length
+  
+  // Filter orders by client name
+  const filteredOrdini = ordini.filter(o => {
+    const clientName = o.profili?.nome || ''
+    return clientName.toLowerCase().includes(filterName.toLowerCase())
+  })
+  
+  const ordiniDaStampare = filteredOrdini.filter(o => !o.completato).length
 
   return (
     <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl p-6 shadow-lg">
@@ -41,8 +54,24 @@ export function OrdersForDayList({
         <div className="text-sm text-blue-900 mt-2 font-semibold">
           Data: {formatDate(selectedDate.toISOString())}
         </div>
-        <div className="mt-3 inline-block bg-blue-200 text-blue-900 px-4 py-2 rounded-full font-bold">
-          Totale: <span className="text-lg">{totalOrders}</span> ordini
+        <div className="mt-3 flex gap-3">
+          <div className="inline-block bg-blue-200 text-blue-900 px-4 py-2 rounded-full font-bold">
+            Totale: <span className="text-lg">{totalOrders}</span> ordini
+          </div>
+          <div className="inline-block bg-orange-200 text-orange-900 px-4 py-2 rounded-full font-bold">
+            Da stampare: <span className="text-lg">{ordiniDaStampare}</span>
+          </div>
+        </div>
+
+        {/* Filter Input */}
+        <div className="mt-4">
+          <input
+            type="text"
+            placeholder="🔍 Filtra per nome cliente..."
+            value={filterName}
+            onChange={(e) => setFilterName(e.target.value)}
+            className="w-full px-4 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-600 text-gray-800 placeholder-gray-500"
+          />
         </div>
       </div>
 
@@ -53,16 +82,23 @@ export function OrdersForDayList({
             ❌ Nessun ordine per il {dayName.toLowerCase()} {formatDate(selectedDate.toISOString())}
           </p>
         </div>
+      ) : filteredOrdini.length === 0 ? (
+        <div className="p-8 text-center bg-yellow-100 border-l-4 border-yellow-500 rounded-lg">
+          <p className="text-black font-semibold">
+            ⚠️ Nessun ordine corrisponde al filtro "{filterName}"
+          </p>
+        </div>
       ) : (
         /* Orders List */
         <div className="space-y-4 max-h-72 overflow-y-auto">
-          {ordini.map((ordine) => (
+          {filteredOrdini.map((ordine) => (
             <AdminOrderCard
               key={ordine.id}
               ordine={ordine}
               onStatusChange={onStatusChange}
               onDeleteOrder={onDeleteOrder}
               isLoading={isLoading}
+              showAsReceiptCards={showAsReceiptCards}
             />
           ))}
         </div>
