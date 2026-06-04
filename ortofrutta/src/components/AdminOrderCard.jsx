@@ -87,31 +87,32 @@ export function AdminOrderCard({
     return (
       <>
         <div className="bg-white border-2 border-gray-300 rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
-          {/* Receipt Header */}
-          <div className="flex justify-between items-start mb-4">
-            <div>
+          {/* Receipt Header - All left aligned */}
+          <div className="mb-6 text-left">
+            <div className="flex items-start justify-between mb-3">
               <h3 className="text-lg font-bold text-gray-800">
                 👤 {ordine.profili?.nome || 'Cliente Sconosciuto'}
               </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                Ordine #: <span className="font-mono font-bold">{ordine.id}</span>
-              </p>
+              <div className={`
+                px-3 py-1 rounded-full font-bold text-sm
+                ${ordine.completato 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-orange-100 text-orange-800'
+                }
+              `}>
+                {ordine.completato ? '✅ Completato' : '⏳ In Corso'}
+              </div>
             </div>
-            <div className={`
-              px-3 py-1 rounded-full font-bold text-sm
-              ${ordine.completato 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-orange-100 text-orange-800'
-              }
-            `}>
-              {ordine.completato ? '✅ Completato' : '⏳ In Corso'}
-            </div>
-          </div>
-
-          {/* Dates */}
-          <div className="text-sm text-gray-700 mb-4 space-y-1">
-            <p><span className="font-semibold">Data ordine:</span> {formatDate(ordine.data_ordine)}</p>
-            <p><span className="font-semibold">Data sottomissione:</span> {formatDateTime(ordine.data_creazione)}</p>
+            
+            <p className="text-sm text-gray-700 mb-2">
+              <span className="font-semibold">Ordine #:</span> <span className="font-mono">{ordine.id}</span>
+            </p>
+            <p className="text-sm text-gray-700 mb-1">
+              <span className="font-semibold">Data ordine:</span> {formatDate(ordine.data_ordine)}
+            </p>
+            <p className="text-sm text-gray-700">
+              <span className="font-semibold">Data sottomissione:</span> {formatDateTime(ordine.data_creazione)}
+            </p>
           </div>
 
           {/* Products */}
