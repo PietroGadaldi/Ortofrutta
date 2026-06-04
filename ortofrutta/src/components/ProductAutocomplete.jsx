@@ -19,6 +19,7 @@ export function ProductAutocomplete({
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const inputRef = useRef(null)
   const dropdownRef = useRef(null)
+  const justSelectedRef = useRef(false)
 
   // Filter products based on input
   useEffect(() => {
@@ -33,7 +34,10 @@ export function ProductAutocomplete({
     )
 
     setFilteredProducts(filtered)
-    setIsOpen(filtered.length > 0)
+    // Non riaprire il dropdown se è stato appena selezionato un prodotto
+    if (!justSelectedRef.current) {
+      setIsOpen(filtered.length > 0)
+    }
     setHighlightedIndex(-1)
   }, [value, prodotti])
 
@@ -59,11 +63,34 @@ export function ProductAutocomplete({
   }
 
   const handleSelectProduct = (product) => {
+    justSelectedRef.current = true
     onSelectProduct(product)
     setIsOpen(false)
+    // Reset flag dopo un momento per permettere future navigazioni
+    setTimeout(() => {
+      justSelectedRef.current = false
+    }, 0)
   }
 
   const handleKeyDown = (e) => {
+    // Tab: navigazione nei prodotti
+    if (e.key === 'Tab') {
+      if (filteredProducts.length > 0) {
+        e.preventDefault()
+        if (!isOpen) {
+          // Apri dropdown e evidenzia il primo
+          setIsOpen(true)
+          setHighlightedIndex(0)
+        } else {
+          // Naviga al prossimo elemento (o ritorna al primo se sei all'ultimo)
+          setHighlightedIndex((prev) =>
+            prev < filteredProducts.length - 1 ? prev + 1 : 0
+          )
+        }
+      }
+      return
+    }
+
     if (!isOpen && e.key !== 'ArrowDown') return
 
     switch (e.key) {
@@ -80,8 +107,10 @@ export function ProductAutocomplete({
         break
       case 'Enter':
         e.preventDefault()
-        if (highlightedIndex >= 0 && filteredProducts[highlightedIndex]) {
-          handleSelectProduct(filteredProducts[highlightedIndex])
+        if (filteredProducts.length > 0) {
+          // Se c'è un elemento evidenziato, selezionalo; altrimenti seleziona il primo
+          const indexToSelect = highlightedIndex >= 0 ? highlightedIndex : 0
+          handleSelectProduct(filteredProducts[indexToSelect])
         }
         break
       case 'Escape':
