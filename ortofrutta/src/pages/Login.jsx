@@ -133,9 +133,9 @@ export function Login() {
           <div className="mt-8 pt-6 border-t-2 border-green-300 text-center text-sm text-black font-semibold">
             <p>
               Non hai un account?{' '}
-              <span className="text-green-700">
+              <a href="https://wa.me/393888005812" target="_blank" rel="noopener noreferrer" className="text-green-700 hover:text-green-900 font-bold hover:underline">
                 Contatta il titolare per registrarti.
-              </span>
+              </a>
             </p>
           </div>
 
