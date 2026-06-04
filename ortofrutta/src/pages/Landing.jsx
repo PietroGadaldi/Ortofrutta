@@ -33,7 +33,7 @@ export function Landing() {
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl text-verde-orto-100 font-semibold">
-            Il modo più semplice per ordinare i tuoi prodotti a km 0, direttamente dal nostro orto.
+            Il modo più semplice per ordinare i tuoi prodotti.
           </p>
         </div>
 
@@ -42,7 +42,7 @@ export function Landing() {
           <div className="bg-gradient-to-br from-white to-green-50 border-2 border-verde-orto-200 rounded-xl shadow-lg p-8 hover:shadow-xl hover:border-verde-orto-400 transition-all transform hover:scale-105">
             <div className="text-5xl mb-4">🌱</div>
             <h3 className="text-xl font-bold text-verde-orto-900 mb-3">Prodotti Freschi</h3>
-            <p className="text-verde-orto-700">I migliori prodotti dell'orto, selezionati ogni giorno con cura e passione.</p>
+            <p className="text-verde-orto-700">I migliori prodotti selezionati ogni giorno con cura e passione.</p>
           </div>
           <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-200 rounded-xl shadow-lg p-8 hover:shadow-xl hover:border-blue-400 transition-all transform hover:scale-105">
             <div className="text-5xl mb-4">📦</div>
@@ -51,8 +51,8 @@ export function Landing() {
           </div>
           <div className="bg-gradient-to-br from-white to-red-50 border-2 border-red-200 rounded-xl shadow-lg p-8 hover:shadow-xl hover:border-red-400 transition-all transform hover:scale-105">
             <div className="text-5xl mb-4">💚</div>
-            <h3 className="text-xl font-bold text-red-900 mb-3">100% Sostenibile</h3>
-            <p className="text-red-700">Prodotti biologici e rispetto dell'ambiente per un futuro migliore.</p>
+            <h3 className="text-xl font-bold text-red-900 mb-3">Servizio Garantito</h3>
+            <p className="text-red-700">Siamo sempre operativi e in stagione anche la domenica</p>
           </div>
         </div>
 
