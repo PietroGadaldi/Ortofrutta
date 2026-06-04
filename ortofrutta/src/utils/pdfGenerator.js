@@ -31,11 +31,12 @@ export function generateOrderPDF(order) {
     const contentWidth = pageWidth - margin * 2
     let yPosition = margin
 
-    // Header - Title
-    pdf.setFontSize(22)
+    // Header - Title with client name
+    pdf.setFontSize(26)
     pdf.setFont(undefined, 'bold')
-    pdf.text('RICEVUTA ORDINE', pageWidth / 2, yPosition, { align: 'center' })
-    yPosition += 12
+    const clientName = order.profili?.nome || 'Cliente'
+    pdf.text(clientName, pageWidth / 2, yPosition, { align: 'center' })
+    yPosition += 14
 
     // Divider
     pdf.setDrawColor(100)
@@ -43,18 +44,8 @@ export function generateOrderPDF(order) {
     pdf.line(margin, yPosition, pageWidth - margin, yPosition)
     yPosition += 10
 
-    // Order info section
-    pdf.setFontSize(12)
-    pdf.setFont(undefined, 'normal')
-
-    // Client name - label and value on same line
-    pdf.setFont(undefined, 'bold')
-    pdf.text('Cliente:', margin, yPosition)
-    pdf.setFont(undefined, 'normal')
-    pdf.text(order.profili?.nome || 'N/A', margin + 28, yPosition)
-    yPosition += 9
-
-    // Order date (data_ordine) - label and value on same line
+    // Order date (data_ordine) on single line
+    pdf.setFontSize(13)
     pdf.setFont(undefined, 'bold')
     pdf.text('Data ordine:', margin, yPosition)
     pdf.setFont(undefined, 'normal')
@@ -62,17 +53,7 @@ export function generateOrderPDF(order) {
       locale: it,
     })
     pdf.text(formattedOrderDate, margin + 40, yPosition)
-    yPosition += 9
-
-    // Creation date (data_creazione) - label and value on separate positions
-    pdf.setFont(undefined, 'bold')
-    pdf.text('Data sottomissione:', margin, yPosition)
-    pdf.setFont(undefined, 'normal')
-    const formattedCreationDate = format(new Date(order.data_creazione), 'dd/MM/yyyy HH:mm', {
-      locale: it,
-    })
-    pdf.text(formattedCreationDate, margin + 40, yPosition)
-    yPosition += 12
+    yPosition += 14
 
     // Divider
     pdf.setDrawColor(100)
@@ -81,19 +62,19 @@ export function generateOrderPDF(order) {
     yPosition += 10
 
     // Products table header
-    pdf.setFontSize(11)
+    pdf.setFontSize(12)
     pdf.setFont(undefined, 'bold')
     pdf.setFillColor(220, 220, 220)
     pdf.rect(margin, yPosition - 6, contentWidth, 8, 'F')
     pdf.text('Prodotto', margin + 3, yPosition)
-    pdf.text('Quantità', margin + 80, yPosition)
-    pdf.text('Unità', margin + 115, yPosition)
-    pdf.text('Peso Effettivo', margin + 155, yPosition)
+    pdf.text('Quantità', margin + 70, yPosition)
+    pdf.text('Unità', margin + 105, yPosition)
+    pdf.text('Peso Eff.', margin + 155, yPosition)
     yPosition += 10
 
     // Products list
     pdf.setFont(undefined, 'normal')
-    pdf.setFontSize(11)
+    pdf.setFontSize(12)
     let productYPosition = yPosition
 
     order.dettagli_ordine.forEach((item, index) => {
@@ -109,8 +90,8 @@ export function generateOrderPDF(order) {
 
       // Product row with better spacing
       pdf.text(productName, margin + 3, productYPosition)
-      pdf.text(quantity.toString(), margin + 90, productYPosition, { align: 'right' })
-      pdf.text(tipologia, margin + 115, productYPosition)
+      pdf.text(quantity.toString(), margin + 80, productYPosition, { align: 'right' })
+      pdf.text(tipologia, margin + 105, productYPosition)
       // Peso Effettivo column is left blank for manual entry
       productYPosition += 8
     })
