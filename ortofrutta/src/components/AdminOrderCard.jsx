@@ -68,6 +68,11 @@ export function AdminOrderCard({
       }
 
       setShowPDFModal(true)
+      
+      // Auto-complete order when viewing PDF (stampa)
+      if (!ordine.completato) {
+        await onStatusChange(ordine.id, true)
+      }
     } catch (error) {
       console.error('Error loading PDF:', error)
       setPdfError('Errore nel caricamento del PDF')
@@ -100,7 +105,7 @@ export function AdminOrderCard({
                   : 'bg-orange-100 text-orange-800'
                 }
               `}>
-                {ordine.completato ? '✅ Completato' : '⏳ In Corso'}
+                {ordine.completato ? '✅ Completato' : '🖨️ Da stampare'}
               </div>
             </div>
             
@@ -142,20 +147,6 @@ export function AdminOrderCard({
               className="flex-1 py-2 px-3 bg-blue-500 text-white text-sm font-bold rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-all"
             >
               {pdfLoading ? '⏳ Caricamento...' : '👁️ Visualizza PDF'}
-            </button>
-            <button
-              onClick={handleStatusToggle}
-              disabled={isLoading}
-              className={`
-                py-2 px-3 text-white text-sm font-bold rounded-lg transition-all
-                ${ordine.completato
-                  ? 'bg-blue-600 hover:bg-blue-700'
-                  : 'bg-green-600 hover:bg-green-700'
-                }
-                ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-              `}
-            >
-              {ordine.completato ? '↩️ Annulla' : '✅ Completa'}
             </button>
             <button
               onClick={handleDeleteOrder}

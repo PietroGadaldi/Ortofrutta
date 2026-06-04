@@ -32,6 +32,7 @@ export function OrdersForDayList({
 
   const dayName = format(selectedDate, 'EEEE', { locale: it }).toUpperCase()
   const totalOrders = ordini.length
+  const ordiniDaStampare = ordini.filter(o => !o.completato).length
 
   return (
     <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl p-6 shadow-lg">
@@ -43,8 +44,13 @@ export function OrdersForDayList({
         <div className="text-sm text-blue-900 mt-2 font-semibold">
           Data: {formatDate(selectedDate.toISOString())}
         </div>
-        <div className="mt-3 inline-block bg-blue-200 text-blue-900 px-4 py-2 rounded-full font-bold">
-          Totale: <span className="text-lg">{totalOrders}</span> ordini
+        <div className="mt-3 flex gap-3">
+          <div className="inline-block bg-blue-200 text-blue-900 px-4 py-2 rounded-full font-bold">
+            Totale: <span className="text-lg">{totalOrders}</span> ordini
+          </div>
+          <div className="inline-block bg-orange-200 text-orange-900 px-4 py-2 rounded-full font-bold">
+            Da stampare: <span className="text-lg">{ordiniDaStampare}</span>
+          </div>
         </div>
       </div>
 
