@@ -48,21 +48,7 @@ export function OrdersForDayList({
     <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl p-6 shadow-lg">
       {/* Header */}
       <div className="mb-6">
-        <h3 className="text-2xl font-bold text-black flex items-center gap-2">
-          <span className="text-3xl">📋</span> Ordini del {dayName}
-        </h3>
-        <div className="text-sm text-blue-900 mt-2 font-semibold">
-          Data: {formatDate(selectedDate.toISOString())}
-        </div>
-        <div className="mt-3 flex gap-3">
-          <div className="inline-block bg-blue-200 text-blue-900 px-4 py-2 rounded-full font-bold">
-            Totale: <span className="text-lg">{totalOrders}</span> ordini
-          </div>
-          <div className="inline-block bg-orange-200 text-orange-900 px-4 py-2 rounded-full font-bold">
-            Da stampare: <span className="text-lg">{ordiniDaStampare}</span>
-          </div>
-        </div>
-
+    
         {/* Filter Input */}
         <div className="mt-4">
           <input
@@ -90,7 +76,7 @@ export function OrdersForDayList({
         </div>
       ) : (
         /* Orders List */
-        <div className="space-y-4 max-h-72 overflow-y-auto">
+        <div className="space-y-4 max-h-[600px] overflow-y-auto">
           {filteredOrdini.map((ordine) => (
             <AdminOrderCard
               key={ordine.id}

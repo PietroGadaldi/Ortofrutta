@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { startOfDay, format } from 'date-fns'
+import { it } from 'date-fns/locale'
 import { HorizontalWeekSelector } from '../components/HorizontalWeekSelector'
 import { OrdersForDayList } from '../components/OrdersForDayList'
 import { updateOrdineStatus, deleteOrdine } from '../services/ordiniService'
@@ -16,6 +17,23 @@ export function AdminOrdersPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  // Filtro per nome cliente
+  const filteredOrdini = useMemo(() => {
+    if (!searchTerm.trim()) return ordini
+    return ordini.filter((o) =>
+      o.profili?.nome?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }, [ordini, searchTerm])
+
+  // Calcolo statistiche per i riquadri
+  const stats = useMemo(() => {
+    return {
+      totale: ordini.length,
+      daStampare: ordini.filter(o => !o.completato).length
+    }
+  }, [ordini])
 
   // Fetch orders when date changes
   useEffect(() => {
@@ -126,15 +144,34 @@ export function AdminOrdersPage() {
       {/* Horizontal Week Selector */}
       <HorizontalWeekSelector selectedDate={selectedDate} onSelectDate={setSelectedDate} />
 
+      {/* Titolo Formattato e Riquadri Statistiche */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-xl border-2 border-amber-200 shadow-sm">
+        <h2 className="text-2xl font-black text-amber-900 uppercase">
+          ORDINI DI {format(selectedDate, "EEEE d MMMM yyyy", { locale: it })}
+        </h2>
+        
+        <div className="flex gap-3 w-full md:w-auto">
+          <div className="flex-1 md:flex-none bg-amber-50 border-2 border-amber-300 p-3 rounded-lg text-center">
+            <p className="text-xs font-bold text-amber-700 uppercase">Totale ordini</p>
+            <p className="text-2xl font-black text-amber-900">{stats.totale}</p>
+          </div>
+          <div className="flex-1 md:flex-none bg-orange-50 border-2 border-orange-300 p-3 rounded-lg text-center">
+            <p className="text-xs font-bold text-orange-700 uppercase">Da stampare</p>
+            <p className="text-2xl font-black text-orange-900">{stats.daStampare}</p>
+          </div>
+        </div>
+      </div>
+
+
       {/* Orders List */}
       <div>
         <OrdersForDayList
           selectedDate={selectedDate}
-          ordini={ordini}
+          ordini={filteredOrdini}
           onStatusChange={handleStatusChange}
           onDeleteOrder={handleDeleteOrder}
           isLoading={isUpdating}
-          isEmpty={ordini.length === 0 && !loading}
+          isEmpty={filteredOrdini.length === 0 && !loading}
           showAsReceiptCards={true}
         />
       </div>
