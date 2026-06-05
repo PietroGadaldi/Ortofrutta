@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { format, parseISO, isSameDay, isAfter, startOfDay } from 'date-fns'
 import { it } from 'date-fns/locale'
+import { capitalize } from '../utils/constants'
 
 /**
  * OrdersHistory component
@@ -9,13 +10,29 @@ import { it } from 'date-fns/locale'
  * @param {Function} onEditOrder - Callback to edit an order
  * @param {Function} onDeleteOrder - Callback to delete an order
  * @param {boolean} isLoading - Loading state
+ * @param {string} expandedOrderId - ID of the order to expand (controlled from parent)
+ * @param {Function} onToggleExpanded - Callback to toggle expansion (controlled from parent)
  */
-export function OrdersHistory({ ordini = [], onEditOrder, onDeleteOrder, isLoading = false }) {
-  const [expandedOrderId, setExpandedOrderId] = useState(null)
+export function OrdersHistory({ 
+  ordini = [], 
+  onEditOrder, 
+  onDeleteOrder, 
+  isLoading = false,
+  expandedOrderId: expandedOrderIdProp,
+  onToggleExpanded
+}) {
+  const [internalExpandedId, setInternalExpandedId] = useState(null)
   const [filterDate, setFilterDate] = useState('')
 
+  // Usa l'ID passato dal parent se presente, altrimenti usa lo stato interno
+  const expandedOrderId = expandedOrderIdProp !== undefined ? expandedOrderIdProp : internalExpandedId
+
   const toggleExpanded = (ordineId) => {
-    setExpandedOrderId(expandedOrderId === ordineId ? null : ordineId)
+    if (onToggleExpanded) {
+      onToggleExpanded(expandedOrderId === ordineId ? null : ordineId)
+    } else {
+      setInternalExpandedId(internalExpandedId === ordineId ? null : ordineId)
+    }
   }
 
   // Check if order can be edited (only if data_ordine is today or in the future)
@@ -32,16 +49,37 @@ export function OrdersHistory({ ordini = [], onEditOrder, onDeleteOrder, isLoadi
 
   // Filter orders by data_ordine
   const filteredOrdini = useMemo(() => {
-    if (!filterDate) return ordini
+    // Creiamo una copia per non mutare l'array originale durante il sort
+    let result = [...ordini]
 
-    return ordini.filter((ordine) => {
-      try {
-        const ordineDate = parseISO(ordine.data_ordine)
-        const filteringDate = parseISO(filterDate)
-        return isSameDay(ordineDate, filteringDate)
-      } catch {
-        return true
+    // 1. Filtro per data (se applicato)
+    if (filterDate) {
+      result = result.filter((ordine) => {
+        try {
+          const ordineDate = parseISO(ordine.data_ordine)
+          const filteringDate = parseISO(filterDate)
+          return isSameDay(ordineDate, filteringDate)
+        } catch {
+          return true
+        }
+      })
+    }
+
+    // 2. Ordinamento combinato
+    return result.sort((a, b) => {
+      const isPastA = !isOrderEditable(a.data_ordine)
+      const isPastB = !isOrderEditable(b.data_ordine)
+
+      // Definiamo i pesi della priorità: In corso = 1, Completato = 2, Archiviato = 3
+      const priorityA = isPastA ? 3 : (a.completato ? 2 : 1)
+      const priorityB = isPastB ? 3 : (b.completato ? 2 : 1)
+
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB // Ordine crescente di priorità (1 -> 2 -> 3)
       }
+
+      // Se hanno la stessa priorità, ordina per data ordine decrescente (più recente in alto)
+      return parseISO(b.data_ordine).getTime() - parseISO(a.data_ordine).getTime()
     })
   }, [ordini, filterDate])
 
@@ -78,7 +116,7 @@ export function OrdersHistory({ ordini = [], onEditOrder, onDeleteOrder, isLoadi
           <span className="text-2xl">📜</span> Cronologia Ordini
         </h3>
         <div className="flex items-center gap-3">
-          <label className="text-sm font-bold text-blue-900">Filtra per data:</label>
+          <label className="hidden md:block text-sm font-bold text-blue-900">Filtra per data:</label>
           <input
             type="date"
             value={filterDate}
@@ -88,7 +126,7 @@ export function OrdersHistory({ ordini = [], onEditOrder, onDeleteOrder, isLoadi
           {filterDate && (
             <button
               onClick={() => setFilterDate('')}
-              className="px-3 py-2 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-bold"
+              className="hidden md:block px-3 py-2 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-bold"
             >
               ✕ Azzera
             </button>
@@ -102,44 +140,69 @@ export function OrdersHistory({ ordini = [], onEditOrder, onDeleteOrder, isLoadi
         </div>
       )}
 
-      <div className="space-y-3">
-        {filteredOrdini.map((ordine) => (
+      <div className="space-y-3 max-h-[550px] overflow-y-auto pr-2">
+        {filteredOrdini.map((ordine) => {
+          const isPast = !isOrderEditable(ordine.data_ordine);
+          return (
           <div
             key={ordine.id}
-            className="bg-gradient-to-r from-blue-50 to-white border-2 border-blue-300 rounded-xl overflow-hidden hover:shadow-lg hover:border-blue-400 transition-all"
+            className={`border-2 rounded-xl overflow-hidden transition-all hover:shadow-lg ${
+              isPast
+                ? 'bg-gradient-to-r from-blue-50 to-white border-blue-300 hover:border-blue-400'
+                : ordine.completato
+                ? 'bg-gradient-to-r from-green-50 to-white border-green-300 hover:border-green-400'
+                : 'bg-gradient-to-r from-amber-50 to-white border-amber-300 hover:border-amber-400'
+            }`}
           >
             {/* Order header (always visible) */}
             <button
               onClick={() => toggleExpanded(ordine.id)}
-              className="w-full flex items-center justify-between p-5 hover:bg-blue-100 transition-all active:scale-95"
+              className={`w-full flex items-center justify-between p-5 transition-all active:scale-95 ${
+                isPast ? 'hover:bg-blue-100' : ordine.completato ? 'hover:bg-green-100' : 'hover:bg-amber-100'
+              }`}
             >
               <div className="text-left flex-1">
-                <div className="font-bold text-blue-900 text-lg">
+                <div className={`font-bold text-lg ${isPast ? 'text-blue-900' : ordine.completato ? 'text-green-900' : 'text-amber-900'}`}>
                   📅 {formatDate(ordine.data_ordine)}
                 </div>
-                <div className="text-xs text-blue-700 mt-2 font-semibold">
-                  Creato il {formatDate(ordine.data_creazione)}
+                <div className={`text-xs mt-2 font-bold ${isPast ? 'text-blue-700' : ordine.completato ? 'text-green-700' : 'text-amber-700'}`}>
+                  {isPast ? '📁 Archiviato' : ordine.completato ? '✅ Completato!' : '⏳ Ordine in corso...'}
                 </div>
               </div>
-              <span className="text-blue-600 text-2xl ml-4">
+              <span className={`text-2xl ml-4 ${isPast ? 'text-blue-600' : ordine.completato ? 'text-green-600' : 'text-amber-600'}`}>
                 {expandedOrderId === ordine.id ? '▲' : '▼'}
               </span>
             </button>
 
             {/* Order details (expandable) */}
             {expandedOrderId === ordine.id && (
-              <div className="border-t-2 border-blue-300 p-5 bg-gradient-to-br from-blue-50 to-white">
+              <div className={`border-t-2 p-5 ${
+                isPast 
+                  ? 'border-blue-300 bg-gradient-to-br from-blue-50 to-white' 
+                  : ordine.completato 
+                    ? 'border-green-300 bg-gradient-to-br from-green-50 to-white' 
+                    : 'border-amber-300 bg-gradient-to-br from-amber-50 to-white'
+              }`}>
+                <div className={`text-left text-xs mb-4 font-bold ${isPast ? 'text-blue-700' : ordine.completato ? 'text-green-700' : 'text-amber-700'}`}>
+                  🕒 Creato il {formatDate(ordine.data_creazione)}
+                </div>
                 {/* Products list */}
                 <div className="mb-5">
-                  <h4 className="font-bold text-blue-900 text-sm mb-4 flex items-center gap-2">
+                  <h4 className={`text-left font-bold text-sm mb-4 flex items-center gap-2 ${isPast ? 'text-blue-900' : ordine.completato ? 'text-green-900' : 'text-amber-900'}`}>
                     <span>📦</span> Prodotti ordinati:
                   </h4>
                   <ul className="space-y-3 ml-2">
                     {ordine.dettagli_ordine && ordine.dettagli_ordine.length > 0 ? (
                       ordine.dettagli_ordine.map((dettaglio) => (
-                        <li key={dettaglio.id} className="text-sm text-blue-900 bg-white px-4 py-3 rounded-lg border-l-4 border-blue-500 shadow-sm font-semibold text-left">
-                          <span className="font-bold block">{dettaglio.prodotti?.nome}</span>
-                          <span className="text-blue-700 text-xs mt-1 block">
+                        <li key={dettaglio.id} className={`text-sm bg-white px-4 py-3 rounded-lg border-l-4 shadow-sm font-semibold text-left ${
+                          isPast 
+                            ? 'text-blue-900 border-blue-500' 
+                            : ordine.completato 
+                              ? 'text-green-900 border-green-500' 
+                              : 'text-amber-900 border-amber-500'
+                        }`}>
+                          <span className="font-bold block">{capitalize(dettaglio.prodotti?.nome)}</span>
+                          <span className={`text-xs mt-1 block ${isPast ? 'text-blue-700' : ordine.completato ? 'text-green-700' : 'text-amber-700'}`}>
                             {dettaglio.quantita} {dettaglio.tipologia}
                           </span>
                         </li>
@@ -150,48 +213,34 @@ export function OrdersHistory({ ordini = [], onEditOrder, onDeleteOrder, isLoadi
                   </ul>
                 </div>
 
-                {/* Action buttons (only if not completed and still editable) */}
-                {!ordine.completato && (
-                  <>
-                    {!isOrderEditable(ordine.data_ordine) && (
-                      <div className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg mb-4">
-                        <p className="text-xs text-yellow-900 font-semibold">
-                          ⏱️ La data di questo ordine è passata. Non puoi più modificarlo o eliminarlo, ma puoi visualizzarne i dettagli.
-                        </p>
-                      </div>
-                    )}
-                    <div className="flex gap-3 border-t-2 border-blue-300 pt-5 mt-5">
-                      <button
-                        onClick={() => onEditOrder(ordine)}
-                        disabled={isLoading || !isOrderEditable(ordine.data_ordine)}
-                        title={!isOrderEditable(ordine.data_ordine) ? 'Non puoi modificare ordini con data passata' : 'Modifica questo ordine'}
-                        className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-bold rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
-                      >
-                        ✏️ Modifica
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              'Sei sicuro di voler cancellare questo ordine?'
-                            )
-                          ) {
-                            onDeleteOrder(ordine.id)
-                          }
-                        }}
-                        disabled={isLoading || !isOrderEditable(ordine.data_ordine)}
-                        title={!isOrderEditable(ordine.data_ordine) ? 'Non puoi eliminare ordini con data passata' : 'Elimina questo ordine'}
-                        className="flex-1 py-3 px-4 bg-red-500 text-white text-sm font-bold rounded-lg hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
-                      >
-                        🗑️ Cancella
-                      </button>
-                    </div>
-                  </>
+                {/* Action buttons (only if NOT archived and NOT completed) */}
+                {!isPast && !ordine.completato && (
+                  <div className="flex gap-3 border-t-2 border-amber-300 pt-5 mt-5">
+                    <button
+                      onClick={() => onEditOrder(ordine)}
+                      disabled={isLoading}
+                      className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-bold rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
+                    >
+                      Modifica Ordine
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm('Sei sicuro di voler cancellare questo ordine?')) {
+                          onDeleteOrder(ordine.id)
+                        }
+                      }}
+                      disabled={isLoading}
+                      className="flex-1 py-3 px-4 bg-red-500 text-white text-sm font-bold rounded-lg hover:bg-red-600 disabled:bg-gray-400 transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
+                    >
+                      Annulla Ordine
+                    </button>
+                  </div>
                 )}
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   )

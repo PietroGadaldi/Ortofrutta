@@ -27,24 +27,27 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
   const renderHeader = () => {
+    const monthText = format(currentMonth, 'MMMM yyyy', { locale: it })
+    const capitalizedMonth = monthText.charAt(0).toUpperCase() + monthText.slice(1)
+
     return (
       <div className="flex items-center justify-between mb-6 px-2">
         <button
           onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-          className="p-2 hover:bg-green-200 rounded-lg transition-all hover:scale-110"
+          className="p-2 bg-white border-2 border-green-300 hover:bg-green-200 rounded-lg transition-all hover:scale-110"
           title="Mese precedente"
         >
-          <span className="text-green-700 font-bold text-lg">←</span>
+          <span className="text-green-700 font-bold text-lg">{'<<'}</span>
         </button>
         <h2 className="text-xl font-bold text-green-900">
-          {format(currentMonth, 'MMMM yyyy', { locale: it })}
+          {capitalizedMonth}
         </h2>
         <button
           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-          className="p-2 hover:bg-green-200 rounded-lg transition-all hover:scale-110"
+          className="p-2 bg-white border-2 border-green-300 hover:bg-green-200 rounded-lg transition-all hover:scale-110"
           title="Mese prossimo"
         >
-          <span className="text-green-700 font-bold text-lg">→</span>
+          <span className="text-green-700 font-bold text-lg">{'>>'}</span>
         </button>
       </div>
     )

@@ -8,7 +8,7 @@ import { RUOLI } from '../utils/constants'
 export function Login() {
   const navigate = useNavigate()
   const { user, loading } = useAuth()
-  const [email, setEmail] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -24,22 +24,47 @@ export function Login() {
     e.preventDefault()
     setError('')
 
-    // Validate
-    if (!validateEmail(email)) {
-      setError('Email non valida')
+    if (!identifier.trim()) {
+      setError('Inserisci email o nome utente')
       return
     }
-
     if (!validatePassword(password)) {
       setError('Password deve avere almeno 6 caratteri')
       return
     }
 
     setIsLoading(true)
-
     try {
-      const { user: loggedInUser, error: loginError } =
-        await authService.signInWithPassword(email, password)
+      let loggedInUser = null
+      let loginError = null
+
+      // Determina se l'input è una mail
+      if (validateEmail(identifier)) {
+        // Login standard tramite email
+        const result = await authService.signInWithPassword(identifier, password)
+        loggedInUser = result.user
+        loginError = result.error
+      } else {
+        // Login tramite nome utente via Netlify Function
+        const response = await fetch(`/.netlify/functions/login-by-username`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: identifier, password })
+        })
+        const result = await response.json()
+        if (!response.ok) {
+          loginError = { message: result.error || 'Errore durante il login' }
+        } else {
+          // Importante: dobbiamo settare la sessione manualmente nel client Supabase
+          const { supabase } = await import('../services/supabaseClient')
+          const { error: setSessionError } = await supabase.auth.setSession(result.session)
+          if (setSessionError) {
+            loginError = setSessionError
+          } else {
+            loggedInUser = result.user
+          }
+        }
+      }
 
       if (loginError) {
         setError(loginError.message || 'Errore durante il login')
@@ -66,6 +91,21 @@ export function Login() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-600 via-green-50 to-white px-4">
+        <div className="text-center">
+          <div className="flex justify-center mb-6">
+            <div className="animate-spin">
+              <div className="h-16 w-16 border-4 border-green-300 border-t-green-600 rounded-full"></div>
+            </div>
+          </div>
+          <p className="text-green-700 font-bold text-lg">Verifica sessione...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-600 via-green-50 to-white px-4 py-8">
       <div className="w-full max-w-md">
@@ -90,15 +130,15 @@ export function Login() {
             {/* Email field */}
             <div>
               <label htmlFor="email" className="block text-sm font-bold text-black mb-2 text-left">
-                📧 Email
+                Nome Utente
               </label>
               <input
                 id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition text-black font-semibold"
-                placeholder="tuo@email.com"
+                placeholder="Email o Nome"
                 disabled={isLoading}
               />
             </div>
@@ -106,7 +146,7 @@ export function Login() {
             {/* Password field */}
             <div>
               <label htmlFor="password" className="block text-sm font-bold text-black mb-2 text-left">
-                🔐 Password
+                Password
               </label>
               <input
                 id="password"
@@ -125,7 +165,7 @@ export function Login() {
               disabled={isLoading}
               className="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100 text-lg"
             >
-              {isLoading ? '⏳ Accesso in corso...' : '✅ Accedi'}
+              {isLoading ? 'Accesso in corso...' : 'Accedi'}
             </button>
           </form>
 
@@ -133,16 +173,16 @@ export function Login() {
           <div className="mt-8 pt-6 border-t-2 border-green-300 text-center text-sm text-black font-semibold">
             <p>
               Non hai un account?{' '}
-              <a href="https://wa.me/393888005812" target="_blank" rel="noopener noreferrer" className="text-green-700 hover:text-green-900 font-bold hover:underline">
+              <span className="text-green-700">
                 Contatta il titolare per registrarti.
-              </a>
+              </span>
             </p>
           </div>
 
           {/* Link back */}
           <div className="mt-6 text-center">
             <Link to="/" className="text-green-700 hover:text-green-900 font-bold hover:underline">
-              ← Torna alla home
+              Torna alla home
             </Link>
           </div>
         </div>

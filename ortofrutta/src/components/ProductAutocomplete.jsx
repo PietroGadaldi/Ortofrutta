@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { parseTipologie, capitalize } from '../utils/constants'
 
 /**
  * ProductAutocomplete component
@@ -134,8 +135,8 @@ export function ProductAutocomplete({
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         onFocus={() => value && setIsOpen(true)}
-        placeholder="Inizia a digitare il nome del prodotto..."
-        className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-black font-semibold"
+        placeholder="Scrivi il nome del prodotto..."
+        className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-black font-semibold"
       />
 
       {isOpen && filteredProducts.length > 0 && (
@@ -157,9 +158,9 @@ export function ProductAutocomplete({
                     }
                   `}
                 >
-                  <div className="font-bold">{product.nome}</div>
-                  <div className="text-xs opacity-75 mt-1">
-                    Tipi: {product.tipologie_possibili}
+                  <div className="font-bold text-left">{capitalize(product.nome)}</div>
+                  <div className="text-xs opacity-75 mt-1 text-left">
+                    Disponibilità: {parseTipologie(product.tipologie_possibili).map(capitalize).join(', ')}
                   </div>
                 </button>
               </li>
