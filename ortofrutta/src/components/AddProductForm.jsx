@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { ProductAutocomplete } from './ProductAutocomplete'
-import { parseTipologie } from '../utils/constants'
+import { parseTipologie, capitalize } from '../utils/constants'
 
 /**
  * AddProductForm component
@@ -17,19 +17,27 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
   const [tipologieDisponibili, setTipologieDisponibili] = useState([])
   const [error, setError] = useState('')
 
+  // Trasforma i prodotti per avere i nomi con l'iniziale maiuscola per l'autocomplete e la visualizzazione
+  const formattedProdotti = useMemo(() => {
+    return prodotti.map(p => ({
+      ...p,
+      nome: capitalize(p.nome)
+    }))
+  }, [prodotti])
+
   // If editing, pre-fill the form
   useEffect(() => {
     if (editingItem) {
-      const product = prodotti.find((p) => p.id === editingItem.prodotto_id)
+      const product = formattedProdotti.find((p) => p.id === editingItem.prodotto_id)
       if (product) {
         setSelectedProduct(product)
-        setInputValue(product.nome)
+        setInputValue(capitalize(product.nome))
         setQuantita(editingItem.quantita.toString())
         setTipologia(editingItem.tipologia)
         setTipologieDisponibili(parseTipologie(product.tipologie_possibili))
       }
     }
-  }, [editingItem, prodotti])
+  }, [editingItem, formattedProdotti])
 
   // Update tipologie when product changes
   useEffect(() => {
@@ -96,7 +104,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
         {/* Product Autocomplete (col-span 5) */}
         <div className="md:col-span-5">
           <ProductAutocomplete
-            prodotti={prodotti}
+            prodotti={formattedProdotti}
             onSelectProduct={handleProductSelect}
             value={inputValue}
             onInputChange={setInputValue}
@@ -134,7 +142,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
             <option value="">-- Seleziona tipologia --</option>
             {tipologieDisponibili.map((tipo) => (
               <option key={tipo} value={tipo}>
-                {tipo}
+                {capitalize(tipo)}
               </option>
             ))}
           </select>

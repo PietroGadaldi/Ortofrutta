@@ -130,7 +130,7 @@ export function Login() {
             {/* Email field */}
             <div>
               <label htmlFor="email" className="block text-sm font-bold text-black mb-2 text-left">
-                📧 Email o Nome Utente
+                Nome Utente
               </label>
               <input
                 id="email"
@@ -146,7 +146,7 @@ export function Login() {
             {/* Password field */}
             <div>
               <label htmlFor="password" className="block text-sm font-bold text-black mb-2 text-left">
-                🔐 Password
+                Password
               </label>
               <input
                 id="password"
@@ -165,7 +165,7 @@ export function Login() {
               disabled={isLoading}
               className="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100 text-lg"
             >
-              {isLoading ? '⏳ Accesso in corso...' : '✅ Accedi'}
+              {isLoading ? 'Accesso in corso...' : 'Accedi'}
             </button>
           </form>
 
@@ -182,7 +182,7 @@ export function Login() {
           {/* Link back */}
           <div className="mt-6 text-center">
             <Link to="/" className="text-green-700 hover:text-green-900 font-bold hover:underline">
-              ← Torna alla home
+              Torna alla home
             </Link>
           </div>
         </div>

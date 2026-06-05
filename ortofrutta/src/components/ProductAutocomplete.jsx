@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { parseTipologie, capitalize } from '../utils/constants'
 
 /**
  * ProductAutocomplete component
@@ -157,9 +158,9 @@ export function ProductAutocomplete({
                     }
                   `}
                 >
-                  <div className="font-bold">{product.nome}</div>
-                  <div className="text-xs opacity-75 mt-1">
-                    Tipi: {product.tipologie_possibili}
+                  <div className="font-bold text-left">{capitalize(product.nome)}</div>
+                  <div className="text-xs opacity-75 mt-1 text-left">
+                    Disponibilità: {parseTipologie(product.tipologie_possibili).map(capitalize).join(', ')}
                   </div>
                 </button>
               </li>
