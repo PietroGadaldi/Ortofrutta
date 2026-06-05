@@ -10,6 +10,8 @@ export function Utenti() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [isModifying, setIsModifying] = useState(false)
+  const [modifyingUserId, setModifyingUserId] = useState(null)
   
   // Clients list state
   const [clienti, setClienti] = useState([])
@@ -41,6 +43,27 @@ export function Utenti() {
     }
   }
 
+  const handleEditUser = (cliente) => {
+    setNome(cliente.nome)
+    setEmail(cliente.email || '') // Nota: l'email potrebbe arrivare dal profilo o dall'auth
+    setPassword('') // La password rimane vuota in modifica
+    setRuolo(cliente.ruolo)
+    setIsModifying(true)
+    setModifyingUserId(cliente.id)
+    setError('')
+    setSuccess('')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const resetForm = () => {
+    setNome('')
+    setEmail('')
+    setPassword('')
+    setRuolo('cliente')
+    setIsModifying(false)
+    setModifyingUserId(null)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -57,26 +80,33 @@ export function Utenti() {
       return
     }
 
-    if (!password || password.length < 6) {
+    // Password obbligatoria solo in creazione
+    if (!isModifying && (!password || password.length < 6)) {
       setError('Password deve avere almeno 6 caratteri')
+      return
+    } else if (isModifying && password && password.length < 6) {
+      setError('La nuova password deve avere almeno 6 caratteri')
       return
     }
 
     setIsSubmitting(true)
 
     try {
-      // Call Netlify Function to create user
+      const functionName = isModifying ? '/update-user' : '/create-user'
+      const method = isModifying ? 'PATCH' : 'POST'
+      
       const response = await fetch(
-        import.meta.env.VITE_NETLIFY_FUNCTIONS_URL + '/create-user',
+        import.meta.env.VITE_NETLIFY_FUNCTIONS_URL + functionName,
         {
-          method: 'POST',
+          method: method,
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${await getAuthToken()}`,
           },
           body: JSON.stringify({
+            userId: modifyingUserId,
             email,
-            password,
+            password: password || undefined, // Invia la password solo se scritta
             nome,
             ruolo,
           }),
@@ -86,14 +116,11 @@ export function Utenti() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Errore nella creazione account')
+        throw new Error(data.error || 'Errore nel salvataggio account')
       }
 
-      setSuccess(`Account creato con successo per ${email}`)
-      setNome('')
-      setEmail('')
-      setPassword('')
-      setRuolo('cliente')
+      setSuccess(isModifying ? `Account aggiornato per ${email}` : `Account creato per ${email}`)
+      resetForm()
       
       // Refresh clients list
       await fetchClienti()
@@ -123,9 +150,20 @@ export function Utenti() {
       <div className="grid md:grid-cols-2 gap-8">
         {/* Form */}
         <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl shadow-lg p-6">
-          <h2 className="text-2xl font-bold text-black mb-4 flex items-center gap-2">
-            <span className="text-3xl">➕</span> Crea Nuovo Account
-          </h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold text-black flex items-center gap-2">
+              <span className="text-3xl">{isModifying ? '📝' : '➕'}</span> 
+              {isModifying ? 'Modifica Account' : 'Crea Nuovo Account'}
+            </h2>
+            {isModifying && (
+              <button
+                onClick={resetForm}
+                className="text-xs font-bold text-red-600 hover:underline"
+              >
+                Annulla Modifica
+              </button>
+            )}
+          </div>
 
           {error && (
             <div className="mb-3 p-3 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-900 text-xs font-semibold">
@@ -171,7 +209,7 @@ export function Utenti() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold"
-                placeholder="Min. 6 caratteri"
+                placeholder={isModifying ? "Lascia vuoto per non cambiare" : "Min. 6 caratteri"}
                 disabled={isSubmitting}
               />
             </div>
@@ -194,7 +232,7 @@ export function Utenti() {
               disabled={isSubmitting}
               className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100 text-lg"
             >
-              {isSubmitting ? '⏳ Creazione in corso...' : '✅ Crea Account'}
+              {isSubmitting ? '⏳ Salvataggio...' : isModifying ? '💾 Aggiorna Account' : '✅ Crea Account'}
             </button>
           </form>
         </div>
@@ -235,9 +273,17 @@ export function Utenti() {
                     <p className="font-bold text-black text-left">{cliente.nome}</p>
                     <p className="text-xs text-green-700 mt-1 font-semibold text-left">{cliente.id}</p>
                   </div>
-                  <span className="ml-4 px-3 py-1 text-xs bg-gradient-to-r from-green-200 to-green-100 text-green-900 rounded-full font-bold">
-                    {cliente.ruolo === 'cliente' ? '👤 Cliente' : '🏪 Titolare'}
-                  </span>
+                  <div className="flex flex-col items-end gap-2">
+                    <span className="px-3 py-1 text-xs bg-gradient-to-r from-green-200 to-green-100 text-green-900 rounded-full font-bold">
+                      {cliente.ruolo === 'cliente' ? '👤 Cliente' : '🏪 Titolare'}
+                    </span>
+                    <button
+                      onClick={() => handleEditUser(cliente)}
+                      className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-lg font-bold hover:bg-blue-200 transition"
+                    >
+                      ✏️ Modifica
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

@@ -115,20 +115,38 @@ export async function handler(event) {
       }
     } else {
       // Fetch all clients (default)
-      const { data: clients, error: clientsError } = await supabaseAdmin
+      const { data: profiles, error: profilesError } = await supabaseAdmin
         .from('profili')
         .select('id, nome, ruolo')
         .eq('ruolo', 'cliente')
         .order('nome', { ascending: true })
 
-      if (clientsError) {
-        console.error('Clients fetch error:', clientsError)
-        return errorResponse(500, `Errore nel caricamento clienti: ${clientsError.message}`)
+      if (profilesError) {
+        console.error('Profiles fetch error:', profilesError)
+        return errorResponse(500, `Errore nel caricamento profili: ${profilesError.message}`)
       }
 
+      // Recupera tutti gli utenti dall'Auth di Supabase per ottenere le email
+      // Nota: listUsers ha un limite di paginazione predefinito (50 utenti)
+      const { data: { users }, error: authError } = await supabaseAdmin.auth.admin.listUsers()
+      
+      if (authError) {
+        console.error('Auth fetch error:', authError)
+        // Se fallisce il recupero email, restituiamo comunque i profili senza email
+      }
+
+      // Unisce i dati dei profili con le email dell'auth
+      const clientsWithEmail = (profiles || []).map(profile => {
+        const authUser = (users || []).find(u => u.id === profile.id)
+        return {
+          ...profile,
+          email: authUser ? authUser.email : ''
+        }
+      })
+
       return successResponse(200, {
-        clients: clients || [],
-        count: (clients || []).length,
+        clients: clientsWithEmail,
+        count: clientsWithEmail.length,
       })
     }
   } catch (err) {
