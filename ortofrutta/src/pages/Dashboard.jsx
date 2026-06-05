@@ -31,6 +31,26 @@ export function Dashboard() {
   const [editingOrderId, setEditingOrderId] = useState(null)
   const [editingItemIndex, setEditingItemIndex] = useState(null)
 
+  // Intercetta l'errore del Service Worker relativo alle estensioni Chrome,
+  // svuota la cache e ricarica la pagina per risolvere il blocco.
+  useEffect(() => {
+    const handleCacheError = (event) => {
+      const errorMsg = event.reason?.message || "";
+      if (errorMsg.includes("Request scheme 'chrome-extension' is unsupported")) {
+        if ('caches' in window) {
+          caches.keys().then((names) => {
+            return Promise.all(names.map((name) => caches.delete(name)));
+          }).then(() => {
+            window.location.reload();
+          });
+        }
+      }
+    };
+
+    window.addEventListener('unhandledrejection', handleCacheError);
+    return () => window.removeEventListener('unhandledrejection', handleCacheError);
+  }, []);
+
   // Fetch user ordini and prodotti on mount
   useEffect(() => {
     fetchData()
