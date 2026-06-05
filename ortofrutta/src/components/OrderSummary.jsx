@@ -22,7 +22,7 @@ export function OrderSummary({
     return (
       <div className="bg-gradient-to-br from-green-50 to-white border-2 border-green-300 rounded-xl p-6 text-center shadow-lg">
         <p className="text-green-900 font-semibold">
-          📋 Aggiungi prodotti dal modulo a sinistra per creare un ordine
+          Aggiungi dei prodotti per visualizzare il Riepilogo del Ordine.
         </p>
       </div>
     )
