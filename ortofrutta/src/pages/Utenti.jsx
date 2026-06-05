@@ -13,6 +13,9 @@ export function Utenti() {
   const [isModifying, setIsModifying] = useState(false)
   const [modifyingUserId, setModifyingUserId] = useState(null)
   
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [userToDelete, setUserToDelete] = useState(null)
+
   // Clients list state
   const [clienti, setClienti] = useState([])
   const [loadingClienti, setLoadingClienti] = useState(true)
@@ -57,6 +60,47 @@ export function Utenti() {
     const newRole = viewingRole === 'cliente' ? 'titolare' : 'cliente'
     setViewingRole(newRole)
     fetchClienti(newRole)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!userToDelete) return
+    
+    setIsSubmitting(true)
+    setError('')
+    
+    try {
+      const response = await fetch(
+        import.meta.env.VITE_NETLIFY_FUNCTIONS_URL + '/delete-user',
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${await getAuthToken()}`,
+          },
+          body: JSON.stringify({ userId: userToDelete.id }),
+        }
+      )
+
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(text || `Errore del server (${response.status})`);
+      }
+
+      if (!response.ok) throw new Error(data?.error || 'Errore durante l\'eliminazione')
+
+      setSuccess(`Utente ${userToDelete.nome} eliminato correttamente`)
+      setShowDeleteModal(false)
+      setUserToDelete(null)
+      fetchClienti(viewingRole)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleEditUser = (cliente) => {
@@ -298,15 +342,24 @@ export function Utenti() {
                     <p className="font-bold text-black text-left">{cliente.nome}</p>
                     <p className="text-xs text-green-700 mt-1 font-semibold text-left">{cliente.id}</p>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
+                  <div className="flex items-center gap-2">
                     <span className="px-3 py-1 text-xs bg-gradient-to-r from-green-200 to-green-100 text-green-900 rounded-full font-bold">
                       {cliente.ruolo === 'cliente' ? '👤 Cliente' : '🏪 Titolare'}
                     </span>
                     <button
                       onClick={() => handleEditUser(cliente)}
-                      className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-lg font-bold hover:bg-blue-200 transition"
+                      className="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs font-semibold hover:bg-blue-200 transition"
                     >
-                      ✏️ Modifica
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => {
+                        setUserToDelete(cliente)
+                        setShowDeleteModal(true)
+                      }}
+                      className="px-2 py-1 bg-red-100 text-red-600 rounded text-xs font-semibold hover:bg-red-200 transition"
+                    >
+                      ❌
                     </button>
                   </div>
                 </div>
@@ -315,6 +368,43 @@ export function Utenti() {
           )}
         </div>
       </div>
+
+      {/* Modal di Conferma Eliminazione */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border-2 border-red-300">
+            <h3 className="text-xl font-bold text-red-600 mb-4 flex items-center gap-2 text-left">
+              ⚠️ Conferma Eliminazione
+            </h3>
+            <p className="text-gray-700 mb-4 text-left">
+              Sei sicuro di voler eliminare l'utente <strong>{userToDelete?.nome}</strong> ({userToDelete?.email})?
+            </p>
+            <div className="bg-red-50 border-l-4 border-red-500 p-3 mb-6">
+              <p className="text-xs text-red-800 font-bold text-left">
+                ATTENZIONE: Questa operazione è irreversibile e rimuoverà permanentemente il profilo e TUTTI gli ordini associati a questo utente dal database.
+              </p>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false)
+                  setUserToDelete(null)
+                }}
+                className="px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded-lg transition"
+              >
+                Annulla
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={isSubmitting}
+                className="px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:bg-gray-400"
+              >
+                {isSubmitting ? 'Eliminazione...' : 'Sì, Elimina Tutto'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
