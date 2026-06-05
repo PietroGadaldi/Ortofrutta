@@ -199,6 +199,21 @@ export function Utenti() {
     return data.session?.access_token || ''
   }
 
+  if (loadingClienti && clienti.length === 0) {
+    return (
+      <div className="flex justify-center items-center py-24">
+        <div className="text-center">
+          <div className="flex justify-center mb-6">
+            <div className="animate-spin">
+              <div className="h-16 w-16 border-4 border-blue-300 border-t-blue-600 rounded-full"></div>
+            </div>
+          </div>
+          <p className="text-blue-700 font-bold text-lg">Caricamento utenti...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -328,7 +343,16 @@ export function Utenti() {
           )}
 
           {loadingClienti ? (
-            <div className="text-black font-semibold">⏳ Caricamento...</div>
+            <div className="flex justify-center py-12">
+              <div className="text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="animate-spin">
+                    <div className="h-12 w-12 border-4 border-blue-300 border-t-blue-600 rounded-full"></div>
+                  </div>
+                </div>
+                <p className="text-blue-700 font-bold">Caricamento...</p>
+              </div>
+            </div>
           ) : clienti.length === 0 ? (
             <div className="text-black font-semibold italic">❌ Nessun {viewingRole === 'cliente' ? 'cliente' : 'titolare'} creato ancora</div>
           ) : (

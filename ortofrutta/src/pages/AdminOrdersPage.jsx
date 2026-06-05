@@ -97,8 +97,10 @@ export function AdminOrdersPage() {
     return (
       <div className="flex justify-center items-center py-24">
         <div className="text-center">
-          <div className="animate-spin mb-6">
-            <div className="h-16 w-16 border-4 border-amber-300 border-t-amber-600 rounded-full"></div>
+          <div className="flex justify-center mb-6">
+            <div className="animate-spin">
+              <div className="h-16 w-16 border-4 border-amber-300 border-t-amber-600 rounded-full"></div>
+            </div>
           </div>
           <p className="text-amber-700 font-bold text-lg">Caricamento ordini...</p>
         </div>
