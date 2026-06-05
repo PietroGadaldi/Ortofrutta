@@ -15,6 +15,7 @@ export function Prodotti() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isModifying, setIsModifying] = useState(false)
   const [modifyingProdottoId, setModifyingProdottoId] = useState(null)
+  const [searchFilter, setSearchFilter] = useState('')
 
   useEffect(() => {
     fetchProdotti()
@@ -271,13 +272,40 @@ export function Prodotti() {
             </button>
           </div>
 
+          {/* Filtro di Ricerca */}
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="🔍 Cerca prodotto..."
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              className="w-full px-4 py-2 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold"
+            />
+          </div>
+
           {loading ? (
             <div className="text-black font-semibold">⏳ Caricamento...</div>
           ) : prodotti.length === 0 ? (
             <div className="text-black font-semibold italic">❌ Nessun prodotto presente</div>
           ) : (
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {prodotti.map((p) => (
+            <>
+              {(() => {
+                const filteredProdotti = prodotti.filter((p) => {
+                  const searchLower = searchFilter.toLowerCase()
+                  const nomeMatch = p.nome.toLowerCase().includes(searchLower)
+                  const tipologieMatch = parseTipologie(p.tipologie_possibili).some(tip =>
+                    tip.toLowerCase().includes(searchLower)
+                  )
+                  return nomeMatch || tipologieMatch
+                })
+
+                return (
+                  <>
+                    {filteredProdotti.length === 0 && searchFilter ? (
+                      <div className="text-black font-semibold italic">❌ Nessun prodotto corrisponde alla ricerca</div>
+                    ) : (
+                      <div className="space-y-3 max-h-96 overflow-y-auto">
+                        {filteredProdotti.map((p) => (
                 <div
                   key={p.id}
                   className="p-3 bg-gray-50 rounded-lg border border-gray-200"
@@ -312,8 +340,13 @@ export function Prodotti() {
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
+            </>
           )}
         </div>
       </div>
