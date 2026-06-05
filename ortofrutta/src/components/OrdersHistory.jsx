@@ -221,7 +221,7 @@ export function OrdersHistory({
                       disabled={isLoading}
                       className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-bold rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
                     >
-                      ✏️ Modifica
+                      Modifica Ordine
                     </button>
                     <button
                       onClick={() => {
@@ -232,7 +232,7 @@ export function OrdersHistory({
                       disabled={isLoading}
                       className="flex-1 py-3 px-4 bg-red-500 text-white text-sm font-bold rounded-lg hover:bg-red-600 disabled:bg-gray-400 transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
                     >
-                      🗑️ Cancella
+                      Annulla Ordine
                     </button>
                   </div>
                 )}

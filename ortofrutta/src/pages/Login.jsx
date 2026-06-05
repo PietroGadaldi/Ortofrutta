@@ -46,7 +46,7 @@ export function Login() {
         loginError = result.error
       } else {
         // Login tramite nome utente via Netlify Function
-        const response = await fetch(`${import.meta.env.VITE_NETLIFY_FUNCTIONS_URL}/login-by-username`, {
+        const response = await fetch(`/.netlify/functions/login-by-username`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: identifier, password })

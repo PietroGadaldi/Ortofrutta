@@ -135,7 +135,7 @@ export function ProductAutocomplete({
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         onFocus={() => value && setIsOpen(true)}
-        placeholder="Inizia a digitare il nome del prodotto..."
+        placeholder="Scrivi il nome del prodotto..."
         className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-black font-semibold"
       />
 

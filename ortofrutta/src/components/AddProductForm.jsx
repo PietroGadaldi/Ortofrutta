@@ -146,14 +146,14 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
                 else if (num < 1) setQuantita('1');
               }}
               placeholder="0"
-              className="flex-1 h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all"
+            className="flex-1 min-w-0 h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all"
               disabled={!selectedProduct}
             />
             <button
               type="button"
               onClick={handleDecrement}
               disabled={!selectedProduct || Number(quantita) <= 1}
-              className="w-12 h-12 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
+            className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
             >
               -
             </button>
@@ -161,7 +161,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
               type="button"
               onClick={handleIncrement}
               disabled={!selectedProduct || Number(quantita) >= 100}
-              className="w-12 h-12 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
+            className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
             >
               +
             </button>

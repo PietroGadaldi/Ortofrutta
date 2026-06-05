@@ -33,7 +33,7 @@ export function Utenti() {
     setErrorClienti('')
     try {
       const token = await getAuthToken()
-      const url = `${import.meta.env.VITE_NETLIFY_FUNCTIONS_URL}/list-clients?role=${role}`
+      const url = `/.netlify/functions/list-clients?role=${role}`
       
       const response = await fetch(url, {
         method: 'GET',
@@ -70,7 +70,7 @@ export function Utenti() {
     
     try {
       const response = await fetch(
-        import.meta.env.VITE_NETLIFY_FUNCTIONS_URL + '/delete-user',
+        '/.netlify/functions/delete-user',
         {
           method: 'DELETE',
           headers: {
@@ -152,11 +152,11 @@ export function Utenti() {
     setIsSubmitting(true)
 
     try {
-      const functionName = isModifying ? '/update-user' : '/create-user'
+      const functionPath = isModifying ? '/.netlify/functions/update-user' : '/.netlify/functions/create-user'
       const method = isModifying ? 'PATCH' : 'POST'
       
       const response = await fetch(
-        import.meta.env.VITE_NETLIFY_FUNCTIONS_URL + functionName,
+        functionPath,
         {
           method: method,
           headers: {
