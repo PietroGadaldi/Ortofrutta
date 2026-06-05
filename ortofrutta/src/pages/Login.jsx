@@ -8,7 +8,7 @@ import { RUOLI } from '../utils/constants'
 export function Login() {
   const navigate = useNavigate()
   const { user, loading } = useAuth()
-  const [email, setEmail] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -24,22 +24,47 @@ export function Login() {
     e.preventDefault()
     setError('')
 
-    // Validate
-    if (!validateEmail(email)) {
-      setError('Email non valida')
+    if (!identifier.trim()) {
+      setError('Inserisci email o nome utente')
       return
     }
-
     if (!validatePassword(password)) {
       setError('Password deve avere almeno 6 caratteri')
       return
     }
 
     setIsLoading(true)
-
     try {
-      const { user: loggedInUser, error: loginError } =
-        await authService.signInWithPassword(email, password)
+      let loggedInUser = null
+      let loginError = null
+
+      // Determina se l'input è una mail
+      if (validateEmail(identifier)) {
+        // Login standard tramite email
+        const result = await authService.signInWithPassword(identifier, password)
+        loggedInUser = result.user
+        loginError = result.error
+      } else {
+        // Login tramite nome utente via Netlify Function
+        const response = await fetch(`${import.meta.env.VITE_NETLIFY_FUNCTIONS_URL}/login-by-username`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: identifier, password })
+        })
+        const result = await response.json()
+        if (!response.ok) {
+          loginError = { message: result.error || 'Errore durante il login' }
+        } else {
+          // Importante: dobbiamo settare la sessione manualmente nel client Supabase
+          const { supabase } = await import('../services/supabaseClient')
+          const { error: setSessionError } = await supabase.auth.setSession(result.session)
+          if (setSessionError) {
+            loginError = setSessionError
+          } else {
+            loggedInUser = result.user
+          }
+        }
+      }
 
       if (loginError) {
         setError(loginError.message || 'Errore durante il login')
@@ -90,15 +115,15 @@ export function Login() {
             {/* Email field */}
             <div>
               <label htmlFor="email" className="block text-sm font-bold text-black mb-2 text-left">
-                📧 Email
+                📧 Email o Nome Utente
               </label>
               <input
                 id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition text-black font-semibold"
-                placeholder="tuo@email.com"
+                placeholder="Email o Nome"
                 disabled={isLoading}
               />
             </div>
@@ -133,9 +158,9 @@ export function Login() {
           <div className="mt-8 pt-6 border-t-2 border-green-300 text-center text-sm text-black font-semibold">
             <p>
               Non hai un account?{' '}
-              <a href="https://wa.me/393888005812" target="_blank" rel="noopener noreferrer" className="text-green-700 hover:text-green-900 font-bold hover:underline">
+              <span className="text-green-700">
                 Contatta il titolare per registrarti.
-              </a>
+              </span>
             </p>
           </div>
 
