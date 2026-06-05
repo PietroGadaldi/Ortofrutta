@@ -312,9 +312,9 @@ export function Dashboard() {
       </div>
 
       {/* Form + Summary Section (Grid layout) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* AddProductForm (left, col-span 2) */}
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* AddProductForm (left) */}
+        <div>
           <AddProductForm
             prodotti={prodotti}
             onAddProduct={handleAddProduct}
@@ -326,8 +326,8 @@ export function Dashboard() {
           />
         </div>
 
-        {/* OrderSummary (right, col-span 1) */}
-        <div className="lg:col-span-1">
+        {/* OrderSummary (right) */}
+        <div className="h-full">
           <OrderSummary
             items={productsInOrder}
             onEditItem={handleEditItem}
@@ -335,6 +335,7 @@ export function Dashboard() {
             onConfirmOrder={handleConfirmOrder}
             onClearOrder={handleClearOrder}
             isLoading={submitting}
+            selectedDate={selectedDate}
           />
         </div>
       </div>

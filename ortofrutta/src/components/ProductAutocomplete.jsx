@@ -136,7 +136,7 @@ export function ProductAutocomplete({
         onKeyDown={handleKeyDown}
         onFocus={() => value && setIsOpen(true)}
         placeholder="Inizia a digitare il nome del prodotto..."
-        className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-black font-semibold"
+        className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-black font-semibold"
       />
 
       {isOpen && filteredProducts.length > 0 && (
