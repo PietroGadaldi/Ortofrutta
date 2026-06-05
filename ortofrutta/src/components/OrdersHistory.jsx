@@ -78,7 +78,7 @@ export function OrdersHistory({ ordini = [], onEditOrder, onDeleteOrder, isLoadi
           <span className="text-2xl">📜</span> Cronologia Ordini
         </h3>
         <div className="flex items-center gap-3">
-          <label className="text-sm font-bold text-blue-900">Filtra per data:</label>
+          <label className="hidden md:block text-sm font-bold text-blue-900">Filtra per data:</label>
           <input
             type="date"
             value={filterDate}
@@ -88,7 +88,7 @@ export function OrdersHistory({ ordini = [], onEditOrder, onDeleteOrder, isLoadi
           {filterDate && (
             <button
               onClick={() => setFilterDate('')}
-              className="px-3 py-2 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-bold"
+              className="hidden md:block px-3 py-2 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-bold"
             >
               ✕ Azzera
             </button>

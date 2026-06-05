@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../services/supabaseClient'
 import { useAuth } from '../hooks/useAuth'
 import { CalendarPicker } from '../components/CalendarPicker'
@@ -19,6 +19,11 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(null)
+  const [lastCreatedOrderId, setLastCreatedOrderId] = useState(null)
+  const [expandedOrderId, setExpandedOrderId] = useState(null)
+
+  const historyRef = useRef(null)
   
   // State for new/editing order
   const [selectedDate, setSelectedDate] = useState(new Date())
@@ -89,6 +94,8 @@ export function Dashboard() {
       setProductsInOrder([...productsInOrder, product])
     }
     setError(null)
+    setSuccess(null)
+    setLastCreatedOrderId(null)
   }
 
   // Edit product in order summary
@@ -118,6 +125,7 @@ export function Dashboard() {
 
     setSubmitting(true)
     setError(null)
+    setSuccess(null)
 
     try {
       // Format date as YYYY-MM-DD string for database
@@ -131,6 +139,7 @@ export function Dashboard() {
         )
         if (updateError) throw updateError
         
+        setSuccess('Ordine aggiornato con successo!')
         setEditingOrderId(null)
       } else {
         // Create new order
@@ -140,6 +149,9 @@ export function Dashboard() {
           productsInOrder
         )
         if (createError) throw createError
+
+        setSuccess('Ordine inviato con successo!')
+        setLastCreatedOrderId(newOrdine.id)
 
         // Generate and upload PDF (non-blocking, error doesn't interrupt flow)
         if (newOrdine && user) {
@@ -191,8 +203,20 @@ export function Dashboard() {
     }
   }
 
+  // View last order: scroll to bottom and open details
+  const handleViewLastOrder = () => {
+    if (lastCreatedOrderId) {
+      setExpandedOrderId(lastCreatedOrderId)
+      setTimeout(() => {
+        historyRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    }
+  }
+
   // Load order for editing
   const handleEditOrder = (ordine) => {
+    setSuccess(null)
+    setLastCreatedOrderId(null)
     setEditingOrderId(ordine.id)
     
     // Parse date from ordine
@@ -264,6 +288,21 @@ export function Dashboard() {
         </div>
       )}
 
+      {/* Success alert */}
+      {success && (
+        <div className="p-5 bg-green-100 border-l-4 border-green-500 rounded-lg shadow-md flex justify-between items-center">
+          <p className="text-green-900 font-bold">✅ {success}</p>
+          {success === 'Ordine inviato con successo!' && lastCreatedOrderId && (
+            <button
+              onClick={handleViewLastOrder}
+              className="text-green-700 underline font-bold hover:text-green-900 transition-colors"
+            >
+              Visualizza
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Calendar Picker Section */}
       <div>
         <CalendarPicker
@@ -309,12 +348,14 @@ export function Dashboard() {
       )}
 
       {/* Orders History Section */}
-      <div>
+      <div ref={historyRef}>
         <OrdersHistory
           ordini={ordini}
           onEditOrder={handleEditOrder}
           onDeleteOrder={handleDeleteOrder}
           isLoading={submitting}
+          expandedOrderId={expandedOrderId}
+          onToggleExpanded={setExpandedOrderId}
         />
       </div>
     </div>

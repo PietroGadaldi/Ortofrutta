@@ -137,7 +137,7 @@ export function HorizontalWeekSelector({ selectedDate, onSelectDate }) {
           {monthYear.charAt(0).toUpperCase() + monthYear.slice(1)}
         </p>
         <div className="flex items-center gap-3">
-          <label className="text-sm font-bold text-amber-900">Filtra per data:</label>
+          <label className="hidden md:block text-sm font-bold text-amber-900">Filtra per data:</label>
           <input
             type="date"
             value={filterDate || format(selectedDate, 'yyyy-MM-dd')}
@@ -147,7 +147,7 @@ export function HorizontalWeekSelector({ selectedDate, onSelectDate }) {
           {filterDate && (
             <button
               onClick={() => setFilterDate('')}
-              className="px-3 py-2 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-bold"
+              className="hidden md:block px-3 py-2 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-bold"
             >
               ✕ Azzera
             </button>
