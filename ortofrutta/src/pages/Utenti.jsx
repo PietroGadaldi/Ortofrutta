@@ -332,7 +332,7 @@ export function Utenti() {
           ) : clienti.length === 0 ? (
             <div className="text-black font-semibold italic">❌ Nessun {viewingRole === 'cliente' ? 'cliente' : 'titolare'} creato ancora</div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
               {clienti.map((cliente) => (
                 <div
                   key={cliente.id}
@@ -340,7 +340,7 @@ export function Utenti() {
                 >
                   <div className="flex-1">
                     <p className="font-bold text-black text-left">{cliente.nome}</p>
-                    <p className="text-xs text-green-700 mt-1 font-semibold text-left">{cliente.id}</p>
+                    <p className="text-xs text-green-700 mt-1 font-semibold text-left">{cliente.email}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="px-3 py-1 text-xs bg-gradient-to-r from-green-200 to-green-100 text-green-900 rounded-full font-bold">
