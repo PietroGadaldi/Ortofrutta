@@ -218,9 +218,9 @@ export function Utenti() {
             {isModifying && (
               <button
                 onClick={resetForm}
-                className="text-xs font-bold text-red-600 hover:underline"
+                className="px-4 py-2 text-sm bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-bold hover:from-red-700 hover:to-red-800 transition shadow-md hover:scale-105 active:scale-95"
               >
-                Annulla Modifica
+                ✖ Annulla Modifica
               </button>
             )}
           </div>
