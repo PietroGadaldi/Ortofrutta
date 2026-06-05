@@ -6,6 +6,7 @@
  * Query params:
  *   - type: 'clients' (default) or 'orders'
  *   - date: YYYY-MM-DD (required if type='orders')
+ *   - role: 'cliente' (default) or 'titolare'
  * 
  * Only allows titolare (owner) to access this function
  */
@@ -58,13 +59,14 @@ export async function handler(event) {
       return errorResponse(403, 'Solo i titolari possono accedere a questa risorsa')
     }
 
-    // Get request type from query params
-    const queryParams = new URLSearchParams(event.rawUrl.split('?')[1] || '')
-    const type = queryParams.get('type') || 'clients'
+    // Get parameters from query string
+    const params = event.queryStringParameters || {}
+    const type = params.type || 'clients'
+    const role = params.role || 'cliente'
+    const dateParam = params.date
 
     if (type === 'orders') {
       // Fetch orders for specific date
-      const dateParam = queryParams.get('date')
       if (!dateParam) {
         return errorResponse(400, 'Parametro "date" richiesto per type=orders (formato: YYYY-MM-DD)')
       }
@@ -114,11 +116,11 @@ export async function handler(event) {
         return errorResponse(400, 'Formato data non valido. Usa YYYY-MM-DD')
       }
     } else {
-      // Fetch all clients (default)
+      // Fetch profiles based on role
       const { data: profiles, error: profilesError } = await supabaseAdmin
         .from('profili')
         .select('id, nome, ruolo')
-        .eq('ruolo', 'cliente')
+        .eq('ruolo', role)
         .order('nome', { ascending: true })
 
       if (profilesError) {

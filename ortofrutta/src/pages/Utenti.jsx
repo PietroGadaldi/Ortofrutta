@@ -17,30 +17,46 @@ export function Utenti() {
   const [clienti, setClienti] = useState([])
   const [loadingClienti, setLoadingClienti] = useState(true)
   const [errorClienti, setErrorClienti] = useState('')
+  const [viewingRole, setViewingRole] = useState('cliente')
 
   // Load clients on mount
   useEffect(() => {
-    fetchClienti()
+    fetchClienti(viewingRole)
   }, [])
 
   // Helper to fetch clients
-  const fetchClienti = async () => {
+  const fetchClienti = async (role = viewingRole) => {
     setLoadingClienti(true)
     setErrorClienti('')
     try {
-      const { data, error } = await getClientList()
-      if (error) {
-        setErrorClienti(error.message)
-        setClienti([])
-      } else {
-        setClienti(data || [])
+      const token = await getAuthToken()
+      const url = `${import.meta.env.VITE_NETLIFY_FUNCTIONS_URL}/list-clients?role=${role}`
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const result = await response.json()
+      if (!response.ok) {
+        throw new Error(result.error || 'Errore nel caricamento della lista')
       }
+      setClienti(result.clients || [])
     } catch (err) {
       setErrorClienti('Errore nel caricamento dei clienti')
       console.error(err)
     } finally {
       setLoadingClienti(false)
     }
+  }
+
+  const toggleRole = () => {
+    const newRole = viewingRole === 'cliente' ? 'titolare' : 'cliente'
+    setViewingRole(newRole)
+    fetchClienti(newRole)
   }
 
   const handleEditUser = (cliente) => {
@@ -123,7 +139,7 @@ export function Utenti() {
       resetForm()
       
       // Refresh clients list
-      await fetchClienti()
+      await fetchClienti(viewingRole)
     } catch (err) {
       setError(err.message)
       console.error(err)
@@ -241,15 +257,24 @@ export function Utenti() {
         <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-black flex items-center gap-2">
-              <span className="text-3xl">📋</span> Clienti ({clienti.length})
+              <span className="text-3xl">📋</span> {viewingRole === 'cliente' ? 'Clienti' : 'Titolari'} ({clienti.length})
             </h2>
-            <button
-              onClick={fetchClienti}
-              disabled={loadingClienti}
-              className="px-4 py-2 text-sm bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100"
-            >
-              🔄 Aggiorna
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={toggleRole}
+                disabled={loadingClienti}
+                className="px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100"
+              >
+                {viewingRole === 'cliente' ? '👑 Mostra Titolari' : '👤 Mostra Clienti'}
+              </button>
+              <button
+                onClick={() => fetchClienti(viewingRole)}
+                disabled={loadingClienti}
+                className="px-4 py-2 text-sm bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100"
+              >
+                🔄 Aggiorna
+              </button>
+            </div>
           </div>
 
           {errorClienti && (
@@ -261,7 +286,7 @@ export function Utenti() {
           {loadingClienti ? (
             <div className="text-black font-semibold">⏳ Caricamento...</div>
           ) : clienti.length === 0 ? (
-            <div className="text-black font-semibold italic">❌ Nessun cliente creato ancora</div>
+            <div className="text-black font-semibold italic">❌ Nessun {viewingRole === 'cliente' ? 'cliente' : 'titolare'} creato ancora</div>
           ) : (
             <div className="space-y-2">
               {clienti.map((cliente) => (
