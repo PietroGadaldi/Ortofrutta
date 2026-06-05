@@ -15,7 +15,15 @@ export default function Navigation() {
   }
 
   // Se l'autenticazione è in caricamento, non mostriamo nulla
-  if (loading) return null
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-4 bg-verde-orto-600">
+        <div className="animate-spin">
+          <div className="h-8 w-8 border-2 border-white/30 border-t-white rounded-full"></div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <nav className="bg-gradient-to-r from-verde-orto-600 to-verde-orto-700 shadow-lg">
@@ -23,7 +31,8 @@ export default function Navigation() {
         <div className="flex justify-between items-center h-16">
           {/* Logo - Porta sempre alla Home */}
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-white">🥬 Ortofrutta Brescia</span>
+            <img src="/Ortofrutta.png" alt="Logo" className="h-10 w-10" />
+            <span className="text-2xl font-bold text-white">Ortofrutta Brescia</span>
           </Link>
 
           <div className="flex items-center gap-6">

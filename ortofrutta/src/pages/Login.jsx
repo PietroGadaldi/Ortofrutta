@@ -91,6 +91,21 @@ export function Login() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-600 via-green-50 to-white px-4">
+        <div className="text-center">
+          <div className="flex justify-center mb-6">
+            <div className="animate-spin">
+              <div className="h-16 w-16 border-4 border-green-300 border-t-green-600 rounded-full"></div>
+            </div>
+          </div>
+          <p className="text-green-700 font-bold text-lg">Verifica sessione...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-600 via-green-50 to-white px-4 py-8">
       <div className="w-full max-w-md">
