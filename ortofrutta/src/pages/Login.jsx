@@ -12,6 +12,7 @@ export function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   // Redirect if already logged in - use useEffect to avoid render issues
   useEffect(() => {
@@ -130,7 +131,7 @@ export function Login() {
             {/* Email field */}
             <div>
               <label htmlFor="email" className="block text-sm font-bold text-black mb-2 text-left">
-                Nome Utente
+                Email o Nome Utente
               </label>
               <input
                 id="email"
@@ -148,15 +149,25 @@ export function Login() {
               <label htmlFor="password" className="block text-sm font-bold text-black mb-2 text-left">
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition text-black font-semibold"
-                placeholder="••••••"
-                disabled={isLoading}
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition text-black font-semibold pr-12"
+                  placeholder={showPassword ? 'Password' : '••••••'}
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 flex items-center justify-center bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition shadow-sm border border-green-200"
+                  title={showPassword ? 'Nascondi password' : 'Mostra password'}
+                >
+                  {showPassword ? '🔓' : '🔒'}
+                </button>
+              </div>
             </div>
 
             {/* Submit button */}
@@ -171,11 +182,9 @@ export function Login() {
 
           {/* Footer */}
           <div className="mt-8 pt-6 border-t-2 border-green-300 text-center text-sm text-black font-semibold">
-            <p>
-              Non hai un account?{' '}
-              <span className="text-green-700">
-                Contatta il titolare per registrarti.
-              </span>
+            <p className="mb-1">Non hai un account?</p>
+            <p className="text-green-700">
+              Contatta il titolare per registrarti.
             </p>
           </div>
 
