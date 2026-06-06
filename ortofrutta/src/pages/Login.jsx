@@ -94,7 +94,7 @@ export function Login() {
 
   if (loading) {
     return (
-      <div className="w-full min-h-screen flex items-center justify-center bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-green-300 via-white via-60% to-white px-4">
+      <div className="w-full min-h-screen flex items-center justify-center bg-white min-[900px]:bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] min-[900px]:from-green-300 min-[900px]:via-white min-[900px]:via-60% min-[900px]:to-white px-4">
         <div className="text-center">
           <div className="flex justify-center mb-6">
             <div className="animate-spin">
@@ -108,13 +108,13 @@ export function Login() {
   }
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-green-300 via-white via-60% to-white px-4 py-8">
+    <div className="w-full min-h-screen flex items-center justify-center bg-white min-[900px]:bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] min-[900px]:from-green-300 min-[900px]:via-white min-[900px]:via-60% min-[900px]:to-white px-4 py-8">
       <div className="w-full max-w-md">
         {/* Card */}
         <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <img src="/Ortofrutta.png" alt="Ortofrutta Logo" className="h-24 w-24 mx-auto mb-3 rounded-lg shadow-lg" />
+            <img src="/Ortofrutta.png" alt="Ortofrutta Logo" className="h-24 w-24 mx-auto mb-3 drop-shadow-lg" />
             <h1 className="text-4xl font-black text-black">Ortofrutta Brescia</h1>
             <p className="text-green-900 mt-2 font-semibold">Accedi al tuo account</p>
           </div>
