@@ -94,7 +94,7 @@ export function Login() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-600 via-green-50 to-white px-4">
+      <div className="w-full min-h-screen flex items-center justify-center bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-green-300 via-white via-60% to-white px-4">
         <div className="text-center">
           <div className="flex justify-center mb-6">
             <div className="animate-spin">
@@ -108,7 +108,7 @@ export function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-600 via-green-50 to-white px-4 py-8">
+    <div className="w-full min-h-screen flex items-center justify-center bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-green-300 via-white via-60% to-white px-4 py-8">
       <div className="w-full max-w-md">
         {/* Card */}
         <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-xl p-8">
