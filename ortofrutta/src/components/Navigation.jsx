@@ -31,7 +31,7 @@ export default function Navigation() {
         <div className="flex justify-between items-center h-16">
           {/* Logo - Porta sempre alla Home */}
           <Link to="/" className="flex items-center gap-2">
-            <img src="/Ortofrutta.png" alt="Logo" className="h-10 w-10" />
+            <img src="/Ortofrutta.png" alt="Logo" className="h-12 w-12" />
             <span className="text-2xl font-bold text-white">Ortofrutta Brescia</span>
           </Link>
 
