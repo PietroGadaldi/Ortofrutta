@@ -101,6 +101,9 @@ export function HorizontalWeekSelector({ selectedDate, onSelectDate }) {
     const selectedDay = startOfDay(day)
     const newWeekStart = startOfWeek(selectedDay, { weekStartsOn: 1 })
     
+    // Azzera il filtro manuale quando si interagisce con i giorni del calendario
+    setFilterDate('')
+
     // Update week first
     setWeekStart(newWeekStart)
     
@@ -150,7 +153,12 @@ export function HorizontalWeekSelector({ selectedDate, onSelectDate }) {
           />
           {filterDate && (
             <button
-              onClick={() => setFilterDate('')}
+              onClick={() => {
+                const today = startOfDay(new Date())
+                setFilterDate('')
+                onSelectDate(today)
+                setWeekStart(startOfWeek(today, { weekStartsOn: 1 }))
+              }}
               className="hidden md:block px-3 py-2 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-bold"
             >
               ✕ Azzera
