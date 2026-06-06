@@ -35,10 +35,6 @@ export function ProductAutocomplete({
     )
 
     setFilteredProducts(filtered)
-    // Non riaprire il dropdown se è stato appena selezionato un prodotto
-    if (!justSelectedRef.current) {
-      setIsOpen(filtered.length > 0)
-    }
     setHighlightedIndex(-1)
   }, [value, prodotti])
 
@@ -60,7 +56,12 @@ export function ProductAutocomplete({
   }, [])
 
   const handleInputChange = (e) => {
-    onInputChange(e.target.value)
+    const val = e.target.value
+    onInputChange(val)
+    // Apri il dropdown solo se l'utente sta effettivamente scrivendo nell'input
+    if (val.trim() && !justSelectedRef.current) {
+      setIsOpen(true)
+    }
   }
 
   const handleSelectProduct = (product) => {

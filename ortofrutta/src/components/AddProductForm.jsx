@@ -44,13 +44,15 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
     if (selectedProduct) {
       const tipologie = parseTipologie(selectedProduct.tipologie_possibili)
       setTipologieDisponibili(tipologie)
-      setTipologia('')
     }
   }, [selectedProduct])
 
   const handleProductSelect = (product) => {
     setSelectedProduct(product)
     setInputValue(product.nome)
+    // Reset della tipologia solo quando l'utente sceglie manualmente 
+    // un nuovo prodotto dalla lista (non durante il caricamento in modifica)
+    setTipologia('')
   }
 
   const handleIncrement = () => {
