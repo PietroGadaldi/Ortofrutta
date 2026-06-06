@@ -10,7 +10,11 @@ import { getOrdiniCountsByDates } from '../services/ordiniService'
  * @param {Function} onSelectDate - Callback when date is selected
  */
 export function HorizontalWeekSelector({ selectedDate, onSelectDate }) {
-  const [weekStart, setWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }))
+  // Inizializza l'inizio della settimana in base alla data selezionata passata come prop
+  const [weekStart, setWeekStart] = useState(() => 
+    startOfWeek(selectedDate || new Date(), { weekStartsOn: 1 })
+  )
+  
   const [visibleDays, setVisibleDays] = useState([])
   const [ordersPerDay, setOrdersPerDay] = useState({})
   const [loading, setLoading] = useState(false)

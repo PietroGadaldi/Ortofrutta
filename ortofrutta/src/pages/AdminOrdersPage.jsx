@@ -111,21 +111,6 @@ export function AdminOrdersPage() {
     }
   }
 
-  if (loading && ordini.length === 0) {
-    return (
-      <div className="flex justify-center items-center py-24">
-        <div className="text-center">
-          <div className="flex justify-center mb-6">
-            <div className="animate-spin">
-              <div className="h-16 w-16 border-4 border-amber-300 border-t-amber-600 rounded-full"></div>
-            </div>
-          </div>
-          <p className="text-amber-700 font-bold text-lg">Caricamento ordini...</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -165,15 +150,26 @@ export function AdminOrdersPage() {
 
       {/* Orders List */}
       <div>
-        <OrdersForDayList
-          selectedDate={selectedDate}
-          ordini={filteredOrdini}
-          onStatusChange={handleStatusChange}
-          onDeleteOrder={handleDeleteOrder}
-          isLoading={isUpdating}
-          isEmpty={filteredOrdini.length === 0 && !loading}
-          showAsReceiptCards={true}
-        />
+        {loading && ordini.length === 0 ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-center">
+              <div className="animate-spin mb-4">
+                <div className="h-12 w-12 border-4 border-amber-300 border-t-amber-600 rounded-full mx-auto"></div>
+              </div>
+              <p className="text-amber-700 font-bold">Caricamento ordini...</p>
+            </div>
+          </div>
+        ) : (
+          <OrdersForDayList
+            selectedDate={selectedDate}
+            ordini={filteredOrdini}
+            onStatusChange={handleStatusChange}
+            onDeleteOrder={handleDeleteOrder}
+            isLoading={isUpdating || loading}
+            isEmpty={filteredOrdini.length === 0 && !loading}
+            showAsReceiptCards={true}
+          />
+        )}
       </div>
     </div>
   )
