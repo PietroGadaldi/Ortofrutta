@@ -8,8 +8,10 @@ import { parseTipologie, capitalize } from '../utils/constants'
  * @param {Array<Object>} prodotti - List of available products
  * @param {Function} onAddProduct - Callback when product is added {prodotto_id, prodotto_nome, quantita, tipologia}
  * @param {Object} editingItem - If editing, the item being edited (used to populate form)
+ * @param {Function} onReorderLast - Callback to reorder items from the most recent order
+ * @param {Function} onSetTomorrow - Callback to set order date to tomorrow
  */
-export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null }) {
+export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null, onReorderLast, onSetTomorrow }) {
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [inputValue, setInputValue] = useState('')
   const [quantita, setQuantita] = useState('')
@@ -188,6 +190,26 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
               </option>
             ))}
           </select>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="pt-2 flex gap-3">
+          {onReorderLast && (
+            <button
+              type="button"
+              onClick={onReorderLast}
+              className="flex-1 h-12 px-2 bg-amber-50 border-2 border-amber-300 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-100 transition-all flex items-center justify-center gap-1 shadow-sm hover:shadow-md transform active:scale-95"
+            >
+              🔄 Ripeti ultimo ordine
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onSetTomorrow}
+            className="flex-1 h-12 px-2 bg-blue-50 border-2 border-blue-300 text-blue-800 rounded-lg text-xs font-bold hover:bg-blue-100 transition-all flex items-center justify-center gap-1 shadow-sm hover:shadow-md transform active:scale-95"
+          >
+            📅 Ordina per domani
+          </button>
         </div>
       </div>
 

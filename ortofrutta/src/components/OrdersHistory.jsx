@@ -16,6 +16,7 @@ import { capitalize } from '../utils/constants'
 export function OrdersHistory({ 
   ordini = [], 
   onEditOrder, 
+  onReorder, 
   onDeleteOrder, 
   isLoading = false,
   expandedOrderId: expandedOrderIdProp,
@@ -207,9 +208,24 @@ export function OrdersHistory({
                 </div>
                 {/* Products list */}
                 <div className="mb-5">
-                  <h4 className={`text-left font-bold text-sm mb-4 flex items-center gap-2 ${isPast ? 'text-blue-900' : ordine.completato ? 'text-green-900' : 'text-amber-900'}`}>
-                    <span>📦</span> Prodotti ordinati:
-                  </h4>
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className={`font-bold text-sm flex items-center gap-2 ${isPast ? 'text-blue-900' : ordine.completato ? 'text-green-900' : 'text-amber-900'}`}>
+                      <span>📦</span> Prodotti ordinati:
+                    </h4>
+                    <button
+                      onClick={() => onReorder(ordine)}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm hover:shadow-md transform hover:scale-105 active:scale-95 flex items-center gap-1 ${
+                        isPast 
+                          ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                          : ordine.completato 
+                            ? 'bg-green-600 text-white hover:bg-green-700' 
+                            : 'bg-amber-600 text-white hover:bg-amber-700'
+                      }`}
+                      title="Copia questi prodotti nel riepilogo per un nuovo ordine"
+                    >
+                      <span></span> Ripeti Ordine
+                    </button>
+                  </div>
                   <ul className="space-y-3 ml-2">
                     {ordine.dettagli_ordine && ordine.dettagli_ordine.length > 0 ? (
                       ordine.dettagli_ordine.map((dettaglio) => (

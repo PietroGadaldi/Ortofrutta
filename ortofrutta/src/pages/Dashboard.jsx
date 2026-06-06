@@ -8,7 +8,8 @@ import { OrdersHistory } from '../components/OrdersHistory'
 import { createOrdine, updateOrdineDettagli, updateOrdineStatus, deleteOrdine, getAllOrdini } from '../services/ordiniService'
 import { generateOrderPDF } from '../utils/pdfGenerator'
 import { uploadOrderPDF } from '../services/pdfStorageService'
-import { format } from 'date-fns'
+import { capitalize } from '../utils/constants'
+import { format, addDays, startOfDay } from 'date-fns'
 
 export function Dashboard() {
   const { user } = useAuth()
@@ -24,6 +25,7 @@ export function Dashboard() {
   const [expandedOrderId, setExpandedOrderId] = useState(null)
 
   const historyRef = useRef(null)
+  const summaryRef = useRef(null)
   
   // State for new/editing order
   const [selectedDate, setSelectedDate] = useState(new Date())
@@ -258,8 +260,51 @@ export function Dashboard() {
     setProductsInOrder(items)
     setEditingItemIndex(null)
 
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Scorre fino alla sezione del riepilogo/form
+    summaryRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  // Imposta la data dell'ordine a domani
+  const handleSetTomorrow = () => {
+    setSelectedDate(addDays(startOfDay(new Date()), 1))
+  }
+
+  // Carica i prodotti di un ordine passato nel riepilogo per creare un nuovo ordine
+  const handleReorder = (ordine) => {
+    setSuccess(null)
+    setError(null)
+    setLastCreatedOrderId(null)
+    setEditingOrderId(null) // Fondamentale: non stiamo modificando il vecchio ordine, ma creandone uno nuovo
+    
+    // Filtriamo i prodotti per assicurarci che esistano ancora nel catalogo corrente
+    // e formattiamo i nomi correttamente (iniziale maiuscola e resto minuscolo)
+    const validItems = (ordine.dettagli_ordine || [])
+      .filter((dettaglio) => prodotti.some((p) => p.id === dettaglio.prodotto_id))
+      .map((dettaglio) => {
+        // Recuperiamo il nome aggiornato dal catalogo per consistenza
+        const prodottoCatalogo = prodotti.find((p) => p.id === dettaglio.prodotto_id)
+        return {
+          prodotto_id: dettaglio.prodotto_id,
+          prodotto_nome: capitalize(prodottoCatalogo?.nome || dettaglio.prodotti?.nome || ''),
+          quantita: dettaglio.quantita,
+          tipologia: dettaglio.tipologia,
+        }
+      })
+
+    if (validItems.length === 0) {
+      setError("Nessuno dei prodotti di questo ordine è attualmente disponibile nel catalogo.")
+      return
+    }
+
+    if (validItems.length < (ordine.dettagli_ordine?.length || 0)) {
+      setError("Nota: alcuni prodotti non più disponibili nel catalogo sono stati esclusi dal riordino.")
+    }
+    
+    setProductsInOrder(validItems)
+    setEditingItemIndex(null)
+
+    // Scorre fino alla sezione del riepilogo/form
+    summaryRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   // Delete order
@@ -332,7 +377,7 @@ export function Dashboard() {
       </div>
 
       {/* Form + Summary Section (Grid layout) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div ref={summaryRef} className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* AddProductForm (left) */}
         <div>
           <AddProductForm
@@ -343,6 +388,8 @@ export function Dashboard() {
                 ? productsInOrder[editingItemIndex]
                 : null
             }
+            onReorderLast={ordini.length > 0 ? () => handleReorder(ordini[0]) : null}
+            onSetTomorrow={handleSetTomorrow}
           />
         </div>
 
@@ -373,6 +420,7 @@ export function Dashboard() {
         <OrdersHistory
           ordini={ordini}
           onEditOrder={handleEditOrder}
+          onReorder={handleReorder}
           onDeleteOrder={handleDeleteOrder}
           isLoading={submitting}
           expandedOrderId={expandedOrderId}
