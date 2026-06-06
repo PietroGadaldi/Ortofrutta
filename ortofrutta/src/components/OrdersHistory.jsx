@@ -35,13 +35,22 @@ export function OrdersHistory({
     }
   }
 
-  // Check if order can be edited (only if data_ordine is today or in the future)
+  // Check if order can be edited (today or future, but today only until 06:00)
   const isOrderEditable = (data_ordine) => {
     try {
       const ordineDate = startOfDay(parseISO(data_ordine))
-      const today = startOfDay(new Date())
-      // Can edit only if ordine date is today or in the future
-      return isAfter(ordineDate, today) || isSameDay(ordineDate, today)
+      const now = new Date()
+      const today = startOfDay(now)
+      
+      // Se l'ordine è per un giorno futuro, è sempre modificabile
+      if (isAfter(ordineDate, today)) return true
+      
+      // Se l'ordine è per oggi, è modificabile solo se sono prima delle 6:00 del mattino
+      if (isSameDay(ordineDate, today)) {
+        return now.getHours() < 6
+      }
+      
+      return false
     } catch {
       return false
     }
@@ -132,6 +141,16 @@ export function OrdersHistory({
             </button>
           )}
         </div>
+      </div>
+
+      {/* Avviso vincolo orario modifiche */}
+      <div className="mb-6 p-4 bg-blue-100 border-l-4 border-blue-500 rounded-lg shadow-sm text-left">
+        <p className="text-sm text-blue-900 font-bold flex items-center gap-2">
+          <span>ℹ️</span> Informazione importante:
+        </p>
+        <p className="text-xs text-blue-800 mt-1 font-semibold">
+          Puoi modificare o annullare i tuoi ordini in autonomia fino alle <strong>06:00</strong> del giorno di consegna.
+        </p>
       </div>
 
       {filteredOrdini.length === 0 && filterDate && (
@@ -234,6 +253,17 @@ export function OrdersHistory({
                     >
                       Annulla Ordine
                     </button>
+                  </div>
+                )}
+
+                {/* Messaggio quando il tempo per modificare è scaduto ma l'ordine non è ancora completato */}
+                {isPast && !ordine.completato && (
+                  <div className="mt-5 p-4 bg-orange-100 border-l-4 border-orange-500 rounded-lg text-left">
+                    <p className="text-sm text-orange-900 font-bold">⚠️ Modifica non più disponibile</p>
+                    <p className="text-xs text-orange-800 mt-1 font-semibold leading-relaxed">
+                      Il tempo massimo per la modifica automatica (ore 06:00 del giorno di consegna) è scaduto.<br/>
+                      Se hai bisogno di variazioni urgenti, prova a <strong>contattare direttamente il titolare</strong>.
+                    </p>
                   </div>
                 )}
               </div>

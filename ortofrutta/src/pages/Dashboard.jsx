@@ -361,7 +361,7 @@ export function Dashboard() {
       </div>
 
       {editingOrderId && (
-        <div className="p-5 bg-blue-100 border-l-4 border-blue-500 rounded-lg shadow-md">
+        <div className="p-5 bg-blue-100 border-l-4 border-blue-500 rounded-lg shadow-md text-left">
           <p className="text-blue-900 font-bold">
             ℹ️ Stai modificando un ordine. Clicca "Conferma e Ordina" per salvare le modifiche.
           </p>
