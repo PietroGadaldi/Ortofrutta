@@ -91,6 +91,7 @@ export async function handler(event) {
               quantita,
               tipologia,
               prodotto_id,
+              nome_custom,
               prodotti (nome)
             )
           `)

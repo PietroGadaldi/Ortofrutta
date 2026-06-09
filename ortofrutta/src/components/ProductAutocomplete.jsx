@@ -206,7 +206,7 @@ export function ProductAutocomplete({
         </div>
       )}
 
-      {value && !isOpen && filteredProducts.length === 0 && (
+      {value.trim() && filteredProducts.length === 0 && (
         <div className={`absolute z-10 w-full mt-2 bg-white rounded-lg shadow-xl p-4 ${isAdminMode ? 'border-2 border-amber-400' : 'border-2 border-red-400'}`}>
           {isAdminMode ? (
             <p className="text-sm text-amber-700 font-semibold">
