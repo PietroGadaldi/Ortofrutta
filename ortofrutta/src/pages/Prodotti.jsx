@@ -324,8 +324,15 @@ export function Prodotti() {
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-900 text-left">{capitalize(p.nome)}</p>
-                      <div className="flex flex-wrap gap-1 mt-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <p className="font-semibold text-gray-900 text-left">{capitalize(p.nome)}</p>
+                        <span className={`px-3 py-1 text-xs rounded-full font-bold whitespace-nowrap ${
+                          p.attivo ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                        }`}>
+                          {p.attivo ? 'Attivo' : 'Non attivo'}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
                         {parseTipologie(p.tipologie_possibili).map((tip, idx) => (
                           <span
                             key={idx}
@@ -336,17 +343,19 @@ export function Prodotti() {
                         ))}
                       </div>
                     </div>
-                    <div className="ml-2 flex flex-row gap-2">
+                    <div className="ml-2 flex flex-row gap-2 items-center">
                       <button
                         onClick={() => handleToggleAttivo(p)}
-                        className={`px-2 py-1 rounded text-xs font-semibold transition ${
-                          p.attivo
-                            ? 'bg-green-100 text-green-600 hover:bg-green-200'
-                            : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors ${
+                          p.attivo ? 'bg-green-500' : 'bg-gray-300'
                         }`}
                         title={p.attivo ? 'Disattiva prodotto' : 'Attiva prodotto'}
                       >
-                        {p.attivo ? '✅' : '⭕'}
+                        <span
+                          className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                            p.attivo ? 'translate-x-7' : 'translate-x-1'
+                          }`}
+                        />
                       </button>
                       <button
                         onClick={() => handleModificaProdotto(p)}
