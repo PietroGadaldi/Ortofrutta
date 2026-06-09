@@ -13,6 +13,7 @@ import { generateOrderPDF } from '../utils/pdfGenerator'
  * @param {Function} onStatusChange - Callback when status is toggled
  * @param {Function} onDeleteOrder - Callback when delete is clicked
  * @param {Function} onOrderModified - Callback when order is modified
+ * @param {Function} onDateChanged - Callback when order date is changed (receives newDate)
  * @param {Array} prodotti - Available products for autocomplete when editing
  * @param {boolean} isLoading - Loading state for button
  * @param {boolean} showAsReceiptCards - If true, show as non-expandable receipt card
@@ -22,6 +23,7 @@ export function AdminOrderCard({
   onStatusChange, 
   onDeleteOrder, 
   onOrderModified,
+  onDateChanged,
   prodotti = [],
   isLoading = false,
   showAsReceiptCards = false 
@@ -198,6 +200,7 @@ export function AdminOrderCard({
           isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}
           onSave={onOrderModified}
+          onDateChanged={onDateChanged}
           prodotti={prodotti}
         />
       </>

@@ -11,6 +11,7 @@ import { AdminOrderCard } from './AdminOrderCard'
  * @param {Function} onStatusChange - Callback when order status changes
  * @param {Function} onDeleteOrder - Callback when order is deleted
  * @param {Function} onOrderModified - Callback when order is modified
+ * @param {Function} onDateChanged - Callback when order date is changed
  * @param {Array} prodotti - Available products for editing orders
  * @param {boolean} isLoading - Loading state
  * @param {boolean} isEmpty - Whether there are no orders
@@ -22,6 +23,7 @@ export function OrdersForDayList({
   onStatusChange,
   onDeleteOrder,
   onOrderModified,
+  onDateChanged,
   prodotti = [],
   isLoading = false,
   isEmpty = false,
@@ -88,6 +90,7 @@ export function OrdersForDayList({
               onStatusChange={onStatusChange}
               onDeleteOrder={onDeleteOrder}
               onOrderModified={onOrderModified}
+              onDateChanged={onDateChanged}
               prodotti={prodotti}
               isLoading={isLoading}
               showAsReceiptCards={showAsReceiptCards}

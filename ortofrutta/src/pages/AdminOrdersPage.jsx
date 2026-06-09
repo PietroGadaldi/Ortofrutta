@@ -138,6 +138,11 @@ export function AdminOrdersPage() {
     await fetchOrders()
   }
 
+  const handleDateChanged = async (newDate) => {
+    // Change the selected date to the new order date
+    setSelectedDate(startOfDay(newDate))
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -193,6 +198,7 @@ export function AdminOrdersPage() {
             onStatusChange={handleStatusChange}
             onDeleteOrder={handleDeleteOrder}
             onOrderModified={handleOrderModified}
+            onDateChanged={handleDateChanged}
             prodotti={prodotti}
             isLoading={isUpdating || loading}
             isEmpty={filteredOrdini.length === 0 && !loading}

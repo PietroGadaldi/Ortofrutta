@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
+import { format, parseISO } from 'date-fns'
 import { AddProductForm } from './AddProductForm'
 import { OrderItemCard } from './OrderItemCard'
+import { CalendarPicker } from './CalendarPicker'
 import { updateOrdineDettagli } from '../services/ordiniService'
 import { generateOrderPDF } from '../utils/pdfGenerator'
 import { uploadOrderPDF } from '../services/pdfStorageService'
@@ -9,21 +11,23 @@ import { supabase } from '../services/supabaseClient'
 /**
  * EditOrderModal component
  * Modal to edit an existing order (admin/titolare only)
- * Allows adding/editing/removing products from an order
+ * Allows adding/editing/removing products from an order and changing order date
  * @param {Object} ordine - Order object to edit
  * @param {boolean} isOpen - Whether modal is open
  * @param {Function} onClose - Callback to close modal
  * @param {Function} onSave - Callback when order is successfully saved
+ * @param {Function} onDateChanged - Callback when order date is changed
  * @param {Array} prodotti - Available products for autocomplete
  */
-export function EditOrderModal({ ordine, isOpen, onClose, onSave, prodotti = [] }) {
+export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged, prodotti = [] }) {
   const [productsInOrder, setProductsInOrder] = useState([])
+  const [selectedDate, setSelectedDate] = useState(null)
   const [editingItemIndex, setEditingItemIndex] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  // Initialize products when modal opens
+  // Initialize products and date when modal opens
   useEffect(() => {
     if (isOpen && ordine) {
       const items = (ordine.dettagli_ordine || []).map((dettaglio) => ({
@@ -33,6 +37,7 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, prodotti = [] 
         tipologia: dettaglio.tipologia,
       }))
       setProductsInOrder(items)
+      setSelectedDate(new Date(ordine.data_ordine))
       setEditingItemIndex(null)
       setError('')
       setSuccess('')
@@ -62,13 +67,17 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, prodotti = [] 
 
   // Delete product from order summary
   const handleDeleteItem = (index) => {
-    setProductsInOrder(productsInOrder.filter((_, i) => i !== index))
+    if (window.confirm('Sei sicuro di voler eliminare questo prodotto dall\'ordine?')) {
+      setProductsInOrder(productsInOrder.filter((_, i) => i !== index))
+    }
   }
 
   // Clear all products
   const handleClearOrder = () => {
-    setProductsInOrder([])
-    setEditingItemIndex(null)
+    if (window.confirm('Sei sicuro di voler svuotare completamente l\'ordine? Tutti i prodotti verranno rimossi.')) {
+      setProductsInOrder([])
+      setEditingItemIndex(null)
+    }
   }
 
   // Save order changes
@@ -89,6 +98,20 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, prodotti = [] 
         productsInOrder
       )
       if (updateError) throw updateError
+
+      // Check if date has changed
+      const dateChanged = selectedDate && new Date(ordine.data_ordine).toDateString() !== selectedDate.toDateString()
+      
+      // Update order date if changed
+      if (dateChanged) {
+        const dateString = format(selectedDate, 'yyyy-MM-dd')
+        const { error: dateError } = await supabase
+          .from('ordini')
+          .update({ data_ordine: dateString })
+          .eq('id', ordine.id)
+
+        if (dateError) throw dateError
+      }
 
       // Fetch fresh order data for PDF generation
       const { data: updatedOrder, error: fetchError } = await supabase
@@ -131,8 +154,11 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, prodotti = [] 
       setProductsInOrder([])
       setEditingItemIndex(null)
 
-      // Call parent callback after brief delay for UX
+      // Call parent callbacks after brief delay for UX
       setTimeout(() => {
+        if (dateChanged && onDateChanged) {
+          onDateChanged(selectedDate)
+        }
         onSave()
         onClose()
       }, 500)
@@ -147,10 +173,10 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, prodotti = [] 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 sticky top-0">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full h-[90vh] flex flex-col">
+        {/* Header - Sticky */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex-shrink-0 border-b-2 border-blue-800">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-white">
               ✏️ Modifica Ordine
@@ -165,21 +191,26 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, prodotti = [] 
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Order Info */}
-          {ordine && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-gray-600">
-                <span className="font-semibold">Cliente:</span> {ordine.profili?.nome || 'Sconosciuto'}
-              </p>
-              <p className="text-sm text-gray-600 mt-1">
-                <span className="font-semibold">Ordine per:</span> {new Date(ordine.data_ordine).toLocaleDateString('it-IT')}
-              </p>
-            </div>
-          )}
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6 space-y-6">
+            {/* Order Info - Client and Date Selection */}
+            {ordine && selectedDate && (
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                <p className="text-sm font-semibold text-gray-700 mb-4">
+                  👤 Cliente: <span className="text-blue-900">{ordine.profili?.nome || 'Sconosciuto'}</span>
+                </p>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                  📅 Data dell'ordine
+                </h3>
+                <CalendarPicker 
+                  selectedDate={selectedDate} 
+                  onSelectDate={setSelectedDate}
+                />
+              </div>
+            )}
 
-          {/* Messages */}
+            {/* Messages */}
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
               {error}
@@ -230,31 +261,32 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, prodotti = [] 
               </div>
             )}
           </div>
-
-          {/* Action Buttons */}
-          <div className="border-t pt-6 flex gap-3">
-            <button
-              onClick={handleClearOrder}
-              disabled={isSubmitting || productsInOrder.length === 0}
-              className="flex-1 py-3 px-4 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 disabled:bg-gray-300 transition-all"
-            >
-              🗑️ Svuota
-            </button>
-            <button
-              onClick={onClose}
-              disabled={isSubmitting}
-              className="flex-1 py-3 px-4 bg-gray-400 text-white font-bold rounded-lg hover:bg-gray-500 disabled:bg-gray-300 transition-all"
-            >
-              ❌ Annulla
-            </button>
-            <button
-              onClick={handleSaveOrder}
-              disabled={isSubmitting || productsInOrder.length === 0}
-              className="flex-1 py-3 px-4 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 disabled:bg-gray-300 transition-all"
-            >
-              {isSubmitting ? '⏳ Salvataggio...' : '✅ Salva Modifiche'}
-            </button>
           </div>
+        </div>
+
+        {/* Action Buttons - Fixed at bottom */}
+        <div className="border-t-2 border-gray-300 bg-white px-6 py-4 flex gap-3 flex-shrink-0">
+          <button
+            onClick={handleClearOrder}
+            disabled={isSubmitting || productsInOrder.length === 0}
+            className="flex-1 py-2 px-3 bg-gray-500 text-white text-sm font-bold rounded-lg hover:bg-gray-600 disabled:bg-gray-300 transition-all"
+          >
+            🗑️ Svuota
+          </button>
+          <button
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="flex-1 py-2 px-3 bg-gray-400 text-white text-sm font-bold rounded-lg hover:bg-gray-500 disabled:bg-gray-300 transition-all"
+          >
+            ❌ Annulla
+          </button>
+          <button
+            onClick={handleSaveOrder}
+            disabled={isSubmitting || productsInOrder.length === 0}
+            className="flex-1 py-2 px-3 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700 disabled:bg-gray-300 transition-all"
+          >
+            {isSubmitting ? '⏳ Salvataggio...' : '✅ Salva Modifiche'}
+          </button>
         </div>
       </div>
     </div>
