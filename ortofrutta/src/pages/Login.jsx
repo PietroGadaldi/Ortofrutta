@@ -183,9 +183,14 @@ export function Login() {
           {/* Footer */}
           <div className="mt-8 pt-6 border-t-2 border-green-300 text-center text-sm text-black font-semibold">
             <p className="mb-1">Non hai un account?</p>
-            <p className="text-green-700">
-              Contatta il titolare per registrarti.
-            </p>
+            <a 
+              href="https://wa.me/393888005812" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-green-700 hover:text-green-900 hover:underline inline-flex items-center gap-1"
+            >
+              💬 Contatta il titolare per registrarti.
+            </a>
           </div>
 
           {/* Link back */}
