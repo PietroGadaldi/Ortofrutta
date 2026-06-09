@@ -189,18 +189,28 @@ export function OrdersHistory({
                   {isPast ? '📁 Archiviato' : ordine.completato ? '✅ Completato!' : '⏳ Ordine in corso...'}
                 </div>
               </div>
-              <span className={`text-2xl ml-4 ${isPast ? 'text-blue-600' : ordine.completato ? 'text-green-600' : 'text-amber-600'}`}>
-                {expandedOrderId === ordine.id ? '▲' : '▼'}
-              </span>
+              <svg
+                className={`w-5 h-5 ml-4 flex-shrink-0 transition-transform duration-300 ease-in-out ${
+                  expandedOrderId === ordine.id ? 'rotate-180' : 'rotate-0'
+                } ${isPast ? 'text-blue-600' : ordine.completato ? 'text-green-600' : 'text-amber-600'}`}
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
 
             {/* Order details (expandable) */}
-            {expandedOrderId === ordine.id && (
-              <div className={`border-t-2 p-5 ${
-                isPast 
-                  ? 'border-blue-300 bg-gradient-to-br from-blue-50 to-white' 
-                  : ordine.completato 
-                    ? 'border-green-300 bg-gradient-to-br from-green-50 to-white' 
+            <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
+              expandedOrderId === ordine.id ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+            }`}>
+              <div className="overflow-hidden">
+              <div className={`border-t-2 p-5 transition-opacity duration-200 ${
+                expandedOrderId === ordine.id ? 'opacity-100 delay-100' : 'opacity-0'
+              } ${
+                isPast
+                  ? 'border-blue-300 bg-gradient-to-br from-blue-50 to-white'
+                  : ordine.completato
+                    ? 'border-green-300 bg-gradient-to-br from-green-50 to-white'
                     : 'border-amber-300 bg-gradient-to-br from-amber-50 to-white'
               }`}>
                 <div className={`text-left text-xs mb-4 font-bold ${isPast ? 'text-blue-700' : ordine.completato ? 'text-green-700' : 'text-amber-700'}`}>
@@ -297,7 +307,8 @@ export function OrdersHistory({
                   </div>
                 )}
               </div>
-            )}
+              </div>
+            </div>
           </div>
           );
         })}
