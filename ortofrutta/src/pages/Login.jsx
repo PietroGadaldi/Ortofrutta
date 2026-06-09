@@ -8,10 +8,11 @@ import { RUOLI } from '../utils/constants'
 export function Login() {
   const navigate = useNavigate()
   const { user, loading } = useAuth()
-  const [email, setEmail] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   // Redirect if already logged in - use useEffect to avoid render issues
   useEffect(() => {
@@ -24,22 +25,47 @@ export function Login() {
     e.preventDefault()
     setError('')
 
-    // Validate
-    if (!validateEmail(email)) {
-      setError('Email non valida')
+    if (!identifier.trim()) {
+      setError('Inserisci email o nome utente')
       return
     }
-
     if (!validatePassword(password)) {
       setError('Password deve avere almeno 6 caratteri')
       return
     }
 
     setIsLoading(true)
-
     try {
-      const { user: loggedInUser, error: loginError } =
-        await authService.signInWithPassword(email, password)
+      let loggedInUser = null
+      let loginError = null
+
+      // Determina se l'input è una mail
+      if (validateEmail(identifier)) {
+        // Login standard tramite email
+        const result = await authService.signInWithPassword(identifier, password)
+        loggedInUser = result.user
+        loginError = result.error
+      } else {
+        // Login tramite nome utente via Netlify Function
+        const response = await fetch(`/.netlify/functions/login-by-username`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: identifier, password })
+        })
+        const result = await response.json()
+        if (!response.ok) {
+          loginError = { message: result.error || 'Errore durante il login' }
+        } else {
+          // Importante: dobbiamo settare la sessione manualmente nel client Supabase
+          const { supabase } = await import('../services/supabaseClient')
+          const { error: setSessionError } = await supabase.auth.setSession(result.session)
+          if (setSessionError) {
+            loginError = setSessionError
+          } else {
+            loggedInUser = result.user
+          }
+        }
+      }
 
       if (loginError) {
         setError(loginError.message || 'Errore durante il login')
@@ -66,15 +92,30 @@ export function Login() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center bg-white min-[900px]:bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] min-[900px]:from-green-300 min-[900px]:via-white min-[900px]:via-60% min-[900px]:to-white px-4">
+        <div className="text-center">
+          <div className="flex justify-center mb-6">
+            <div className="animate-spin">
+              <div className="h-16 w-16 border-4 border-green-300 border-t-green-600 rounded-full"></div>
+            </div>
+          </div>
+          <p className="text-green-700 font-bold text-lg">Verifica sessione...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-600 via-green-50 to-white px-4 py-8">
+    <div className="w-full min-h-screen flex items-center justify-center bg-white min-[900px]:bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] min-[900px]:from-green-300 min-[900px]:via-white min-[900px]:via-60% min-[900px]:to-white px-4 py-8">
       <div className="w-full max-w-md">
         {/* Card */}
-        <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-xl p-8">
+        <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-xl p-5 sm:p-8">
           {/* Header */}
-          <div className="text-center mb-8">
-            <img src="/Ortofrutta.png" alt="Ortofrutta Logo" className="h-24 w-24 mx-auto mb-3 rounded-lg shadow-lg" />
-            <h1 className="text-4xl font-black text-black">Ortofrutta Brescia</h1>
+          <div className="text-center mb-6 sm:mb-8">
+            <img src="/Ortofrutta.png" alt="Ortofrutta Logo" className="h-16 w-16 sm:h-24 sm:w-24 mx-auto mb-3 drop-shadow-lg" />
+            <h1 className="text-2xl sm:text-4xl font-black text-black">Ortofrutta Brescia</h1>
             <p className="text-green-900 mt-2 font-semibold">Accedi al tuo account</p>
           </div>
 
@@ -90,15 +131,15 @@ export function Login() {
             {/* Email field */}
             <div>
               <label htmlFor="email" className="block text-sm font-bold text-black mb-2 text-left">
-                📧 Email
+                Email o Nome Utente
               </label>
               <input
                 id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition text-black font-semibold"
-                placeholder="tuo@email.com"
+                placeholder="Email o Nome"
                 disabled={isLoading}
               />
             </div>
@@ -106,17 +147,27 @@ export function Login() {
             {/* Password field */}
             <div>
               <label htmlFor="password" className="block text-sm font-bold text-black mb-2 text-left">
-                🔐 Password
+                Password
               </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition text-black font-semibold"
-                placeholder="••••••"
-                disabled={isLoading}
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition text-black font-semibold pr-12"
+                  placeholder={showPassword ? 'Password' : '••••••'}
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 flex items-center justify-center bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition shadow-sm border border-green-200"
+                  title={showPassword ? 'Nascondi password' : 'Mostra password'}
+                >
+                  {showPassword ? '🔓' : '🔒'}
+                </button>
+              </div>
             </div>
 
             {/* Submit button */}
@@ -125,24 +176,27 @@ export function Login() {
               disabled={isLoading}
               className="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100 text-lg"
             >
-              {isLoading ? '⏳ Accesso in corso...' : '✅ Accedi'}
+              {isLoading ? 'Accesso in corso...' : 'Accedi'}
             </button>
           </form>
 
           {/* Footer */}
           <div className="mt-8 pt-6 border-t-2 border-green-300 text-center text-sm text-black font-semibold">
-            <p>
-              Non hai un account?{' '}
-              <span className="text-green-700">
-                Contatta il titolare per registrarti.
-              </span>
-            </p>
+            <p className="mb-1">Non hai un account?</p>
+            <a 
+              href="https://wa.me/393888005812" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-green-700 hover:text-green-900 hover:underline inline-flex items-center gap-1"
+            >
+              💬 Contatta il titolare per registrarti.
+            </a>
           </div>
 
           {/* Link back */}
           <div className="mt-6 text-center">
             <Link to="/" className="text-green-700 hover:text-green-900 font-bold hover:underline">
-              ← Torna alla home
+              Torna alla home
             </Link>
           </div>
         </div>

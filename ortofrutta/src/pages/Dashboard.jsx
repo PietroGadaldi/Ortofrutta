@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../services/supabaseClient'
 import { useAuth } from '../hooks/useAuth'
 import { CalendarPicker } from '../components/CalendarPicker'
@@ -8,7 +8,8 @@ import { OrdersHistory } from '../components/OrdersHistory'
 import { createOrdine, updateOrdineDettagli, updateOrdineStatus, deleteOrdine, getAllOrdini } from '../services/ordiniService'
 import { generateOrderPDF } from '../utils/pdfGenerator'
 import { uploadOrderPDF } from '../services/pdfStorageService'
-import { format } from 'date-fns'
+import { capitalize } from '../utils/constants'
+import { format, addDays, startOfDay } from 'date-fns'
 
 export function Dashboard() {
   const { user } = useAuth()
@@ -19,12 +20,38 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(null)
+  const [lastCreatedOrderId, setLastCreatedOrderId] = useState(null)
+  const [expandedOrderId, setExpandedOrderId] = useState(null)
+
+  const historyRef = useRef(null)
+  const summaryRef = useRef(null)
   
   // State for new/editing order
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [productsInOrder, setProductsInOrder] = useState([])
   const [editingOrderId, setEditingOrderId] = useState(null)
   const [editingItemIndex, setEditingItemIndex] = useState(null)
+
+  // Intercetta l'errore del Service Worker relativo alle estensioni Chrome,
+  // svuota la cache e ricarica la pagina per risolvere il blocco.
+  useEffect(() => {
+    const handleCacheError = (event) => {
+      const errorMsg = event.reason?.message || "";
+      if (errorMsg.includes("Request scheme 'chrome-extension' is unsupported")) {
+        if ('caches' in window) {
+          caches.keys().then((names) => {
+            return Promise.all(names.map((name) => caches.delete(name)));
+          }).then(() => {
+            window.location.reload();
+          });
+        }
+      }
+    };
+
+    window.addEventListener('unhandledrejection', handleCacheError);
+    return () => window.removeEventListener('unhandledrejection', handleCacheError);
+  }, []);
 
   // Fetch user ordini and prodotti on mount
   useEffect(() => {
@@ -59,6 +86,7 @@ export function Dashboard() {
             quantita,
             tipologia,
             prodotto_id,
+            nome_custom,
             prodotti (nome)
           )
         `
@@ -89,6 +117,8 @@ export function Dashboard() {
       setProductsInOrder([...productsInOrder, product])
     }
     setError(null)
+    setSuccess(null)
+    setLastCreatedOrderId(null)
   }
 
   // Edit product in order summary
@@ -118,6 +148,7 @@ export function Dashboard() {
 
     setSubmitting(true)
     setError(null)
+    setSuccess(null)
 
     try {
       // Format date as YYYY-MM-DD string for database
@@ -131,6 +162,7 @@ export function Dashboard() {
         )
         if (updateError) throw updateError
         
+        setSuccess('Ordine aggiornato con successo!')
         setEditingOrderId(null)
       } else {
         // Create new order
@@ -140,6 +172,9 @@ export function Dashboard() {
           productsInOrder
         )
         if (createError) throw createError
+
+        setSuccess('Ordine inviato con successo!')
+        setLastCreatedOrderId(newOrdine.id)
 
         // Generate and upload PDF (non-blocking, error doesn't interrupt flow)
         if (newOrdine && user) {
@@ -159,6 +194,7 @@ export function Dashboard() {
                   quantita,
                   tipologia,
                   prodotto_id,
+                  nome_custom,
                   prodotti (nome)
                 )
               `
@@ -191,8 +227,20 @@ export function Dashboard() {
     }
   }
 
+  // View last order: scroll to bottom and open details
+  const handleViewLastOrder = () => {
+    if (lastCreatedOrderId) {
+      setExpandedOrderId(lastCreatedOrderId)
+      setTimeout(() => {
+        historyRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    }
+  }
+
   // Load order for editing
   const handleEditOrder = (ordine) => {
+    setSuccess(null)
+    setLastCreatedOrderId(null)
     setEditingOrderId(ordine.id)
     
     // Parse date from ordine
@@ -206,7 +254,7 @@ export function Dashboard() {
     // Load products from dettagli_ordine
     const items = ordine.dettagli_ordine.map((dettaglio) => ({
       prodotto_id: dettaglio.prodotto_id,
-      prodotto_nome: dettaglio.prodotti.nome,
+      prodotto_nome: dettaglio.prodotti?.nome || dettaglio.nome_custom || '',
       quantita: dettaglio.quantita,
       tipologia: dettaglio.tipologia,
     }))
@@ -214,8 +262,51 @@ export function Dashboard() {
     setProductsInOrder(items)
     setEditingItemIndex(null)
 
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Scorre fino alla sezione del riepilogo/form
+    summaryRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  // Imposta la data dell'ordine a domani
+  const handleSetTomorrow = () => {
+    setSelectedDate(addDays(startOfDay(new Date()), 1))
+  }
+
+  // Carica i prodotti di un ordine passato nel riepilogo per creare un nuovo ordine
+  const handleReorder = (ordine) => {
+    setSuccess(null)
+    setError(null)
+    setLastCreatedOrderId(null)
+    setEditingOrderId(null) // Fondamentale: non stiamo modificando il vecchio ordine, ma creandone uno nuovo
+    
+    // Filtriamo i prodotti per assicurarci che esistano ancora nel catalogo corrente
+    // e formattiamo i nomi correttamente (iniziale maiuscola e resto minuscolo)
+    const validItems = (ordine.dettagli_ordine || [])
+      .filter((dettaglio) => prodotti.some((p) => p.id === dettaglio.prodotto_id))
+      .map((dettaglio) => {
+        // Recuperiamo il nome aggiornato dal catalogo per consistenza
+        const prodottoCatalogo = prodotti.find((p) => p.id === dettaglio.prodotto_id)
+        return {
+          prodotto_id: dettaglio.prodotto_id,
+          prodotto_nome: capitalize(prodottoCatalogo?.nome || dettaglio.prodotti?.nome || ''),
+          quantita: dettaglio.quantita,
+          tipologia: dettaglio.tipologia,
+        }
+      })
+
+    if (validItems.length === 0) {
+      setError("Nessuno dei prodotti di questo ordine è attualmente disponibile nel catalogo.")
+      return
+    }
+
+    if (validItems.length < (ordine.dettagli_ordine?.length || 0)) {
+      setError("Nota: alcuni prodotti non più disponibili nel catalogo sono stati esclusi dal riordino.")
+    }
+    
+    setProductsInOrder(validItems)
+    setEditingItemIndex(null)
+
+    // Scorre fino alla sezione del riepilogo/form
+    summaryRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   // Delete order
@@ -252,15 +343,30 @@ export function Dashboard() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-8 shadow-xl">
-        <h1 className="text-4xl font-black mb-2">📦 Gestione Ordini</h1>
-        <p className="text-green-100 text-lg font-semibold">Crea, modifica e visualizza i tuoi ordini in modo semplice e intuitivo</p>
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-4 sm:p-8 shadow-xl">
+        <h1 className="text-2xl sm:text-4xl font-black mb-2">📦 Gestione Ordini</h1>
+        <p className="text-green-100 text-sm sm:text-lg font-semibold">Crea, modifica e visualizza i tuoi ordini in modo semplice e intuitivo</p>
       </div>
 
       {/* Error alert */}
       {error && (
         <div className="p-5 bg-red-100 border-l-4 border-red-500 rounded-lg shadow-md">
           <p className="text-red-900 font-bold">⚠️ {error}</p>
+        </div>
+      )}
+
+      {/* Success alert */}
+      {success && (
+        <div className="p-5 bg-green-100 border-l-4 border-green-500 rounded-lg shadow-md flex justify-between items-center">
+          <p className="text-green-900 font-bold">✅ {success}</p>
+          {success === 'Ordine inviato con successo!' && lastCreatedOrderId && (
+            <button
+              onClick={handleViewLastOrder}
+              className="text-green-700 underline font-bold hover:text-green-900 transition-colors"
+            >
+              Visualizza
+            </button>
+          )}
         </div>
       )}
 
@@ -273,9 +379,9 @@ export function Dashboard() {
       </div>
 
       {/* Form + Summary Section (Grid layout) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* AddProductForm (left, col-span 2) */}
-        <div className="lg:col-span-2">
+      <div ref={summaryRef} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* AddProductForm (left) */}
+        <div>
           <AddProductForm
             prodotti={prodotti}
             onAddProduct={handleAddProduct}
@@ -284,11 +390,13 @@ export function Dashboard() {
                 ? productsInOrder[editingItemIndex]
                 : null
             }
+            onReorderLast={ordini.length > 0 ? () => handleReorder(ordini[0]) : null}
+            onSetTomorrow={handleSetTomorrow}
           />
         </div>
 
-        {/* OrderSummary (right, col-span 1) */}
-        <div className="lg:col-span-1">
+        {/* OrderSummary (right) */}
+        <div className="h-full">
           <OrderSummary
             items={productsInOrder}
             onEditItem={handleEditItem}
@@ -296,25 +404,29 @@ export function Dashboard() {
             onConfirmOrder={handleConfirmOrder}
             onClearOrder={handleClearOrder}
             isLoading={submitting}
+            selectedDate={selectedDate}
           />
         </div>
       </div>
 
       {editingOrderId && (
-        <div className="p-5 bg-blue-100 border-l-4 border-blue-500 rounded-lg shadow-md">
+        <div className="p-5 bg-blue-100 border-l-4 border-blue-500 rounded-lg shadow-md text-left">
           <p className="text-blue-900 font-bold">
-            ℹ️ Stai modificando un ordine. Clicca "Conferma e Crea Ordine" per salvare le modifiche.
+            ℹ️ Stai modificando un ordine. Clicca "Conferma e Ordina" per salvare le modifiche.
           </p>
         </div>
       )}
 
       {/* Orders History Section */}
-      <div>
+      <div ref={historyRef}>
         <OrdersHistory
           ordini={ordini}
           onEditOrder={handleEditOrder}
+          onReorder={handleReorder}
           onDeleteOrder={handleDeleteOrder}
           isLoading={submitting}
+          expandedOrderId={expandedOrderId}
+          onToggleExpanded={setExpandedOrderId}
         />
       </div>
     </div>

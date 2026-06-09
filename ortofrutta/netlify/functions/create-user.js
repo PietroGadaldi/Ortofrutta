@@ -59,9 +59,9 @@ export async function handler(event) {
     // Parse body
     const { email, password, nome, ruolo } = JSON.parse(event.body)
 
-    // Validate required fields
-    if (!email || !password || !nome || !ruolo) {
-      return errorResponse(400, 'Missing required fields: email, password, nome, ruolo')
+    // Validate required fields (email is optional)
+    if (!password || !nome || !ruolo) {
+      return errorResponse(400, 'Campi obbligatori mancanti: password, nome, ruolo')
     }
 
     // Validate ruolo
@@ -69,10 +69,11 @@ export async function handler(event) {
       return errorResponse(400, 'Invalid ruolo: must be "cliente" or "titolare"')
     }
 
-    // Validate email format
+    // Validate email format only if provided
+    const trimmedEmail = email?.trim()
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      return errorResponse(400, 'Invalid email format')
+    if (trimmedEmail && !emailRegex.test(trimmedEmail)) {
+      return errorResponse(400, 'Formato email non valido')
     }
 
     // Validate password length
@@ -80,11 +81,15 @@ export async function handler(event) {
       return errorResponse(400, 'Password must be at least 6 characters')
     }
 
+    // Use provided email or generate a unique internal placeholder
+    const authEmail = trimmedEmail ||
+      `noemail_${Date.now()}_${Math.random().toString(36).substring(2, 9)}@noreply.internal`
+
     // Create user in Supabase Auth
     const { data: authData, error: authCreateError } = await supabaseAdmin.auth.admin.createUser({
-      email,
+      email: authEmail,
       password,
-      email_confirm: true, // Automatically confirm email
+      email_confirm: true,
     })
 
     if (authCreateError) {
@@ -122,7 +127,7 @@ export async function handler(event) {
     return successResponse(201, {
       message: 'Utente creato con successo',
       userId: newUserId,
-      email,
+      email: trimmedEmail || null,
       nome,
       ruolo,
     })

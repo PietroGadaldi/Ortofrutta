@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { PDFPreviewModal } from './PDFPreviewModal'
+import { EditOrderModal } from './EditOrderModal'
 import { getOrderPDFUrl } from '../services/pdfStorageService'
 import { generateOrderPDF } from '../utils/pdfGenerator'
 
@@ -11,6 +12,9 @@ import { generateOrderPDF } from '../utils/pdfGenerator'
  * @param {Object} ordine - Order object with details
  * @param {Function} onStatusChange - Callback when status is toggled
  * @param {Function} onDeleteOrder - Callback when delete is clicked
+ * @param {Function} onOrderModified - Callback when order is modified
+ * @param {Function} onDateChanged - Callback when order date is changed (receives newDate)
+ * @param {Array} prodotti - Available products for autocomplete when editing
  * @param {boolean} isLoading - Loading state for button
  * @param {boolean} showAsReceiptCards - If true, show as non-expandable receipt card
  */
@@ -18,14 +22,19 @@ export function AdminOrderCard({
   ordine, 
   onStatusChange, 
   onDeleteOrder, 
+  onOrderModified,
+  onDateChanged,
+  prodotti = [],
   isLoading = false,
   showAsReceiptCards = false 
 }) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isProductsExpanded, setIsProductsExpanded] = useState(false)
   const [showPDFModal, setShowPDFModal] = useState(false)
   const [pdfData, setPdfData] = useState(null)
   const [pdfLoading, setPdfLoading] = useState(false)
   const [pdfError, setPdfError] = useState(null)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   const formatDate = (dateString) => {
     try {
@@ -88,65 +97,80 @@ export function AdminOrderCard({
       <>
         <div className="bg-white border-2 border-gray-300 rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
           {/* Receipt Header - All left aligned */}
-          <div className="mb-6 text-left">
-            <div className="flex items-start justify-between mb-3">
-              <h3 className="text-lg font-bold text-gray-800">
+          <div className="mb-4 sm:mb-6 text-left">
+            <div className="flex items-start justify-between mb-3 gap-2">
+              <h3 className="text-base sm:text-lg font-bold text-gray-800">
                 👤 {ordine.profili?.nome || 'Cliente Sconosciuto'}
               </h3>
               <div className={`
-                px-3 py-1 rounded-full font-bold text-sm
-                ${ordine.completato 
-                  ? 'bg-green-100 text-green-800' 
+                flex-shrink-0 px-2 sm:px-3 py-1 rounded-full font-bold text-xs sm:text-sm
+                ${ordine.completato
+                  ? 'bg-green-100 text-green-800'
                   : 'bg-orange-100 text-orange-800'
                 }
               `}>
                 {ordine.completato ? '✅ Completato' : '🖨️ Da stampare'}
               </div>
             </div>
-            
-            <p className="text-sm text-gray-700 mb-2">
-              <span className="font-semibold">Ordine #:</span> <span className="font-mono">{ordine.id}</span>
-            </p>
-            <p className="text-sm text-gray-700 mb-1">
+
+            <p className="text-xs sm:text-sm text-gray-700 mb-1">
               <span className="font-semibold">Data ordine:</span> {formatDate(ordine.data_ordine)}
             </p>
-            <p className="text-sm text-gray-700">
-              <span className="font-semibold">Data sottomissione:</span> {formatDateTime(ordine.data_creazione)}
+            <p className="text-xs sm:text-sm text-gray-700">
+              <span className="font-semibold">Data creazione:</span> {formatDateTime(ordine.data_creazione)}
             </p>
           </div>
 
-          {/* Products */}
-          <div className="mb-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h4 className="font-bold text-gray-800 text-sm mb-3">
-              📦 Prodotti ({ordine.dettagli_ordine?.length || 0})
-            </h4>
-            <div className="space-y-2">
-              {ordine.dettagli_ordine && ordine.dettagli_ordine.length > 0 ? (
-                ordine.dettagli_ordine.map((dettaglio) => (
-                  <div key={dettaglio.id} className="text-sm text-gray-700 flex justify-between items-start">
-                    <span className="font-semibold">{dettaglio.prodotti?.nome}</span>
-                    <span className="text-gray-600">{dettaglio.quantita} {dettaglio.tipologia}</span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-gray-500 italic">Nessun prodotto disponibile</p>
-              )}
-            </div>
+          {/* Products - Expandable */}
+          <div className="mb-4 bg-gray-50 rounded-lg border border-gray-200">
+            <button
+              onClick={() => setIsProductsExpanded(!isProductsExpanded)}
+              className="w-full flex items-center justify-between p-4 hover:bg-gray-100 transition-colors"
+            >
+              <h4 className="font-bold text-gray-800 text-sm">
+                📦 Prodotti ({ordine.dettagli_ordine?.length || 0})
+              </h4>
+              <span className="text-gray-600 text-lg">
+                {isProductsExpanded ? '▲' : '▼'}
+              </span>
+            </button>
+
+            {isProductsExpanded && (
+              <div className="border-t border-gray-200 p-4 space-y-2">
+                {ordine.dettagli_ordine && ordine.dettagli_ordine.length > 0 ? (
+                  ordine.dettagli_ordine.map((dettaglio) => (
+                    <div key={dettaglio.id} className="text-sm text-gray-700 flex justify-between items-start">
+                      <span className="font-semibold">{dettaglio.prodotti?.nome || dettaglio.nome_custom}</span>
+                      <span className="text-gray-600">{dettaglio.quantita} {dettaglio.tipologia}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500 italic">Nessun prodotto disponibile</p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4 border-t border-gray-200">
+          <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-200">
             <button
               onClick={handleViewPDF}
               disabled={pdfLoading}
-              className="flex-1 py-2 px-3 bg-blue-500 text-white text-sm font-bold rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-all"
+              className="flex-1 min-w-[100px] py-2 px-2 sm:px-3 bg-blue-500 text-white text-xs sm:text-sm font-bold rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-all"
             >
-              {pdfLoading ? '⏳ Caricamento...' : '👁️ Visualizza PDF'}
+              {pdfLoading ? '⏳ Caricamento...' : '👁️ PDF'}
+            </button>
+            <button
+              onClick={() => setShowEditModal(true)}
+              disabled={isLoading}
+              className="py-2 px-3 bg-orange-500 text-white text-xs sm:text-sm font-bold rounded-lg hover:bg-orange-600 disabled:bg-gray-400 transition-all"
+            >
+              ✏️ Modifica
             </button>
             <button
               onClick={handleDeleteOrder}
               disabled={isLoading}
-              className="py-2 px-3 bg-red-500 text-white text-sm font-bold rounded-lg hover:bg-red-600 disabled:bg-gray-400 transition-all"
+              className="py-2 px-3 bg-red-500 text-white text-xs sm:text-sm font-bold rounded-lg hover:bg-red-600 disabled:bg-gray-400 transition-all"
             >
               🗑️ Elimina
             </button>
@@ -168,6 +192,16 @@ export function AdminOrderCard({
           ordineId={ordine.id}
           onStatusChange={onStatusChange}
           isCompletato={ordine.completato}
+        />
+
+        {/* Edit Order Modal */}
+        <EditOrderModal
+          ordine={ordine}
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onSave={onOrderModified}
+          onDateChanged={onDateChanged}
+          prodotti={prodotti}
         />
       </>
     )
@@ -223,7 +257,7 @@ export function AdminOrderCard({
                 {ordine.dettagli_ordine && ordine.dettagli_ordine.length > 0 ? (
                   ordine.dettagli_ordine.map((dettaglio) => (
                     <li key={dettaglio.id} className="text-sm text-black bg-white px-4 py-3 rounded-lg border-l-4 border-blue-500 shadow-sm font-semibold text-left">
-                      <span className="font-bold block text-left">{dettaglio.prodotti?.nome}</span>
+                      <span className="font-bold block text-left">{dettaglio.prodotti?.nome || dettaglio.nome_custom}</span>
                       <span className="text-blue-700 text-xs mt-1 block">
                         Quantità: {dettaglio.quantita} {dettaglio.tipologia}
                       </span>

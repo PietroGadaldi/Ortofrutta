@@ -6,6 +6,7 @@
  * Query params:
  *   - type: 'clients' (default) or 'orders'
  *   - date: YYYY-MM-DD (required if type='orders')
+ *   - role: 'cliente' (default) or 'titolare'
  * 
  * Only allows titolare (owner) to access this function
  */
@@ -58,13 +59,14 @@ export async function handler(event) {
       return errorResponse(403, 'Solo i titolari possono accedere a questa risorsa')
     }
 
-    // Get request type from query params
-    const queryParams = new URLSearchParams(event.rawUrl.split('?')[1] || '')
-    const type = queryParams.get('type') || 'clients'
+    // Get parameters from query string
+    const params = event.queryStringParameters || {}
+    const type = params.type || 'clients'
+    const role = params.role || 'cliente'
+    const dateParam = params.date
 
     if (type === 'orders') {
       // Fetch orders for specific date
-      const dateParam = queryParams.get('date')
       if (!dateParam) {
         return errorResponse(400, 'Parametro "date" richiesto per type=orders (formato: YYYY-MM-DD)')
       }
@@ -89,6 +91,7 @@ export async function handler(event) {
               quantita,
               tipologia,
               prodotto_id,
+              nome_custom,
               prodotti (nome)
             )
           `)
@@ -114,21 +117,39 @@ export async function handler(event) {
         return errorResponse(400, 'Formato data non valido. Usa YYYY-MM-DD')
       }
     } else {
-      // Fetch all clients (default)
-      const { data: clients, error: clientsError } = await supabaseAdmin
+      // Fetch profiles based on role
+      const { data: profiles, error: profilesError } = await supabaseAdmin
         .from('profili')
         .select('id, nome, ruolo')
-        .eq('ruolo', 'cliente')
+        .eq('ruolo', role)
         .order('nome', { ascending: true })
 
-      if (clientsError) {
-        console.error('Clients fetch error:', clientsError)
-        return errorResponse(500, `Errore nel caricamento clienti: ${clientsError.message}`)
+      if (profilesError) {
+        console.error('Profiles fetch error:', profilesError)
+        return errorResponse(500, `Errore nel caricamento profili: ${profilesError.message}`)
       }
 
+      // Recupera tutti gli utenti dall'Auth di Supabase per ottenere le email
+      // Nota: listUsers ha un limite di paginazione predefinito (50 utenti)
+      const { data: { users }, error: authError } = await supabaseAdmin.auth.admin.listUsers()
+      
+      if (authError) {
+        console.error('Auth fetch error:', authError)
+        // Se fallisce il recupero email, restituiamo comunque i profili senza email
+      }
+
+      // Unisce i dati dei profili con le email dell'auth
+      const clientsWithEmail = (profiles || []).map(profile => {
+        const authUser = (users || []).find(u => u.id === profile.id)
+        return {
+          ...profile,
+          email: authUser ? authUser.email : ''
+        }
+      })
+
       return successResponse(200, {
-        clients: clients || [],
-        count: (clients || []).length,
+        clients: clientsWithEmail,
+        count: clientsWithEmail.length,
       })
     }
   } catch (err) {

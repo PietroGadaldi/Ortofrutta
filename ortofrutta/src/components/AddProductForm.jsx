@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { ProductAutocomplete } from './ProductAutocomplete'
-import { parseTipologie } from '../utils/constants'
+import { parseTipologie, capitalize } from '../utils/constants'
 
 /**
  * AddProductForm component
@@ -8,8 +8,11 @@ import { parseTipologie } from '../utils/constants'
  * @param {Array<Object>} prodotti - List of available products
  * @param {Function} onAddProduct - Callback when product is added {prodotto_id, prodotto_nome, quantita, tipologia}
  * @param {Object} editingItem - If editing, the item being edited (used to populate form)
+ * @param {Function} onReorderLast - Callback to reorder items from the most recent order
+ * @param {Function} onSetTomorrow - Callback to set order date to tomorrow
+ * @param {boolean} isAdminMode - When true, allows free-text product entry without catalog lookup
  */
-export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null }) {
+export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null, onReorderLast, onSetTomorrow, isAdminMode = false }) {
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [inputValue, setInputValue] = useState('')
   const [quantita, setQuantita] = useState('')
@@ -17,44 +20,78 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
   const [tipologieDisponibili, setTipologieDisponibili] = useState([])
   const [error, setError] = useState('')
 
+  // Trasforma i prodotti per avere i nomi con l'iniziale maiuscola per l'autocomplete e la visualizzazione
+  const formattedProdotti = useMemo(() => {
+    return prodotti.map(p => ({
+      ...p,
+      nome: capitalize(p.nome)
+    }))
+  }, [prodotti])
+
   // If editing, pre-fill the form
   useEffect(() => {
     if (editingItem) {
-      const product = prodotti.find((p) => p.id === editingItem.prodotto_id)
+      const product = formattedProdotti.find((p) => p.id === editingItem.prodotto_id)
       if (product) {
         setSelectedProduct(product)
-        setInputValue(product.nome)
+        setInputValue(capitalize(product.nome))
         setQuantita(editingItem.quantita.toString())
         setTipologia(editingItem.tipologia)
         setTipologieDisponibili(parseTipologie(product.tipologie_possibili))
+      } else if (isAdminMode && editingItem.prodotto_nome) {
+        // Custom product (no catalog entry)
+        setSelectedProduct(null)
+        setInputValue(editingItem.prodotto_nome)
+        setQuantita(editingItem.quantita.toString())
+        setTipologia(editingItem.tipologia)
+        setTipologieDisponibili([])
       }
     }
-  }, [editingItem, prodotti])
+  }, [editingItem, formattedProdotti, isAdminMode])
 
   // Update tipologie when product changes
   useEffect(() => {
     if (selectedProduct) {
       const tipologie = parseTipologie(selectedProduct.tipologie_possibili)
       setTipologieDisponibili(tipologie)
-      setTipologia('')
     }
   }, [selectedProduct])
 
   const handleProductSelect = (product) => {
     setSelectedProduct(product)
     setInputValue(product.nome)
+    // Reset della tipologia solo quando l'utente sceglie manualmente 
+    // un nuovo prodotto dalla lista (non durante il caricamento in modifica)
+    setTipologia('')
   }
+
+  const handleIncrement = () => {
+    const val = parseFloat(quantita) || 0;
+    if (val < 100) {
+      setQuantita((val + 1).toString());
+    }
+  };
+
+  const handleDecrement = () => {
+    const val = parseFloat(quantita) || 0;
+    if (val > 1) {
+      setQuantita((val - 1).toString());
+    }
+  };
+
+  const isCustomProduct = isAdminMode && !selectedProduct && inputValue.trim()
 
   const validateForm = () => {
     setError('')
 
-    if (!selectedProduct) {
-      setError('Seleziona un prodotto')
+    if (!selectedProduct && !isCustomProduct) {
+      setError(isAdminMode ? 'Inserisci il nome del prodotto' : 'Seleziona un prodotto')
       return false
     }
 
-    if (!quantita || Number(quantita) <= 0) {
-      setError('Inserisci una quantità valida (maggiore di 0)')
+    const numQuantita = Number(quantita);
+    if (!quantita || numQuantita < 1 || numQuantita > 100) {
+      setError('Inserisci una quantità valida tra 1 e 100')
       return false
     }
 
@@ -72,8 +109,8 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
     if (!validateForm()) return
 
     onAddProduct({
-      prodotto_id: selectedProduct.id,
-      prodotto_nome: selectedProduct.nome,
+      prodotto_id: isCustomProduct ? null : selectedProduct.id,
+      prodotto_nome: isCustomProduct ? inputValue.trim() : selectedProduct.nome,
       quantita: Number(quantita),
       tipologia,
     })
@@ -87,57 +124,119 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
   }
 
   return (
-    <form onSubmit={handleAddProduct} className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl p-6 shadow-lg">
+    <form onSubmit={handleAddProduct} className="md:h-[550px] h-auto flex flex-col bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl p-6 shadow-lg">
       <h3 className="text-xl font-bold text-green-900 mb-6 flex items-center gap-2">
         <span className="text-2xl">📝</span> Aggiungi Prodotto
       </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-        {/* Product Autocomplete (col-span 5) */}
-        <div className="md:col-span-5">
-          <ProductAutocomplete
-            prodotti={prodotti}
-            onSelectProduct={handleProductSelect}
-            value={inputValue}
-            onInputChange={setInputValue}
-          />
-        </div>
+      <div className="space-y-5 flex-1">
+        {/* Product Autocomplete */}
+        <ProductAutocomplete
+          prodotti={formattedProdotti}
+          onSelectProduct={handleProductSelect}
+          value={inputValue}
+          onInputChange={(val) => {
+            setInputValue(val)
+            if (selectedProduct && val !== selectedProduct.nome) {
+              setSelectedProduct(null)
+              setTipologieDisponibili([])
+            }
+          }}
+          isAdminMode={isAdminMode}
+        />
 
-        {/* Quantity Input (col-span 3) */}
-        <div className="md:col-span-3">
+        {/* Quantity Input */}
+        <div>
           <label className="block text-sm font-bold text-green-900 mb-2 text-left">
             📦 Quantità
           </label>
-          <input
-            type="number"
-            min="0.1"
-            step="0.1"
-            value={quantita}
-            onChange={(e) => setQuantita(e.target.value)}
-            placeholder="0"
-            className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all"
-            disabled={!selectedProduct}
-          />
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min="1"
+              max="100"
+              step="any"
+              value={quantita}
+              onChange={(e) => setQuantita(e.target.value)}
+              onBlur={() => {
+                if (quantita === '') return;
+                const num = parseFloat(quantita);
+                if (isNaN(num)) return;
+
+                if (num > 100) setQuantita('100');
+                else if (num < 1) setQuantita('1');
+              }}
+              placeholder="0"
+            className="flex-1 min-w-0 h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all"
+              disabled={!selectedProduct && !isCustomProduct}
+            />
+            <button
+              type="button"
+              onClick={handleDecrement}
+              disabled={(!selectedProduct && !isCustomProduct) || Number(quantita) <= 1}
+            className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
+            >
+              -
+            </button>
+            <button
+              type="button"
+              onClick={handleIncrement}
+              disabled={(!selectedProduct && !isCustomProduct) || Number(quantita) >= 100}
+            className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
+            >
+              +
+            </button>
+          </div>
         </div>
 
-        {/* Tipologia Select (col-span 4) */}
-        <div className="md:col-span-4">
+        {/* Tipologia */}
+        <div>
           <label className="block text-sm font-bold text-green-900 mb-2 text-left">
             🏷️ Tipologia
           </label>
-          <select
-            value={tipologia}
-            onChange={(e) => setTipologia(e.target.value)}
-            className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-black font-semibold transition-all"
-            disabled={!selectedProduct}
+          {isCustomProduct ? (
+            <input
+              type="text"
+              value={tipologia}
+              onChange={(e) => setTipologia(e.target.value)}
+              placeholder="es: kg, pezzo, cassetta..."
+              className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all"
+            />
+          ) : (
+            <select
+              value={tipologia}
+              onChange={(e) => setTipologia(e.target.value)}
+              className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-black font-semibold transition-all"
+              disabled={!selectedProduct}
+            >
+              <option value="">-- Seleziona tipologia --</option>
+              {tipologieDisponibili.map((tipo) => (
+                <option key={tipo} value={tipo}>
+                  {capitalize(tipo)}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {/* Quick Actions */}
+        <div className="pt-2 flex gap-3">
+          {onReorderLast && (
+            <button
+              type="button"
+              onClick={onReorderLast}
+              className="flex-1 h-12 px-2 bg-amber-50 border-2 border-amber-300 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-100 transition-all flex items-center justify-center gap-1 shadow-sm hover:shadow-md transform active:scale-95"
+            >
+              🔄 Ripeti ultimo ordine
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onSetTomorrow}
+            className="flex-1 h-12 px-2 bg-blue-50 border-2 border-blue-300 text-blue-800 rounded-lg text-xs font-bold hover:bg-blue-100 transition-all flex items-center justify-center gap-1 shadow-sm hover:shadow-md transform active:scale-95"
           >
-            <option value="">-- Seleziona tipologia --</option>
-            {tipologieDisponibili.map((tipo) => (
-              <option key={tipo} value={tipo}>
-                {tipo}
-              </option>
-            ))}
-          </select>
+            📅 Ordina per domani
+          </button>
         </div>
       </div>
 
@@ -151,7 +250,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
       {/* Add button */}
       <button
         type="submit"
-        disabled={!selectedProduct || !quantita || !tipologia}
+        disabled={(!selectedProduct && !isCustomProduct) || !quantita || !tipologia}
         className="mt-5 w-full py-3 px-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-lg hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
       >
         ✅ Aggiungi al Riepilogo

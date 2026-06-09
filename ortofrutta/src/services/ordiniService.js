@@ -20,6 +20,7 @@ export const getAllOrdini = async (userId, role) => {
       quantita,
       tipologia,
       prodotto_id,
+      nome_custom,
       prodotti (nome)
     )
   `)
@@ -58,7 +59,8 @@ export const createOrdine = async (clienteId, dataOrdine, dettagli) => {
     // Create dettagli_ordine
     const dettagliRecords = dettagli.map((d) => ({
       ordine_id: ordineId,
-      prodotto_id: d.prodotto_id,
+      prodotto_id: d.prodotto_id || null,
+      nome_custom: d.prodotto_id ? null : (d.prodotto_nome || null),
       quantita: d.quantita,
       tipologia: d.tipologia,
     }))
@@ -122,7 +124,8 @@ export const updateOrdineDettagli = async (ordineId, dettagli) => {
     // Insert new dettagli_ordine
     const dettagliRecords = dettagli.map((d) => ({
       ordine_id: ordineId,
-      prodotto_id: d.prodotto_id,
+      prodotto_id: d.prodotto_id || null,
+      nome_custom: d.prodotto_id ? null : (d.prodotto_nome || null),
       quantita: d.quantita,
       tipologia: d.tipologia,
     }))
@@ -160,6 +163,7 @@ export const getOrdiniByDate = async (dataOrdine) => {
         quantita,
         tipologia,
         prodotto_id,
+        nome_custom,
         prodotti (nome)
       )
     `)

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../services/supabaseClient'
-import { createProdotto, updateProdotto, deleteProdotto } from '../services/prodottiService'
+import { createProdotto, updateProdotto, updateProdottoStatus, deleteProdotto } from '../services/prodottiService'
 import { parseTipologie, capitalize } from '../utils/constants'
 
 export function Prodotti() {
@@ -15,6 +15,7 @@ export function Prodotti() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isModifying, setIsModifying] = useState(false)
   const [modifyingProdottoId, setModifyingProdottoId] = useState(null)
+  const [searchFilter, setSearchFilter] = useState('')
 
   useEffect(() => {
     fetchProdotti()
@@ -23,7 +24,7 @@ export function Prodotti() {
   const fetchProdotti = async () => {
     setLoading(true)
     try {
-      const { data, error: err } = await supabase.from('prodotti').select('*')
+      const { data, error: err } = await supabase.from('prodotti').select('*').order('nome', { ascending: true })
       if (err) throw err
       setProdotti(data || [])
     } catch (err) {
@@ -103,16 +104,25 @@ export function Prodotti() {
 
         if (err) throw err
         setSuccess('Prodotto modificato con successo!')
+        
+        // Aggiorna solo il prodotto locale senza refetch
+        setProdotti(prodotti.map(p => 
+          p.id === modifyingProdottoId 
+            ? { ...p, nome: nomeLower, tipologie_possibili: tipologieStr }
+            : p
+        ))
       } else {
         // Modalità creazione
         const { error: err } = await createProdotto(nomeLower, tipologieStr)
 
         if (err) throw err
         setSuccess('Prodotto aggiunto con successo!')
+        
+        // Ricarica per ottenere il nuovo prodotto con ID
+        await fetchProdotti()
       }
 
       resetForm()
-      await fetchProdotti()
     } catch (err) {
       setError('Errore: ' + err.message)
     } finally {
@@ -134,6 +144,19 @@ export function Prodotti() {
     }
   }
 
+  const handleToggleAttivo = async (prodotto) => {
+    try {
+      const { error: err } = await updateProdottoStatus(prodotto.id, !prodotto.attivo)
+
+      if (err) throw err
+      setSuccess(`Prodotto ${!prodotto.attivo ? 'attivato' : 'disattivato'} con successo!`)
+      // Aggiorna solo il prodotto locale senza refetch
+      setProdotti(prodotti.map(p => p.id === prodotto.id ? { ...p, attivo: !p.attivo } : p))
+    } catch (err) {
+      setError('Errore: ' + err.message)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center py-12">
@@ -148,8 +171,8 @@ export function Prodotti() {
     <div className="space-y-8">
       {/* Header */}
       <div className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-4 shadow-xl">
-        <h1 className="text-4xl font-black mb-2">🛒 Gestione Prodotti</h1>
-        <p className="text-green-100 text-lg font-semibold">Aggiungi, modifica o elimina i prodotti del tuo catalogo</p>
+        <h1 className="text-2xl sm:text-4xl font-black mb-2">🛒 Gestione Prodotti</h1>
+        <p className="text-green-100 text-sm sm:text-lg font-semibold">Aggiungi, modifica o elimina i prodotti del tuo catalogo</p>
       </div>
 
       {error && (
@@ -165,18 +188,18 @@ export function Prodotti() {
       )}
 
       {/* Layout Bicolonna */}
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-2 gap-4 sm:gap-8">
         {/* Sezione Sinistra: Form sempre visibile */}
-        <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-black flex items-center gap-2">
-              <span className="text-3xl">➕</span> Aggiungi Prodotto
+        <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-4 sm:p-8">
+          <div className="flex justify-between items-center mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2">
+              <span className="text-2xl sm:text-3xl">➕</span> Aggiungi Prodotto
             </h2>
             <button
               type="submit"
               form="form-nuovo-prodotto"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 transition-all shadow-md hover:scale-105 disabled:hover:scale-100"
+              className="px-3 sm:px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 transition-all shadow-md hover:scale-105 disabled:hover:scale-100 text-sm sm:text-base"
             >
               {isSubmitting ? '⏳ Salvando...' : isModifying ? '📝 Modifica' : '✅ Aggiungi'}
             </button>
@@ -257,18 +280,29 @@ export function Prodotti() {
         </div>
 
         {/* Sezione Destra: Lista Prodotti */}
-        <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl shadow-lg p-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-black flex items-center gap-2">
-              <span className="text-3xl">📦</span> Prodotti ({prodotti.length})
+        <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl shadow-lg p-4 sm:p-8">
+          <div className="flex justify-between items-center mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2">
+              <span className="text-2xl sm:text-3xl">📦</span> Prodotti ({prodotti.length})
             </h2>
             <button
               onClick={fetchProdotti}
               disabled={loading}
-              className="px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100"
+              className="px-3 sm:px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100"
             >
               🔄 Aggiorna
             </button>
+          </div>
+
+          {/* Filtro di Ricerca */}
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="🔍 Cerca prodotto..."
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              className="w-full px-4 py-2 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold"
+            />
           </div>
 
           {loading ? (
@@ -276,16 +310,39 @@ export function Prodotti() {
           ) : prodotti.length === 0 ? (
             <div className="text-black font-semibold italic">❌ Nessun prodotto presente</div>
           ) : (
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {prodotti.map((p) => (
+            <>
+              {(() => {
+                const filteredProdotti = prodotti.filter((p) => {
+                  const searchLower = searchFilter.toLowerCase()
+                  const nomeMatch = p.nome.toLowerCase().includes(searchLower)
+                  const tipologieMatch = parseTipologie(p.tipologie_possibili).some(tip =>
+                    tip.toLowerCase().includes(searchLower)
+                  )
+                  return nomeMatch || tipologieMatch
+                })
+
+                return (
+                  <>
+                    {filteredProdotti.length === 0 && searchFilter ? (
+                      <div className="text-black font-semibold italic">❌ Nessun prodotto corrisponde alla ricerca</div>
+                    ) : (
+                      <div className="space-y-3 max-h-96 overflow-y-auto">
+                        {filteredProdotti.map((p) => (
                 <div
                   key={p.id}
                   className="p-3 bg-gray-50 rounded-lg border border-gray-200"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-900 text-left">{capitalize(p.nome)}</p>
-                      <div className="flex flex-wrap gap-1 mt-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <p className="font-semibold text-gray-900 text-left">{capitalize(p.nome)}</p>
+                        <span className={`px-3 py-1 text-xs rounded-full font-bold whitespace-nowrap ${
+                          p.attivo ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                        }`}>
+                          {p.attivo ? 'Attivo' : 'Non attivo'}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
                         {parseTipologie(p.tipologie_possibili).map((tip, idx) => (
                           <span
                             key={idx}
@@ -296,12 +353,19 @@ export function Prodotti() {
                         ))}
                       </div>
                     </div>
-                    <div className="ml-2 flex flex-col gap-2">
+                    <div className="ml-2 flex flex-row gap-2 items-center">
                       <button
-                        onClick={() => handleDelete(p.id)}
-                        className="px-2 py-1 bg-red-100 text-red-600 rounded text-xs font-semibold hover:bg-red-200 transition"
+                        onClick={() => handleToggleAttivo(p)}
+                        className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors ${
+                          p.attivo ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
+                        title={p.attivo ? 'Disattiva prodotto' : 'Attiva prodotto'}
                       >
-                        ❌
+                        <span
+                          className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                            p.attivo ? 'translate-x-7' : 'translate-x-1'
+                          }`}
+                        />
                       </button>
                       <button
                         onClick={() => handleModificaProdotto(p)}
@@ -309,11 +373,22 @@ export function Prodotti() {
                       >
                         ✏️
                       </button>
+                      <button
+                        onClick={() => handleDelete(p.id)}
+                        className="px-2 py-1 bg-red-100 text-red-600 rounded text-xs font-semibold hover:bg-red-200 transition"
+                      >
+                        ❌
+                      </button>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
+            </>
           )}
         </div>
       </div>

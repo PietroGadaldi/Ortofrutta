@@ -1,3 +1,5 @@
+export const WHATSAPP_NUMBER = '393888005812'
+
 /**
  * User roles
  */
