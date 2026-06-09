@@ -32,7 +32,7 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
     if (isOpen && ordine) {
       const items = (ordine.dettagli_ordine || []).map((dettaglio) => ({
         prodotto_id: dettaglio.prodotto_id,
-        prodotto_nome: dettaglio.prodotti?.nome || '',
+        prodotto_nome: dettaglio.prodotti?.nome || dettaglio.nome_custom || '',
         quantita: dettaglio.quantita,
         tipologia: dettaglio.tipologia,
       }))
@@ -128,6 +128,7 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
             quantita,
             tipologia,
             prodotto_id,
+            nome_custom,
             prodotti (nome)
           )
         `
@@ -229,6 +230,7 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
               prodotti={prodotti}
               onAddProduct={handleAddProduct}
               editingItem={editingItemIndex !== null ? productsInOrder[editingItemIndex] : null}
+              isAdminMode={true}
             />
           </div>
 

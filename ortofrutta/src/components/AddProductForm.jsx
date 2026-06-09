@@ -10,8 +10,9 @@ import { parseTipologie, capitalize } from '../utils/constants'
  * @param {Object} editingItem - If editing, the item being edited (used to populate form)
  * @param {Function} onReorderLast - Callback to reorder items from the most recent order
  * @param {Function} onSetTomorrow - Callback to set order date to tomorrow
+ * @param {boolean} isAdminMode - When true, allows free-text product entry without catalog lookup
  */
-export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null, onReorderLast, onSetTomorrow }) {
+export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null, onReorderLast, onSetTomorrow, isAdminMode = false }) {
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [inputValue, setInputValue] = useState('')
   const [quantita, setQuantita] = useState('')
@@ -37,9 +38,16 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
         setQuantita(editingItem.quantita.toString())
         setTipologia(editingItem.tipologia)
         setTipologieDisponibili(parseTipologie(product.tipologie_possibili))
+      } else if (isAdminMode && editingItem.prodotto_nome) {
+        // Custom product (no catalog entry)
+        setSelectedProduct(null)
+        setInputValue(editingItem.prodotto_nome)
+        setQuantita(editingItem.quantita.toString())
+        setTipologia(editingItem.tipologia)
+        setTipologieDisponibili([])
       }
     }
-  }, [editingItem, formattedProdotti])
+  }, [editingItem, formattedProdotti, isAdminMode])
 
   // Update tipologie when product changes
   useEffect(() => {
@@ -71,11 +79,13 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
     }
   };
 
+  const isCustomProduct = isAdminMode && !selectedProduct && inputValue.trim()
+
   const validateForm = () => {
     setError('')
 
-    if (!selectedProduct) {
-      setError('Seleziona un prodotto')
+    if (!selectedProduct && !isCustomProduct) {
+      setError(isAdminMode ? 'Inserisci il nome del prodotto' : 'Seleziona un prodotto')
       return false
     }
 
@@ -99,8 +109,8 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
     if (!validateForm()) return
 
     onAddProduct({
-      prodotto_id: selectedProduct.id,
-      prodotto_nome: selectedProduct.nome,
+      prodotto_id: isCustomProduct ? null : selectedProduct.id,
+      prodotto_nome: isCustomProduct ? inputValue.trim() : selectedProduct.nome,
       quantita: Number(quantita),
       tipologia,
     })
@@ -125,7 +135,14 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
           prodotti={formattedProdotti}
           onSelectProduct={handleProductSelect}
           value={inputValue}
-          onInputChange={setInputValue}
+          onInputChange={(val) => {
+            setInputValue(val)
+            if (selectedProduct && val !== selectedProduct.nome) {
+              setSelectedProduct(null)
+              setTipologieDisponibili([])
+            }
+          }}
+          isAdminMode={isAdminMode}
         />
 
         {/* Quantity Input */}
@@ -145,18 +162,18 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
                 if (quantita === '') return;
                 const num = parseFloat(quantita);
                 if (isNaN(num)) return;
-                
+
                 if (num > 100) setQuantita('100');
                 else if (num < 1) setQuantita('1');
               }}
               placeholder="0"
             className="flex-1 min-w-0 h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all"
-              disabled={!selectedProduct}
+              disabled={!selectedProduct && !isCustomProduct}
             />
             <button
               type="button"
               onClick={handleDecrement}
-              disabled={!selectedProduct || Number(quantita) <= 1}
+              disabled={(!selectedProduct && !isCustomProduct) || Number(quantita) <= 1}
             className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
             >
               -
@@ -164,7 +181,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
             <button
               type="button"
               onClick={handleIncrement}
-              disabled={!selectedProduct || Number(quantita) >= 100}
+              disabled={(!selectedProduct && !isCustomProduct) || Number(quantita) >= 100}
             className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
             >
               +
@@ -172,24 +189,34 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
           </div>
         </div>
 
-        {/* Tipologia Select */}
+        {/* Tipologia */}
         <div>
           <label className="block text-sm font-bold text-green-900 mb-2 text-left">
             🏷️ Tipologia
           </label>
-          <select
-            value={tipologia}
-            onChange={(e) => setTipologia(e.target.value)}
-            className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-black font-semibold transition-all"
-            disabled={!selectedProduct}
-          >
-            <option value="">-- Seleziona tipologia --</option>
-            {tipologieDisponibili.map((tipo) => (
-              <option key={tipo} value={tipo}>
-                {capitalize(tipo)}
-              </option>
-            ))}
-          </select>
+          {isCustomProduct ? (
+            <input
+              type="text"
+              value={tipologia}
+              onChange={(e) => setTipologia(e.target.value)}
+              placeholder="es: kg, pezzo, cassetta..."
+              className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all"
+            />
+          ) : (
+            <select
+              value={tipologia}
+              onChange={(e) => setTipologia(e.target.value)}
+              className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-black font-semibold transition-all"
+              disabled={!selectedProduct}
+            >
+              <option value="">-- Seleziona tipologia --</option>
+              {tipologieDisponibili.map((tipo) => (
+                <option key={tipo} value={tipo}>
+                  {capitalize(tipo)}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         {/* Quick Actions */}
@@ -223,7 +250,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
       {/* Add button */}
       <button
         type="submit"
-        disabled={!selectedProduct || !quantita || !tipologia}
+        disabled={(!selectedProduct && !isCustomProduct) || !quantita || !tipologia}
         className="mt-5 w-full py-3 px-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-lg hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
       >
         ✅ Aggiungi al Riepilogo

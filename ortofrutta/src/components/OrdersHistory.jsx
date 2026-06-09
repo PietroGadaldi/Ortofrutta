@@ -236,7 +236,7 @@ export function OrdersHistory({
                               ? 'text-green-900 border-green-500' 
                               : 'text-amber-900 border-amber-500'
                         }`}>
-                          <span className="font-bold block">{capitalize(dettaglio.prodotti?.nome)}</span>
+                          <span className="font-bold block">{capitalize(dettaglio.prodotti?.nome || dettaglio.nome_custom)}</span>
                           <span className={`text-xs mt-1 block ${isPast ? 'text-blue-700' : ordine.completato ? 'text-green-700' : 'text-amber-700'}`}>
                             {dettaglio.quantita} {dettaglio.tipologia}
                           </span>

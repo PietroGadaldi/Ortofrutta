@@ -22,7 +22,7 @@ export function Ordini() {
           data_creazione,
           completato,
           profili (nome),
-          dettagli_ordine (quantita, tipologia, prodotti (nome))
+          dettagli_ordine (quantita, tipologia, nome_custom, prodotti (nome))
         `
         )
         .order('data_creazione', { ascending: false })

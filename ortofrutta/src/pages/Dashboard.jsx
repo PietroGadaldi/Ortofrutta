@@ -86,6 +86,7 @@ export function Dashboard() {
             quantita,
             tipologia,
             prodotto_id,
+            nome_custom,
             prodotti (nome)
           )
         `
@@ -193,6 +194,7 @@ export function Dashboard() {
                   quantita,
                   tipologia,
                   prodotto_id,
+                  nome_custom,
                   prodotti (nome)
                 )
               `
@@ -252,7 +254,7 @@ export function Dashboard() {
     // Load products from dettagli_ordine
     const items = ordine.dettagli_ordine.map((dettaglio) => ({
       prodotto_id: dettaglio.prodotto_id,
-      prodotto_nome: dettaglio.prodotti.nome,
+      prodotto_nome: dettaglio.prodotti?.nome || dettaglio.nome_custom || '',
       quantita: dettaglio.quantita,
       tipologia: dettaglio.tipologia,
     }))
