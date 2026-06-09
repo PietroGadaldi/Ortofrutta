@@ -77,17 +77,25 @@ export function ProductAutocomplete({
   const handleKeyDown = (e) => {
     // Tab: navigazione nei prodotti
     if (e.key === 'Tab') {
-      if (filteredProducts.length > 0) {
+      // Filter only active products for selection
+      const activeProducts = filteredProducts.filter((p) => p.attivo !== false)
+      if (activeProducts.length > 0) {
         e.preventDefault()
         if (!isOpen) {
           // Apri dropdown e evidenzia il primo
           setIsOpen(true)
-          setHighlightedIndex(0)
+          const firstActiveIndex = filteredProducts.findIndex((p) => p.attivo !== false)
+          setHighlightedIndex(firstActiveIndex)
         } else {
-          // Naviga al prossimo elemento (o ritorna al primo se sei all'ultimo)
-          setHighlightedIndex((prev) =>
-            prev < filteredProducts.length - 1 ? prev + 1 : 0
-          )
+          // Naviga al prossimo elemento attivo
+          let nextIndex = highlightedIndex + 1
+          while (nextIndex < filteredProducts.length && filteredProducts[nextIndex].attivo === false) {
+            nextIndex++
+          }
+          if (nextIndex >= filteredProducts.length) {
+            nextIndex = filteredProducts.findIndex((p) => p.attivo !== false)
+          }
+          setHighlightedIndex(nextIndex)
         }
       }
       return
@@ -99,20 +107,34 @@ export function ProductAutocomplete({
       case 'ArrowDown':
         e.preventDefault()
         setIsOpen(true)
-        setHighlightedIndex((prev) =>
-          prev < filteredProducts.length - 1 ? prev + 1 : prev
-        )
+        let nextDownIndex = highlightedIndex + 1
+        while (nextDownIndex < filteredProducts.length && filteredProducts[nextDownIndex].attivo === false) {
+          nextDownIndex++
+        }
+        if (nextDownIndex < filteredProducts.length) {
+          setHighlightedIndex(nextDownIndex)
+        }
         break
       case 'ArrowUp':
         e.preventDefault()
-        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : -1))
+        let nextUpIndex = highlightedIndex - 1
+        while (nextUpIndex >= 0 && filteredProducts[nextUpIndex].attivo === false) {
+          nextUpIndex--
+        }
+        if (nextUpIndex >= 0) {
+          setHighlightedIndex(nextUpIndex)
+        } else {
+          setHighlightedIndex(-1)
+        }
         break
       case 'Enter':
         e.preventDefault()
         if (filteredProducts.length > 0) {
-          // Se c'è un elemento evidenziato, selezionalo; altrimenti seleziona il primo
+          // Se c'è un elemento evidenziato, selezionalo solo se attivo
           const indexToSelect = highlightedIndex >= 0 ? highlightedIndex : 0
-          handleSelectProduct(filteredProducts[indexToSelect])
+          if (filteredProducts[indexToSelect].attivo !== false) {
+            handleSelectProduct(filteredProducts[indexToSelect])
+          }
         }
         break
       case 'Escape':
@@ -146,26 +168,36 @@ export function ProductAutocomplete({
           className="absolute z-10 w-full mt-2 bg-white border-2 border-green-300 rounded-lg shadow-xl"
         >
           <ul className="max-h-60 overflow-y-auto">
-            {filteredProducts.map((product, index) => (
-              <li key={product.id}>
-                <button
-                  onClick={() => handleSelectProduct(product)}
-                  className={`
-                    w-full text-left px-4 py-3 transition-all border-b border-green-100 last:border-b-0
-                    ${
-                      index === highlightedIndex
-                        ? 'bg-green-500 text-white font-semibold'
-                        : 'hover:bg-green-100 text-green-900'
-                    }
-                  `}
-                >
-                  <div className="font-bold text-left">{capitalize(product.nome)}</div>
-                  <div className="text-xs opacity-75 mt-1 text-left">
-                    Disponibilità: {parseTipologie(product.tipologie_possibili).map(capitalize).join(', ')}
-                  </div>
-                </button>
-              </li>
-            ))}
+            {filteredProducts.map((product, index) => {
+              const isActive = product.attivo !== false
+              return (
+                <li key={product.id}>
+                  <button
+                    onClick={() => isActive && handleSelectProduct(product)}
+                    disabled={!isActive}
+                    className={`
+                      w-full text-left px-4 py-3 transition-all border-b border-green-100 last:border-b-0
+                      ${
+                        !isActive
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
+                          : index === highlightedIndex
+                          ? 'bg-green-500 text-white font-semibold'
+                          : 'hover:bg-green-100 text-green-900'
+                      }
+                    `}
+                  >
+                    <div className="font-bold text-left">{capitalize(product.nome)}</div>
+                    <div className="text-xs opacity-75 mt-1 text-left">
+                      {isActive ? (
+                        <>Disponibilità: {parseTipologie(product.tipologie_possibili).map(capitalize).join(', ')}</>
+                      ) : (
+                        <>🚫 Prodotto non di stagione</>
+                      )}
+                    </div>
+                  </button>
+                </li>
+              )
+            })}
           </ul>
         </div>
       )}

@@ -117,6 +117,21 @@ export const updateProduct = async (productId, nome, tipologie_possibili) => {
 }
 
 /**
+ * Update product status via Netlify Function
+ * @param {string} productId
+ * @param {boolean} attivo
+ * @returns {Promise<{data, error}>}
+ */
+export const updateProductStatus = async (productId, attivo) => {
+  const { data, error } = await callFunction('update-product-status', 'PATCH', {
+    productId,
+    attivo,
+  })
+
+  return { data, error }
+}
+
+/**
  * Update order status via Netlify Function
  * @param {string} ordineId
  * @param {boolean} completato
@@ -159,6 +174,7 @@ export default {
   createUser,
   createProduct,
   updateProduct,
+  updateProductStatus,
   updateOrderStatus,
   deleteProduct,
   listClients,

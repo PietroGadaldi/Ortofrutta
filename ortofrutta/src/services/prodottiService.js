@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient'
-import { createProduct, updateProduct, deleteProduct } from './netlifyApi'
+import { createProduct, updateProduct, updateProductStatus, deleteProduct } from './netlifyApi'
 import { parseTipologie } from '../utils/constants'
 
 /**
@@ -39,6 +39,17 @@ export const updateProdotto = async (prodottoId, nome, tipologie_possibili) => {
 }
 
 /**
+ * Update prodotto status (attivo/disattivo) via Netlify Function
+ * @param {string} prodottoId
+ * @param {boolean} attivo
+ * @returns {Promise<{data, error}>}
+ */
+export const updateProdottoStatus = async (prodottoId, attivo) => {
+  const { data, error } = await updateProductStatus(prodottoId, attivo)
+  return { data, error }
+}
+
+/**
  * Delete prodotto via Netlify Function
  * @param {string} prodottoId
  * @returns {Promise<{error}>}
@@ -61,6 +72,7 @@ export default {
   getAllProdotti,
   createProdotto,
   updateProdotto,
+  updateProdottoStatus,
   deleteProdotto,
   formatTipologie,
 }

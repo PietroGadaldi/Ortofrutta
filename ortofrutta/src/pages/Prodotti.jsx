@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../services/supabaseClient'
-import { createProdotto, updateProdotto, deleteProdotto } from '../services/prodottiService'
+import { createProdotto, updateProdotto, updateProdottoStatus, deleteProdotto } from '../services/prodottiService'
 import { parseTipologie, capitalize } from '../utils/constants'
 
 export function Prodotti() {
@@ -129,6 +129,18 @@ export function Prodotti() {
 
       if (err) throw err
       setSuccess('Prodotto eliminato!')
+      await fetchProdotti()
+    } catch (err) {
+      setError('Errore: ' + err.message)
+    }
+  }
+
+  const handleToggleAttivo = async (prodotto) => {
+    try {
+      const { error: err } = await updateProdottoStatus(prodotto.id, !prodotto.attivo)
+
+      if (err) throw err
+      setSuccess(`Prodotto ${!prodotto.attivo ? 'attivato' : 'disattivato'} con successo!`)
       await fetchProdotti()
     } catch (err) {
       setError('Errore: ' + err.message)
@@ -324,18 +336,29 @@ export function Prodotti() {
                         ))}
                       </div>
                     </div>
-                    <div className="ml-2 flex flex-col gap-2">
+                    <div className="ml-2 flex flex-row gap-2">
                       <button
-                        onClick={() => handleDelete(p.id)}
-                        className="px-2 py-1 bg-red-100 text-red-600 rounded text-xs font-semibold hover:bg-red-200 transition"
+                        onClick={() => handleToggleAttivo(p)}
+                        className={`px-2 py-1 rounded text-xs font-semibold transition ${
+                          p.attivo
+                            ? 'bg-green-100 text-green-600 hover:bg-green-200'
+                            : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        }`}
+                        title={p.attivo ? 'Disattiva prodotto' : 'Attiva prodotto'}
                       >
-                        ❌
+                        {p.attivo ? '✅' : '⭕'}
                       </button>
                       <button
                         onClick={() => handleModificaProdotto(p)}
                         className="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs font-semibold hover:bg-blue-200 transition"
                       >
                         ✏️
+                      </button>
+                      <button
+                        onClick={() => handleDelete(p.id)}
+                        className="px-2 py-1 bg-red-100 text-red-600 rounded text-xs font-semibold hover:bg-red-200 transition"
+                      >
+                        ❌
                       </button>
                     </div>
                   </div>
