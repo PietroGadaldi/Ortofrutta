@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { format, parseISO, isSameDay, isAfter, startOfDay } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { capitalize } from '../utils/constants'
+import { capitalize, WHATSAPP_NUMBER } from '../utils/constants'
 
 /**
  * OrdersHistory component
@@ -36,21 +36,21 @@ export function OrdersHistory({
     }
   }
 
-  // Check if order can be edited (today or future, but today only until 06:00)
+  // Check if order can be edited (today or future, but today only until 02:00)
   const isOrderEditable = (data_ordine) => {
     try {
       const ordineDate = startOfDay(parseISO(data_ordine))
       const now = new Date()
       const today = startOfDay(now)
-      
+
       // Se l'ordine è per un giorno futuro, è sempre modificabile
       if (isAfter(ordineDate, today)) return true
-      
-      // Se l'ordine è per oggi, è modificabile solo se sono prima delle 6:00 del mattino
+
+      // Se l'ordine è per oggi, è modificabile solo se sono prima delle 02:00 del mattino
       if (isSameDay(ordineDate, today)) {
-        return now.getHours() < 6
+        return now.getHours() < 2
       }
-      
+
       return false
     } catch {
       return false
@@ -150,7 +150,7 @@ export function OrdersHistory({
           <span>ℹ️</span> Informazione importante:
         </p>
         <p className="text-xs text-blue-800 mt-1 font-semibold">
-          Puoi modificare o annullare i tuoi ordini in autonomia fino alle <strong>06:00</strong> del giorno di consegna.
+          Puoi modificare o annullare i tuoi ordini in autonomia fino alle <strong>02:00</strong> del giorno di consegna.
         </p>
       </div>
 
@@ -272,14 +272,28 @@ export function OrdersHistory({
                   </div>
                 )}
 
-                {/* Messaggio quando il tempo per modificare è scaduto ma l'ordine non è ancora completato */}
-                {isPast && !ordine.completato && (
+                {/* Messaggio quando il tempo per modificare è scaduto */}
+                {isPast && (
                   <div className="mt-5 p-4 bg-orange-100 border-l-4 border-orange-500 rounded-lg text-left">
                     <p className="text-sm text-orange-900 font-bold">⚠️ Modifica non più disponibile</p>
-                    <p className="text-xs text-orange-800 mt-1 font-semibold leading-relaxed">
-                      Il tempo massimo per la modifica automatica (ore 06:00 del giorno di consegna) è scaduto.<br/>
-                      Se hai bisogno di variazioni urgenti, prova a <strong>contattare direttamente il titolare</strong>.
+                    <p className="text-xs text-orange-800 mt-2 font-semibold leading-relaxed">
+                      Il tempo massimo per la modifica autonoma (ore 02:00 del giorno di consegna) è scaduto.
                     </p>
+                    <p className="text-xs text-orange-800 mt-1 leading-relaxed">
+                      Se hai bisogno di variazioni urgenti, contatta direttamente il titolare su WhatsApp:
+                    </p>
+                    <a
+                      href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Salve, avrei bisogno di una modifica urgente al mio ordine.')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold py-2 px-3 rounded-lg transition-all"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 flex-shrink-0">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                        <path d="M12 0C5.373 0 0 5.373 0 12c0 2.115.554 4.1 1.523 5.823L.057 23.486a.5.5 0 0 0 .612.612l5.663-1.466A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.502-5.176-1.381l-.372-.217-3.863 1 1-3.863-.217-.372A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+                      </svg>
+                      Contatta il titolare su WhatsApp
+                    </a>
                   </div>
                 )}
               </div>

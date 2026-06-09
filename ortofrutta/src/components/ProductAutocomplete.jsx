@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { parseTipologie, capitalize } from '../utils/constants'
-
-const WHATSAPP_NUMBER = '393888005812'
+import { parseTipologie, capitalize, WHATSAPP_NUMBER } from '../utils/constants'
 
 /**
  * ProductAutocomplete component
