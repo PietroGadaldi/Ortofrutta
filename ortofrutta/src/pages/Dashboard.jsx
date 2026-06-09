@@ -343,9 +343,9 @@ export function Dashboard() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-8 shadow-xl">
-        <h1 className="text-4xl font-black mb-2">📦 Gestione Ordini</h1>
-        <p className="text-green-100 text-lg font-semibold">Crea, modifica e visualizza i tuoi ordini in modo semplice e intuitivo</p>
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-4 sm:p-8 shadow-xl">
+        <h1 className="text-2xl sm:text-4xl font-black mb-2">📦 Gestione Ordini</h1>
+        <p className="text-green-100 text-sm sm:text-lg font-semibold">Crea, modifica e visualizza i tuoi ordini in modo semplice e intuitivo</p>
       </div>
 
       {/* Error alert */}

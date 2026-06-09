@@ -174,18 +174,18 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-hidden">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden">
+      <div className="bg-white rounded-t-2xl sm:rounded-xl shadow-2xl max-w-2xl w-full h-[95vh] sm:h-[90vh] flex flex-col">
         {/* Header - Sticky */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex-shrink-0 border-b-2 border-blue-800">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0 border-b-2 border-blue-800 rounded-t-2xl sm:rounded-t-xl">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-xl sm:text-2xl font-bold text-white">
               ✏️ Modifica Ordine
             </h2>
             <button
               onClick={onClose}
               disabled={isSubmitting}
-              className="text-white text-2xl leading-none hover:opacity-80 disabled:opacity-50 transition-all"
+              className="text-white text-2xl leading-none hover:opacity-80 disabled:opacity-50 transition-all p-1"
             >
               ✕
             </button>
@@ -194,7 +194,7 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
 
         {/* Content - Scrollable */}
         <div className="flex-1 overflow-y-auto">
-          <div className="p-6 space-y-6">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             {/* Order Info - Client and Date Selection */}
             {ordine && selectedDate && (
               <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
@@ -267,7 +267,7 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
         </div>
 
         {/* Action Buttons - Fixed at bottom */}
-        <div className="border-t-2 border-gray-300 bg-white px-6 py-4 flex gap-3 flex-shrink-0">
+        <div className="border-t-2 border-gray-300 bg-white px-4 sm:px-6 py-3 sm:py-4 flex gap-2 sm:gap-3 flex-shrink-0">
           <button
             onClick={handleClearOrder}
             disabled={isSubmitting || productsInOrder.length === 0}

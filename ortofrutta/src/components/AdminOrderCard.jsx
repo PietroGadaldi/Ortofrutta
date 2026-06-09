@@ -97,26 +97,26 @@ export function AdminOrderCard({
       <>
         <div className="bg-white border-2 border-gray-300 rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
           {/* Receipt Header - All left aligned */}
-          <div className="mb-6 text-left">
-            <div className="flex items-start justify-between mb-3">
-              <h3 className="text-lg font-bold text-gray-800">
+          <div className="mb-4 sm:mb-6 text-left">
+            <div className="flex items-start justify-between mb-3 gap-2">
+              <h3 className="text-base sm:text-lg font-bold text-gray-800">
                 👤 {ordine.profili?.nome || 'Cliente Sconosciuto'}
               </h3>
               <div className={`
-                px-3 py-1 rounded-full font-bold text-sm
-                ${ordine.completato 
-                  ? 'bg-green-100 text-green-800' 
+                flex-shrink-0 px-2 sm:px-3 py-1 rounded-full font-bold text-xs sm:text-sm
+                ${ordine.completato
+                  ? 'bg-green-100 text-green-800'
                   : 'bg-orange-100 text-orange-800'
                 }
               `}>
                 {ordine.completato ? '✅ Completato' : '🖨️ Da stampare'}
               </div>
             </div>
-            
-            <p className="text-sm text-gray-700 mb-1">
+
+            <p className="text-xs sm:text-sm text-gray-700 mb-1">
               <span className="font-semibold">Data ordine:</span> {formatDate(ordine.data_ordine)}
             </p>
-            <p className="text-sm text-gray-700">
+            <p className="text-xs sm:text-sm text-gray-700">
               <span className="font-semibold">Data creazione:</span> {formatDateTime(ordine.data_creazione)}
             </p>
           </div>
@@ -152,25 +152,25 @@ export function AdminOrderCard({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4 border-t border-gray-200">
+          <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-200">
             <button
               onClick={handleViewPDF}
               disabled={pdfLoading}
-              className="flex-1 py-2 px-3 bg-blue-500 text-white text-sm font-bold rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-all"
+              className="flex-1 min-w-[100px] py-2 px-2 sm:px-3 bg-blue-500 text-white text-xs sm:text-sm font-bold rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-all"
             >
-              {pdfLoading ? '⏳ Caricamento...' : '👁️ Visualizza PDF'}
+              {pdfLoading ? '⏳ Caricamento...' : '👁️ PDF'}
             </button>
             <button
               onClick={() => setShowEditModal(true)}
               disabled={isLoading}
-              className="py-2 px-3 bg-orange-500 text-white text-sm font-bold rounded-lg hover:bg-orange-600 disabled:bg-gray-400 transition-all"
+              className="py-2 px-3 bg-orange-500 text-white text-xs sm:text-sm font-bold rounded-lg hover:bg-orange-600 disabled:bg-gray-400 transition-all"
             >
               ✏️ Modifica
             </button>
             <button
               onClick={handleDeleteOrder}
               disabled={isLoading}
-              className="py-2 px-3 bg-red-500 text-white text-sm font-bold rounded-lg hover:bg-red-600 disabled:bg-gray-400 transition-all"
+              className="py-2 px-3 bg-red-500 text-white text-xs sm:text-sm font-bold rounded-lg hover:bg-red-600 disabled:bg-gray-400 transition-all"
             >
               🗑️ Elimina
             </button>

@@ -31,11 +31,11 @@ export default function Navigation() {
         <div className="flex justify-between items-center h-16">
           {/* Logo - Porta sempre alla Home */}
           <Link to="/" className="flex items-center gap-2">
-            <img src="/Ortofrutta.png" alt="Logo" className="h-12 w-12" />
-            <span className="text-2xl font-bold text-white">Ortofrutta Brescia</span>
+            <img src="/Ortofrutta.png" alt="Logo" className="h-9 w-9 sm:h-12 sm:w-12 flex-shrink-0" />
+            <span className="text-sm sm:text-2xl font-bold text-white leading-tight">Ortofrutta Brescia</span>
           </Link>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 sm:gap-6">
             {user ? (
               <>
                 <div className="flex gap-4">
@@ -56,7 +56,7 @@ export default function Navigation() {
 
                 <button
                   onClick={handleLogout}
-                  className="px-4 py-2 bg-white text-verde-orto-600 rounded-lg font-semibold hover:bg-gray-100 transition"
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 bg-white text-verde-orto-600 rounded-lg font-semibold hover:bg-gray-100 transition text-sm sm:text-base"
                 >
                   Logout
                 </button>
@@ -64,7 +64,7 @@ export default function Navigation() {
             ) : (
               <Link
                 to="/login"
-                className="px-4 py-2 bg-white text-verde-orto-600 rounded-lg font-semibold hover:bg-gray-100 transition"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-white text-verde-orto-600 rounded-lg font-semibold hover:bg-gray-100 transition text-sm sm:text-base"
               >
                 Login
               </Link>

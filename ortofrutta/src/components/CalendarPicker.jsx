@@ -56,11 +56,11 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
   const renderDays = () => {
     const days = ['Lu', 'Ma', 'Me', 'Gi', 'Ve', 'Sa', 'Do']
     return (
-      <div className="grid grid-cols-7 gap-2 mb-3">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-3">
         {days.map((day) => (
           <div
             key={day}
-            className="text-center text-sm font-bold text-green-700 py-2 bg-green-100 rounded-lg"
+            className="text-center text-xs sm:text-sm font-bold text-green-700 py-2 bg-green-100 rounded-lg"
           >
             {day}
           </div>
@@ -100,7 +100,7 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
             onClick={() => !isDisabled && onSelectDate(cloneDay)}
             disabled={isDisabled}
             className={`
-              p-2 text-sm font-semibold rounded-lg transition-colors
+              min-h-[36px] sm:min-h-[40px] p-1 sm:p-2 text-xs sm:text-sm font-semibold rounded-lg transition-colors
               ${!isSameMonth(day, monthStart) ? 'text-gray-300' : ''}
               ${isDisabled && isSameMonth(day, monthStart) ? 'text-gray-400 cursor-not-allowed' : ''}
               ${isSelected ? 'bg-green-600 text-white' : ''}
@@ -114,7 +114,7 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
         day = addDays(day, 1)
       }
       rows.push(
-        <div key={day} className="grid grid-cols-7 gap-1 mb-1">
+        <div key={day} className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-0.5 sm:mb-1">
           {days}
         </div>
       )
@@ -125,9 +125,9 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
   }
 
   return (
-    <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl p-6 shadow-lg">
-      <h3 className="text-xl font-bold text-green-900 mb-4 flex items-center gap-2">
-        <span className="text-2xl">📅</span> Seleziona Data Ordine
+    <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl p-4 sm:p-6 shadow-lg">
+      <h3 className="text-lg sm:text-xl font-bold text-green-900 mb-3 sm:mb-4 flex items-center gap-2">
+        <span className="text-xl sm:text-2xl">📅</span> Seleziona Data Ordine
       </h3>
       {renderHeader()}
       {renderDays()}

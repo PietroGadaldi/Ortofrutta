@@ -147,8 +147,8 @@ export function AdminOrdersPage() {
     <div className="space-y-8">
       {/* Header */}
       <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-xl p-4 shadow-xl">
-        <h1 className="text-4xl font-black mb-2">🏪 Gestione Ordini (Titolare)</h1>
-        <p className="text-amber-100 text-lg font-semibold">Visualizza e gestisci gli ordini dei tuoi clienti</p>
+        <h1 className="text-2xl sm:text-4xl font-black mb-2">🏪 Gestione Ordini (Titolare)</h1>
+        <p className="text-amber-100 text-sm sm:text-lg font-semibold">Visualizza e gestisci gli ordini dei tuoi clienti</p>
       </div>
 
       {/* Error Alert */}
@@ -162,19 +162,19 @@ export function AdminOrdersPage() {
       <HorizontalWeekSelector selectedDate={selectedDate} onSelectDate={setSelectedDate} />
 
       {/* Titolo Formattato e Riquadri Statistiche */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-xl border-2 border-amber-200 shadow-sm">
-        <h2 className="text-2xl font-black text-amber-900 uppercase">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 bg-white p-4 sm:p-6 rounded-xl border-2 border-amber-200 shadow-sm">
+        <h2 className="text-base sm:text-2xl font-black text-amber-900 uppercase">
           ORDINI DI {format(selectedDate, "EEEE d MMMM yyyy", { locale: it })}
         </h2>
-        
+
         <div className="flex gap-3 w-full md:w-auto">
           <div className="flex-1 md:flex-none bg-amber-50 border-2 border-amber-300 p-3 rounded-lg text-center">
             <p className="text-xs font-bold text-amber-700 uppercase">Totale ordini</p>
-            <p className="text-2xl font-black text-amber-900">{stats.totale}</p>
+            <p className="text-xl sm:text-2xl font-black text-amber-900">{stats.totale}</p>
           </div>
           <div className="flex-1 md:flex-none bg-orange-50 border-2 border-orange-300 p-3 rounded-lg text-center">
             <p className="text-xs font-bold text-orange-700 uppercase">Da stampare</p>
-            <p className="text-2xl font-black text-orange-900">{stats.daStampare}</p>
+            <p className="text-xl sm:text-2xl font-black text-orange-900">{stats.daStampare}</p>
           </div>
         </div>
       </div>

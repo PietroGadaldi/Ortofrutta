@@ -221,24 +221,24 @@ export function Utenti() {
     <div className="space-y-8">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-4 shadow-xl">
-        <h1 className="text-4xl font-black mb-2">👤 Gestione Utenti</h1>
-        <p className="text-blue-100 text-lg font-semibold">Crea nuovi account per clienti e titolari</p>
+        <h1 className="text-2xl sm:text-4xl font-black mb-2">👤 Gestione Utenti</h1>
+        <p className="text-blue-100 text-sm sm:text-lg font-semibold">Crea nuovi account per clienti e titolari</p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-2 gap-4 sm:gap-8">
         {/* Form */}
         <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl shadow-lg p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-black flex items-center gap-2">
-              <span className="text-3xl">{isModifying ? '📝' : '➕'}</span> 
+            <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2">
+              <span className="text-2xl sm:text-3xl">{isModifying ? '📝' : '➕'}</span>
               {isModifying ? 'Modifica Account' : 'Crea Nuovo Account'}
             </h2>
             {isModifying && (
               <button
                 onClick={resetForm}
-                className="px-4 py-2 text-sm bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-bold hover:from-red-700 hover:to-red-800 transition shadow-md hover:scale-105 active:scale-95"
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-bold hover:from-red-700 hover:to-red-800 transition shadow-md hover:scale-105 active:scale-95"
               >
-                ✖ Annulla Modifica
+                ✖ Annulla
               </button>
             )}
           </div>
@@ -320,24 +320,24 @@ export function Utenti() {
 
         {/* Clients List */}
         <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-black flex items-center gap-2">
-              <span className="text-3xl">📋</span> {viewingRole === 'cliente' ? 'Clienti' : 'Titolari'} ({clienti.length})
+          <div className="flex justify-between items-center mb-4 gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2">
+              <span className="text-2xl sm:text-3xl">📋</span> {viewingRole === 'cliente' ? 'Clienti' : 'Titolari'} ({clienti.length})
             </h2>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-shrink-0">
               <button
                 onClick={toggleRole}
                 disabled={loadingClienti}
-                className="px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100"
+                className="px-2 sm:px-4 py-2 text-xs sm:text-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100"
               >
-                {viewingRole === 'cliente' ? '👑 Mostra Titolari' : '👤 Mostra Clienti'}
+                {viewingRole === 'cliente' ? '👑 Titolari' : '👤 Clienti'}
               </button>
               <button
                 onClick={() => fetchClienti(viewingRole)}
                 disabled={loadingClienti}
-                className="px-4 py-2 text-sm bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100"
+                className="px-2 sm:px-4 py-2 text-xs sm:text-sm bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100"
               >
-                🔄 Aggiorna
+                🔄
               </button>
             </div>
           </div>
@@ -376,13 +376,13 @@ export function Utenti() {
                       <p className="text-xs text-gray-400 mt-1 italic text-left">Nessuna email</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 text-xs bg-gradient-to-r from-green-200 to-green-100 text-green-900 rounded-full font-bold">
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="hidden sm:inline px-3 py-1 text-xs bg-gradient-to-r from-green-200 to-green-100 text-green-900 rounded-full font-bold">
                       {cliente.ruolo === 'cliente' ? '👤 Cliente' : '🏪 Titolare'}
                     </span>
                     <button
                       onClick={() => handleEditUser(cliente)}
-                      className="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs font-semibold hover:bg-blue-200 transition"
+                      className="p-2 bg-blue-100 text-blue-600 rounded text-sm font-semibold hover:bg-blue-200 transition min-w-[36px] min-h-[36px] flex items-center justify-center"
                     >
                       ✏️
                     </button>
@@ -391,7 +391,7 @@ export function Utenti() {
                         setUserToDelete(cliente)
                         setShowDeleteModal(true)
                       }}
-                      className="px-2 py-1 bg-red-100 text-red-600 rounded text-xs font-semibold hover:bg-red-200 transition"
+                      className="p-2 bg-red-100 text-red-600 rounded text-sm font-semibold hover:bg-red-200 transition min-w-[36px] min-h-[36px] flex items-center justify-center"
                     >
                       ❌
                     </button>

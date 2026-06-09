@@ -51,7 +51,7 @@ export function OrdersForDayList({
   const ordiniDaStampare = filteredOrdini.filter(o => !o.completato).length
 
   return (
-    <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl p-6 shadow-lg">
+    <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl p-4 sm:p-6 shadow-lg">
       {/* Header */}
       <div className="mb-6">
     
