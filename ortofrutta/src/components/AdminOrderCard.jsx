@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { PDFPreviewModal } from './PDFPreviewModal'
+import { EditOrderModal } from './EditOrderModal'
 import { getOrderPDFUrl } from '../services/pdfStorageService'
 import { generateOrderPDF } from '../utils/pdfGenerator'
 
@@ -11,6 +12,8 @@ import { generateOrderPDF } from '../utils/pdfGenerator'
  * @param {Object} ordine - Order object with details
  * @param {Function} onStatusChange - Callback when status is toggled
  * @param {Function} onDeleteOrder - Callback when delete is clicked
+ * @param {Function} onOrderModified - Callback when order is modified
+ * @param {Array} prodotti - Available products for autocomplete when editing
  * @param {boolean} isLoading - Loading state for button
  * @param {boolean} showAsReceiptCards - If true, show as non-expandable receipt card
  */
@@ -18,6 +21,8 @@ export function AdminOrderCard({
   ordine, 
   onStatusChange, 
   onDeleteOrder, 
+  onOrderModified,
+  prodotti = [],
   isLoading = false,
   showAsReceiptCards = false 
 }) {
@@ -27,6 +32,7 @@ export function AdminOrderCard({
   const [pdfData, setPdfData] = useState(null)
   const [pdfLoading, setPdfLoading] = useState(false)
   const [pdfError, setPdfError] = useState(null)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   const formatDate = (dateString) => {
     try {
@@ -153,6 +159,13 @@ export function AdminOrderCard({
               {pdfLoading ? '⏳ Caricamento...' : '👁️ Visualizza PDF'}
             </button>
             <button
+              onClick={() => setShowEditModal(true)}
+              disabled={isLoading}
+              className="py-2 px-3 bg-orange-500 text-white text-sm font-bold rounded-lg hover:bg-orange-600 disabled:bg-gray-400 transition-all"
+            >
+              ✏️ Modifica
+            </button>
+            <button
               onClick={handleDeleteOrder}
               disabled={isLoading}
               className="py-2 px-3 bg-red-500 text-white text-sm font-bold rounded-lg hover:bg-red-600 disabled:bg-gray-400 transition-all"
@@ -177,6 +190,15 @@ export function AdminOrderCard({
           ordineId={ordine.id}
           onStatusChange={onStatusChange}
           isCompletato={ordine.completato}
+        />
+
+        {/* Edit Order Modal */}
+        <EditOrderModal
+          ordine={ordine}
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onSave={onOrderModified}
+          prodotti={prodotti}
         />
       </>
     )

@@ -4,6 +4,7 @@ import { it } from 'date-fns/locale'
 import { HorizontalWeekSelector } from '../components/HorizontalWeekSelector'
 import { OrdersForDayList } from '../components/OrdersForDayList'
 import { updateOrdineStatus, deleteOrdine } from '../services/ordiniService'
+import { supabase } from '../services/supabaseClient'
 import { useAuth } from '../hooks/useAuth'
 
 /**
@@ -14,6 +15,7 @@ export function AdminOrdersPage() {
   const { token } = useAuth()
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()))
   const [ordini, setOrdini] = useState([])
+  const [prodotti, setProdotti] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
@@ -39,6 +41,26 @@ export function AdminOrdersPage() {
   useEffect(() => {
     fetchOrders()
   }, [selectedDate])
+
+  // Fetch products on mount
+  useEffect(() => {
+    fetchProdotti()
+  }, [])
+
+  const fetchProdotti = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('prodotti')
+        .select('*')
+        .order('nome', { ascending: true })
+
+      if (error) throw error
+      setProdotti(data || [])
+    } catch (err) {
+      console.error('Error fetching products:', err)
+      // Non è critico, continua comunque
+    }
+  }
 
   const fetchOrders = async () => {
     setLoading(true)
@@ -111,6 +133,11 @@ export function AdminOrdersPage() {
     }
   }
 
+  const handleOrderModified = async () => {
+    // Refresh orders after modification
+    await fetchOrders()
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -165,6 +192,8 @@ export function AdminOrdersPage() {
             ordini={filteredOrdini}
             onStatusChange={handleStatusChange}
             onDeleteOrder={handleDeleteOrder}
+            onOrderModified={handleOrderModified}
+            prodotti={prodotti}
             isLoading={isUpdating || loading}
             isEmpty={filteredOrdini.length === 0 && !loading}
             showAsReceiptCards={true}
