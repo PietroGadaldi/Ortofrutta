@@ -109,7 +109,7 @@ export function AdminOrderCard({
               <span className="font-semibold">Data ordine:</span> {formatDate(ordine.data_ordine)}
             </p>
             <p className="text-sm text-gray-700">
-              <span className="font-semibold">Data sottomissione:</span> {formatDateTime(ordine.data_creazione)}
+              <span className="font-semibold">Data creazione:</span> {formatDateTime(ordine.data_creazione)}
             </p>
           </div>
 
