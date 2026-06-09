@@ -105,7 +105,9 @@ export function Utenti() {
 
   const handleEditUser = (cliente) => {
     setNome(cliente.nome)
-    setEmail(cliente.email || '') // Nota: l'email potrebbe arrivare dal profilo o dall'auth
+    // Non pre-compilare email placeholder interne
+    const realEmail = cliente.email && !cliente.email.endsWith('@noreply.internal') ? cliente.email : ''
+    setEmail(realEmail)
     setPassword('') // La password rimane vuota in modifica
     setRuolo(cliente.ruolo)
     setIsModifying(true)
@@ -135,14 +137,15 @@ export function Utenti() {
       return
     }
 
-    if (!validateEmail(email)) {
-      setError('Email non valida')
+    // Email facoltativa, ma se inserita deve essere valida
+    if (email.trim() && !validateEmail(email)) {
+      setError('Formato email non valido')
       return
     }
 
     // Password obbligatoria solo in creazione
     if (!isModifying && (!password || password.length < 6)) {
-      setError('Password deve avere almeno 6 caratteri')
+      setError('La password è obbligatoria (minimo 6 caratteri)')
       return
     } else if (isModifying && password && password.length < 6) {
       setError('La nuova password deve avere almeno 6 caratteri')
@@ -179,7 +182,7 @@ export function Utenti() {
         throw new Error(data.error || 'Errore nel salvataggio account')
       }
 
-      setSuccess(isModifying ? `Account aggiornato per ${email}` : `Account creato per ${email}`)
+      setSuccess(isModifying ? `Account di ${nome} aggiornato con successo` : `Account creato per ${nome}`)
       resetForm()
       
       // Refresh clients list
@@ -266,13 +269,16 @@ export function Utenti() {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-black mb-2 text-left">📧 Email</label>
+              <label className="block text-sm font-bold text-black mb-2 text-left">
+                📧 Email
+                <span className="ml-2 text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">facoltativa</span>
+              </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold"
-                placeholder="email@example.com"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold"
+                placeholder="Può essere aggiunta in seguito"
                 disabled={isSubmitting}
               />
             </div>
@@ -364,7 +370,11 @@ export function Utenti() {
                 >
                   <div className="flex-1">
                     <p className="font-bold text-black text-left">{cliente.nome}</p>
-                    <p className="text-xs text-green-700 mt-1 font-semibold text-left">{cliente.email}</p>
+                    {cliente.email && !cliente.email.endsWith('@noreply.internal') ? (
+                      <p className="text-xs text-green-700 mt-1 font-semibold text-left">{cliente.email}</p>
+                    ) : (
+                      <p className="text-xs text-gray-400 mt-1 italic text-left">Nessuna email</p>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="px-3 py-1 text-xs bg-gradient-to-r from-green-200 to-green-100 text-green-900 rounded-full font-bold">
@@ -401,7 +411,10 @@ export function Utenti() {
               ⚠️ Conferma Eliminazione
             </h3>
             <p className="text-gray-700 mb-4 text-left">
-              Sei sicuro di voler eliminare l'utente <strong>{userToDelete?.nome}</strong> ({userToDelete?.email})?
+              Sei sicuro di voler eliminare l'utente <strong>{userToDelete?.nome}</strong>
+              {userToDelete?.email && !userToDelete.email.endsWith('@noreply.internal') && (
+                <> ({userToDelete.email})</>
+              )}?
             </p>
             <div className="bg-red-50 border-l-4 border-red-500 p-3 mb-6">
               <p className="text-xs text-red-800 font-bold text-left">

@@ -46,24 +46,33 @@ export async function handler(event) {
 
     if (!userId) return errorResponse(400, 'ID utente mancante')
 
-    // 4. Aggiornamento in Supabase Auth (Email e opzionalmente Password)
-    const authUpdate = {
-      email: email,
-      email_confirm: true // Evita email di conferma per modifiche amministrative
+    // 4. Aggiornamento in Supabase Auth (solo i campi forniti)
+    const authUpdate = {}
+
+    // Aggiorna email solo se fornita e non vuota
+    const trimmedEmail = email?.trim()
+    if (trimmedEmail) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(trimmedEmail)) {
+        return errorResponse(400, 'Formato email non valido')
+      }
+      authUpdate.email = trimmedEmail
+      authUpdate.email_confirm = true
     }
-    
+
     if (password && password.trim() !== '') {
       authUpdate.password = password
     }
 
-    const { error: updateAuthError } = await supabaseAdmin.auth.admin.updateUserById(
-      userId,
-      authUpdate
-    )
-
-    if (updateAuthError) {
-      console.error('Auth update error:', updateAuthError)
-      return errorResponse(500, `Errore Auth: ${updateAuthError.message}`)
+    if (Object.keys(authUpdate).length > 0) {
+      const { error: updateAuthError } = await supabaseAdmin.auth.admin.updateUserById(
+        userId,
+        authUpdate
+      )
+      if (updateAuthError) {
+        console.error('Auth update error:', updateAuthError)
+        return errorResponse(500, `Errore Auth: ${updateAuthError.message}`)
+      }
     }
 
     // 5. Aggiornamento nella tabella Profili
