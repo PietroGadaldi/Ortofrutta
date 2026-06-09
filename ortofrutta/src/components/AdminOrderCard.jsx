@@ -22,6 +22,7 @@ export function AdminOrderCard({
   showAsReceiptCards = false 
 }) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isProductsExpanded, setIsProductsExpanded] = useState(false)
   const [showPDFModal, setShowPDFModal] = useState(false)
   const [pdfData, setPdfData] = useState(null)
   const [pdfLoading, setPdfLoading] = useState(false)
@@ -104,9 +105,6 @@ export function AdminOrderCard({
               </div>
             </div>
             
-            <p className="text-sm text-gray-700 mb-2">
-              <span className="font-semibold">Ordine #:</span> <span className="font-mono">{ordine.id}</span>
-            </p>
             <p className="text-sm text-gray-700 mb-1">
               <span className="font-semibold">Data ordine:</span> {formatDate(ordine.data_ordine)}
             </p>
@@ -115,23 +113,34 @@ export function AdminOrderCard({
             </p>
           </div>
 
-          {/* Products */}
-          <div className="mb-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h4 className="font-bold text-gray-800 text-sm mb-3">
-              📦 Prodotti ({ordine.dettagli_ordine?.length || 0})
-            </h4>
-            <div className="space-y-2">
-              {ordine.dettagli_ordine && ordine.dettagli_ordine.length > 0 ? (
-                ordine.dettagli_ordine.map((dettaglio) => (
-                  <div key={dettaglio.id} className="text-sm text-gray-700 flex justify-between items-start">
-                    <span className="font-semibold">{dettaglio.prodotti?.nome}</span>
-                    <span className="text-gray-600">{dettaglio.quantita} {dettaglio.tipologia}</span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-gray-500 italic">Nessun prodotto disponibile</p>
-              )}
-            </div>
+          {/* Products - Expandable */}
+          <div className="mb-4 bg-gray-50 rounded-lg border border-gray-200">
+            <button
+              onClick={() => setIsProductsExpanded(!isProductsExpanded)}
+              className="w-full flex items-center justify-between p-4 hover:bg-gray-100 transition-colors"
+            >
+              <h4 className="font-bold text-gray-800 text-sm">
+                📦 Prodotti ({ordine.dettagli_ordine?.length || 0})
+              </h4>
+              <span className="text-gray-600 text-lg">
+                {isProductsExpanded ? '▲' : '▼'}
+              </span>
+            </button>
+
+            {isProductsExpanded && (
+              <div className="border-t border-gray-200 p-4 space-y-2">
+                {ordine.dettagli_ordine && ordine.dettagli_ordine.length > 0 ? (
+                  ordine.dettagli_ordine.map((dettaglio) => (
+                    <div key={dettaglio.id} className="text-sm text-gray-700 flex justify-between items-start">
+                      <span className="font-semibold">{dettaglio.prodotti?.nome}</span>
+                      <span className="text-gray-600">{dettaglio.quantita} {dettaglio.tipologia}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500 italic">Nessun prodotto disponibile</p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
