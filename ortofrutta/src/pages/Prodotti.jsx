@@ -24,7 +24,7 @@ export function Prodotti() {
   const fetchProdotti = async () => {
     setLoading(true)
     try {
-      const { data, error: err } = await supabase.from('prodotti').select('*')
+      const { data, error: err } = await supabase.from('prodotti').select('*').order('nome', { ascending: true })
       if (err) throw err
       setProdotti(data || [])
     } catch (err) {
@@ -104,16 +104,25 @@ export function Prodotti() {
 
         if (err) throw err
         setSuccess('Prodotto modificato con successo!')
+        
+        // Aggiorna solo il prodotto locale senza refetch
+        setProdotti(prodotti.map(p => 
+          p.id === modifyingProdottoId 
+            ? { ...p, nome: nomeLower, tipologie_possibili: tipologieStr }
+            : p
+        ))
       } else {
         // Modalità creazione
         const { error: err } = await createProdotto(nomeLower, tipologieStr)
 
         if (err) throw err
         setSuccess('Prodotto aggiunto con successo!')
+        
+        // Ricarica per ottenere il nuovo prodotto con ID
+        await fetchProdotti()
       }
 
       resetForm()
-      await fetchProdotti()
     } catch (err) {
       setError('Errore: ' + err.message)
     } finally {
@@ -141,7 +150,8 @@ export function Prodotti() {
 
       if (err) throw err
       setSuccess(`Prodotto ${!prodotto.attivo ? 'attivato' : 'disattivato'} con successo!`)
-      await fetchProdotti()
+      // Aggiorna solo il prodotto locale senza refetch
+      setProdotti(prodotti.map(p => p.id === prodotto.id ? { ...p, attivo: !p.attivo } : p))
     } catch (err) {
       setError('Errore: ' + err.message)
     }
