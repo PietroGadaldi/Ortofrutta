@@ -362,7 +362,7 @@ export function Utenti() {
           ) : clienti.length === 0 ? (
             <div className="text-black font-semibold italic">❌ Nessun {viewingRole === 'cliente' ? 'cliente' : 'titolare'} creato ancora</div>
           ) : (
-            <div className="space-y-2 max-h-[500px] overflow-y-auto overscroll-contain pr-2" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="space-y-2 md:max-h-[500px] md:overflow-y-auto overscroll-contain pr-2" style={{ WebkitOverflowScrolling: 'touch' }}>
               {clienti.map((cliente) => (
                 <div
                   key={cliente.id}

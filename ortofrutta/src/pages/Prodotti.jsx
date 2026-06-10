@@ -352,7 +352,7 @@ export function Prodotti() {
                     {filteredProdotti.length === 0 && searchFilter ? (
                       <div className="text-black font-semibold italic">❌ Nessun prodotto corrisponde alla ricerca</div>
                     ) : (
-                      <div className="space-y-3 max-h-96 overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+                      <div className="space-y-3 md:max-h-96 md:overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
                         {filteredProdotti.map((p) => (
                 <div
                   key={p.id}
