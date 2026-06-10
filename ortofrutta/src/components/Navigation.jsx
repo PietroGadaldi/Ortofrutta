@@ -26,8 +26,17 @@ export default function Navigation() {
   }
 
   return (
-    <nav className="bg-gradient-to-r from-verde-orto-600 to-verde-orto-700 shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav
+      className="bg-gradient-to-r from-verde-orto-600 to-verde-orto-700 shadow-lg"
+      style={{ paddingTop: 'env(safe-area-inset-top)' }}
+    >
+      <div
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+        style={{
+          paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+          paddingRight: 'max(1rem, env(safe-area-inset-right))',
+        }}
+      >
         <div className="flex justify-between items-center h-16">
           {/* Logo - Porta sempre alla Home */}
           <Link to="/" className="flex items-center gap-2">

@@ -76,6 +76,7 @@ export function Prodotti() {
     setModifyingProdottoId(prodotto.id)
     setError(null)
     setSuccess(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleSubmit = async (e) => {
@@ -214,7 +215,7 @@ export function Prodotti() {
                 type="text"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none text-black font-semibold"
+                className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none text-black font-semibold text-base"
                 placeholder="es. Pomodori"
                 disabled={isSubmitting}
               />
@@ -235,7 +236,7 @@ export function Prodotti() {
                       handleAggiungiTipologia()
                     }
                   }}
-                  className="flex-1 px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none text-black font-semibold"
+                  className="flex-1 px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none text-black font-semibold text-base"
                   placeholder="es. kg"
                   disabled={isSubmitting}
                 />
@@ -326,17 +327,17 @@ export function Prodotti() {
                     {filteredProdotti.length === 0 && searchFilter ? (
                       <div className="text-black font-semibold italic">❌ Nessun prodotto corrisponde alla ricerca</div>
                     ) : (
-                      <div className="space-y-3 max-h-96 overflow-y-auto">
+                      <div className="space-y-3 max-h-96 overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
                         {filteredProdotti.map((p) => (
                 <div
                   key={p.id}
                   className="p-3 bg-gray-50 rounded-lg border border-gray-200"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <p className="font-semibold text-gray-900 text-left">{capitalize(p.nome)}</p>
-                        <span className={`px-3 py-1 text-xs rounded-full font-bold whitespace-nowrap ${
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <p className="font-semibold text-gray-900 text-left truncate">{capitalize(p.nome)}</p>
+                        <span className={`px-2 py-0.5 text-xs rounded-full font-bold whitespace-nowrap flex-shrink-0 ${
                           p.attivo ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
                         }`}>
                           {p.attivo ? 'Attivo' : 'Non attivo'}
@@ -353,31 +354,36 @@ export function Prodotti() {
                         ))}
                       </div>
                     </div>
-                    <div className="ml-2 flex flex-row gap-2 items-center">
+                    <div className="flex flex-row gap-1 items-center flex-shrink-0">
                       <button
                         onClick={() => handleToggleAttivo(p)}
-                        className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors ${
-                          p.attivo ? 'bg-green-500' : 'bg-gray-300'
-                        }`}
+                        className="flex items-center justify-center flex-shrink-0"
+                        style={{ minWidth: '44px', minHeight: '44px' }}
                         title={p.attivo ? 'Disattiva prodotto' : 'Attiva prodotto'}
                       >
-                        <span
-                          className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-                            p.attivo ? 'translate-x-7' : 'translate-x-1'
-                          }`}
-                        />
+                        <div className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors pointer-events-none ${
+                          p.attivo ? 'bg-green-500' : 'bg-gray-300'
+                        }`}>
+                          <span
+                            className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                              p.attivo ? 'translate-x-7' : 'translate-x-1'
+                            }`}
+                          />
+                        </div>
                       </button>
                       <button
                         onClick={() => handleModificaProdotto(p)}
-                        className="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs font-semibold hover:bg-blue-200 transition"
+                        className="bg-blue-100 text-blue-600 rounded text-sm font-semibold hover:bg-blue-200 transition flex items-center justify-center"
+                        style={{ minWidth: '44px', minHeight: '44px' }}
                       >
                         ✏️
                       </button>
                       <button
                         onClick={() => handleDelete(p.id)}
-                        className="px-2 py-1 bg-red-100 text-red-600 rounded text-xs font-semibold hover:bg-red-200 transition"
+                        className="bg-red-100 text-red-600 rounded text-sm font-semibold hover:bg-red-200 transition flex items-center justify-center"
+                        style={{ minWidth: '44px', minHeight: '44px' }}
                       >
-                        ❌
+                        🗑️
                       </button>
                     </div>
                   </div>
