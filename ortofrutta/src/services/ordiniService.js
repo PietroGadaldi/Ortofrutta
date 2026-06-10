@@ -11,6 +11,7 @@ export const getAllOrdini = async (userId, role) => {
   let query = supabase.from('ordini').select(`
     id,
     data_creazione,
+    updated_at,
     data_ordine,
     completato,
     cliente_id,
@@ -137,6 +138,12 @@ export const updateOrdineDettagli = async (ordineId, dettagli) => {
 
     if (dettagliError) throw dettagliError
 
+    // Aggiorna il timestamp di modifica sull'ordine padre
+    await supabase
+      .from('ordini')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('id', ordineId)
+
     return { data: dettagliData, error: null }
   } catch (err) {
     return { data: null, error: err }
@@ -154,6 +161,7 @@ export const getOrdiniByDate = async (dataOrdine) => {
     .select(`
       id,
       data_creazione,
+      updated_at,
       data_ordine,
       completato,
       cliente_id,

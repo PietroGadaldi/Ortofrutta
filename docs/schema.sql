@@ -37,6 +37,7 @@ CREATE TABLE public.ordini (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     cliente_id uuid REFERENCES public.profili(id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     data_creazione timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT NULL,
     data_ordine date NOT NULL DEFAULT CURRENT_DATE,
     completato boolean NOT NULL DEFAULT false
 );

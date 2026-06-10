@@ -58,6 +58,12 @@ export function Dashboard() {
     fetchData()
   }, [user])
 
+  useEffect(() => {
+    if (!success) return
+    const t = setTimeout(() => setSuccess(null), 3500)
+    return () => clearTimeout(t)
+  }, [success])
+
   const fetchData = async () => {
     setLoading(true)
     setError(null)
@@ -79,6 +85,7 @@ export function Dashboard() {
           `
           id,
           data_creazione,
+          updated_at,
           data_ordine,
           completato,
           dettagli_ordine (

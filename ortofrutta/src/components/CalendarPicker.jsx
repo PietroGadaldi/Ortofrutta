@@ -54,7 +54,7 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
   }
 
   const renderDays = () => {
-    const days = ['Lu', 'Ma', 'Me', 'Gi', 'Ve', 'Sa', 'Do']
+    const days = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom']
     return (
       <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-3">
         {days.map((day) => (
