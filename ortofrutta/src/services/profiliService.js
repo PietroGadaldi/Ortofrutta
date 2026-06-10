@@ -86,7 +86,7 @@ export const updateProfile = async (userId, updates) => {
 export const getClientList = async () => {
   try {
     const response = await fetch(
-      import.meta.env.VITE_NETLIFY_FUNCTIONS_URL + '/list-clients',
+      (import.meta.env.VITE_NETLIFY_FUNCTIONS_URL || '/.netlify/functions') + '/list-clients',
       {
         method: 'GET',
         headers: {
