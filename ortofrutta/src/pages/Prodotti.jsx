@@ -17,6 +17,7 @@ export function Prodotti() {
   const [modifyingProdottoId, setModifyingProdottoId] = useState(null)
   const [searchFilter, setSearchFilter] = useState('')
   const [listLoading, setListLoading] = useState(false)
+  const [mobileTab, setMobileTab] = useState('lista')
 
   useEffect(() => {
     fetchProdotti(true)
@@ -97,6 +98,7 @@ export function Prodotti() {
     setModifyingProdottoId(prodotto.id)
     setError(null)
     setSuccess(null)
+    setMobileTab('aggiungi')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -145,6 +147,7 @@ export function Prodotti() {
       }
 
       resetForm()
+      setMobileTab('lista')
     } catch (err) {
       setError('Errore: ' + err.message)
     } finally {
@@ -209,10 +212,34 @@ export function Prodotti() {
         </div>
       )}
 
+      {/* Tab mobile */}
+      <div className="flex md:hidden rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm">
+        <button
+          onClick={() => setMobileTab('aggiungi')}
+          className={`flex-1 py-3 font-bold text-sm transition-all ${
+            mobileTab === 'aggiungi'
+              ? 'bg-green-600 text-white'
+              : 'bg-white text-gray-500 hover:bg-gray-50'
+          }`}
+        >
+          ➕ {isModifying ? 'Modifica' : 'Aggiungi'}
+        </button>
+        <button
+          onClick={() => setMobileTab('lista')}
+          className={`flex-1 py-3 font-bold text-sm transition-all ${
+            mobileTab === 'lista'
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-gray-500 hover:bg-gray-50'
+          }`}
+        >
+          📦 Lista ({prodotti.length})
+        </button>
+      </div>
+
       {/* Layout Bicolonna */}
       <div className="grid md:grid-cols-2 gap-4 sm:gap-8">
-        {/* Sezione Sinistra: Form sempre visibile */}
-        <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-4 sm:p-8">
+        {/* Sezione Sinistra: Form */}
+        <div className={`${mobileTab === 'aggiungi' ? 'block' : 'hidden'} md:block bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-4 sm:p-8`}>
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2">
               <span className="text-2xl sm:text-3xl">➕</span> Aggiungi Prodotto
@@ -302,7 +329,7 @@ export function Prodotti() {
         </div>
 
         {/* Sezione Destra: Lista Prodotti */}
-        <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl shadow-lg p-4 sm:p-8">
+        <div className={`${mobileTab === 'lista' ? 'block' : 'hidden'} md:block bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl shadow-lg p-4 sm:p-8`}>
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2">
               <span className="text-2xl sm:text-3xl">📦</span> Prodotti ({prodotti.length})
