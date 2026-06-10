@@ -292,9 +292,9 @@ export function Prodotti() {
                   type="button"
                   onClick={handleAggiungiTipologia}
                   disabled={isSubmitting}
-                  className="px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition disabled:from-gray-400 disabled:to-gray-500 whitespace-nowrap shadow-md hover:scale-105 disabled:hover:scale-100"
+                  className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold text-xl hover:from-green-700 hover:to-green-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100"
                 >
-                  ➕
+                  +
                 </button>
               </div>
             </div>

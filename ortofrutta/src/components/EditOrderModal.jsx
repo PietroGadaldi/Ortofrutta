@@ -29,6 +29,21 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
 
   const formRef = useRef(null)
   const productsListRef = useRef(null)
+  const scrollContainerRef = useRef(null)
+
+  const scrollTo = (targetRef) => {
+    setTimeout(() => {
+      const container = scrollContainerRef.current
+      const target = targetRef.current
+      if (!container || !target) return
+      const containerRect = container.getBoundingClientRect()
+      const targetRect = target.getBoundingClientRect()
+      container.scrollTo({
+        top: container.scrollTop + targetRect.top - containerRect.top - 12,
+        behavior: 'smooth',
+      })
+    }, 60)
+  }
 
   // Initialize products and date when modal opens
   useEffect(() => {
@@ -59,17 +74,13 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
     }
     setError('')
     setSuccess('')
-    setTimeout(() => {
-      productsListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 50)
+    scrollTo(productsListRef)
   }
 
   // Edit product in order summary
   const handleEditItem = (index) => {
     setEditingItemIndex(index)
-    setTimeout(() => {
-      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 50)
+    scrollTo(formRef)
   }
 
   // Delete product from order summary
@@ -200,7 +211,7 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
         </div>
 
         {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
           <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             {/* Order Info - Client and Date Selection */}
             {ordine && selectedDate && (

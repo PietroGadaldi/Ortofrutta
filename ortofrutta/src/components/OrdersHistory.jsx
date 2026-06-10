@@ -130,26 +130,26 @@ export function OrdersHistory({
 
   return (
     <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl p-6 shadow-lg">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-blue-900 flex items-center gap-2">
+      <div className="mb-6">
+        <h3 className="text-xl font-bold text-blue-900 flex items-center gap-2 mb-3">
           <span className="text-2xl">📜</span> Cronologia Ordini
         </h3>
-        <div className="flex items-center gap-3">
-          <label className="hidden md:block text-sm font-bold text-blue-900">Filtra per data:</label>
+        <div className="flex items-center gap-2">
+          <label className="hidden sm:block text-sm font-bold text-blue-900 whitespace-nowrap">Filtra per data:</label>
           <input
             type="date"
             value={filterDate}
             onChange={(e) => setFilterDate(e.target.value)}
-            className="px-4 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-black font-semibold"
+            className="flex-1 min-w-0 px-3 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-black font-semibold"
           />
-          {filterDate && (
+          {filterDate ? (
             <button
               onClick={() => setFilterDate('')}
-              className="hidden md:block px-3 py-2 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-bold"
+              className="flex-shrink-0 px-3 py-2 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-bold"
             >
               ✕ Azzera
             </button>
-          )}
+          ) : null}
         </div>
       </div>
 
