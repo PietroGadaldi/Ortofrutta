@@ -24,7 +24,8 @@ CREATE TABLE public.profili (
 CREATE TABLE public.prodotti (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     nome text NOT NULL UNIQUE,
-    tipologie_possibili text NOT NULL
+    tipologie_possibili text NOT NULL,
+    attivo boolean NOT NULL DEFAULT true
 );
 
 
@@ -48,9 +49,10 @@ CREATE TABLE public.ordini (
 CREATE TABLE public.dettagli_ordine (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     ordine_id uuid REFERENCES public.ordini(id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
-    prodotto_id uuid REFERENCES public.prodotti(id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    prodotto_id uuid REFERENCES public.prodotti(id) ON UPDATE CASCADE ON DELETE CASCADE,
     quantita numeric NOT NULL,
-    tipologia text NOT NULL
+    tipologia text NOT NULL,
+    nome_custom text 
 );
 
 
