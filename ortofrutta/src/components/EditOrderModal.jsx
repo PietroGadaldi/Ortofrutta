@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { format, parseISO } from 'date-fns'
 import { AddProductForm } from './AddProductForm'
 import { OrderItemCard } from './OrderItemCard'
@@ -27,6 +27,9 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  const formRef = useRef(null)
+  const productsListRef = useRef(null)
+
   // Initialize products and date when modal opens
   useEffect(() => {
     if (isOpen && ordine) {
@@ -47,22 +50,26 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
   // Add product to order summary
   const handleAddProduct = (product) => {
     if (editingItemIndex !== null) {
-      // Edit existing item
       const updated = [...productsInOrder]
       updated[editingItemIndex] = product
       setProductsInOrder(updated)
       setEditingItemIndex(null)
     } else {
-      // Add new item
       setProductsInOrder([...productsInOrder, product])
     }
     setError('')
     setSuccess('')
+    setTimeout(() => {
+      productsListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
   }
 
   // Edit product in order summary
   const handleEditItem = (index) => {
     setEditingItemIndex(index)
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
   }
 
   // Delete product from order summary
@@ -224,7 +231,7 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
           )}
 
           {/* Add Product Form */}
-          <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
+          <div ref={formRef} className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
             <h3 className="font-bold text-green-900 mb-4">📦 Aggiungi Prodotto</h3>
             <AddProductForm
               prodotti={prodotti}
@@ -235,7 +242,7 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
           </div>
 
           {/* Products Summary */}
-          <div className="space-y-3">
+          <div ref={productsListRef} className="space-y-3">
             <h3 className="font-bold text-gray-900 flex items-center gap-2">
               <span>📋</span> Prodotti nell'ordine
               {productsInOrder.length > 0 && (
