@@ -1,38 +1,31 @@
 // Service Worker per Ortofrutta PWA
-const CACHE_NAME = 'ortofrutta-v1';
+const CACHE_NAME = 'ortofrutta-v3';
+
+// Solo asset veramente statici e immutabili (no HTML!)
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/favicon.svg',
   '/Ortofrutta.png',
   '/icons.svg',
+  '/manifest.json',
 ];
 
 // Event: Install
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Installing...');
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Caching static assets');
       return cache.addAll(STATIC_ASSETS);
     })
   );
   self.skipWaiting();
 });
 
-// Event: Activate
+// Event: Activate - pulisce tutte le vecchie cache
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] Activating...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('[Service Worker] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
+        cacheNames
+          .filter((name) => name !== CACHE_NAME)
+          .map((name) => caches.delete(name))
       );
     })
   );
@@ -44,57 +37,57 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Salta le richieste non-GET e gli schemi non supportati (come chrome-extension)
   if (request.method !== 'GET' || !url.protocol.startsWith('http')) {
     return;
   }
 
-  // Cache-first strategy for static assets
-  if (STATIC_ASSETS.some((asset) => url.pathname === asset || url.pathname.endsWith(asset))) {
+  // HTML (navigazione): SEMPRE network-first, mai cache-first.
+  // Questo è fondamentale: l'index.html referenzia bundle JS con hash,
+  // se serviamo una versione vecchia il JS non esiste più → schermata bianca.
+  if (request.mode === 'navigate') {
     event.respondWith(
-      caches.match(request).then((response) => {
-        if (response) {
-          console.log('[Service Worker] Cache hit:', request.url);
-          return response;
-        }
+      fetch(request).catch(() =>
+        caches.match('/index.html').then((res) => res || caches.match('/'))
+      )
+    );
+    return;
+  }
+
+  // Bundle JS/CSS di Vite (hanno hash nel nome → immutabili): cache-first
+  if (url.pathname.startsWith('/assets/')) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached;
         return fetch(request).then((response) => {
-          // Don't cache non-successful responses
-          if (!response || response.status !== 200 || response.type === 'error') {
-            return response;
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseClone);
-          });
           return response;
         });
       })
     );
-  } else {
-    // Network-first strategy for dynamic content
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          // Don't cache non-successful responses
-          if (!response || response.status !== 200) {
-            return response;
-          }
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseClone);
-          });
-          return response;
-        })
-        .catch(() => {
-          // Return cached version if network fails
-          return caches.match(request).then((response) => {
-            return response || new Response('Offline - Resource not available', {
-              status: 503,
-              statusText: 'Service Unavailable',
-              headers: new Headers({ 'Content-Type': 'text/plain' }),
-            });
-          });
-        })
-    );
+    return;
   }
+
+  // Immagini e manifest: cache-first con fallback di rete
+  if (STATIC_ASSETS.some((asset) => url.pathname === asset)) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        return (
+          cached ||
+          fetch(request).then((response) => {
+            if (response && response.status === 200) {
+              const clone = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            }
+            return response;
+          })
+        );
+      })
+    );
+    return;
+  }
+
+  // Tutto il resto (API, Supabase, Netlify functions): solo rete
 });

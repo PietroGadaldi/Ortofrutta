@@ -18,6 +18,21 @@ export function Landing() {
     }
   }, [user, role, loading, navigate])
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="flex justify-center mb-6">
+            <div className="animate-spin">
+              <div className="h-16 w-16 border-4 border-green-300 border-t-green-600 rounded-full"></div>
+            </div>
+          </div>
+          <p className="text-green-700 font-bold text-lg">Caricamento...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 py-8">
       <div className="text-center max-w-3xl w-full">
