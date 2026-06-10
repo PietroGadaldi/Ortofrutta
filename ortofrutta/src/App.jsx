@@ -20,7 +20,14 @@ export default function App() {
       <AuthProvider>
         <div className="min-h-screen bg-white">
           <Navigation />
-          <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+          <main
+            className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8"
+            style={{
+              paddingBottom: 'max(2rem, env(safe-area-inset-bottom))',
+              paddingLeft: 'max(0.75rem, env(safe-area-inset-left))',
+              paddingRight: 'max(0.75rem, env(safe-area-inset-right))',
+            }}
+          >
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Landing />} />

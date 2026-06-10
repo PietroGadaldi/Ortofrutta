@@ -11,6 +11,25 @@
 
 body {
   margin: 0;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+button, a {
+  touch-action: manipulation;
+}
+
+/* iOS Safari: vh include la chrome del browser, svh no.
+   Due righe per garantire il fallback su browser più vecchi. */
+.modal-safe-height {
+  height: 92vh;
+  height: 92svh;
 }
 
 #root {

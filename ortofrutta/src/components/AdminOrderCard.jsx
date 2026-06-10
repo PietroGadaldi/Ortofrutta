@@ -117,8 +117,13 @@ export function AdminOrderCard({
               <span className="font-semibold">Data ordine:</span> {formatDate(ordine.data_ordine)}
             </p>
             <p className="text-xs sm:text-sm text-gray-700">
-              <span className="font-semibold">Data creazione:</span> {formatDateTime(ordine.data_creazione)}
+              <span className="font-semibold">Creato il:</span> {formatDateTime(ordine.data_creazione)}
             </p>
+            {ordine.updated_at && (
+              <p className="text-xs sm:text-sm text-orange-600 font-semibold mt-0.5">
+                ✏️ <span className="font-bold">Modificato il:</span> {formatDateTime(ordine.updated_at)}
+              </p>
+            )}
           </div>
 
           {/* Products - Expandable */}
@@ -224,8 +229,13 @@ export function AdminOrderCard({
               Ordine per: {formatDate(ordine.data_ordine)}
             </div>
             <div className="text-xs text-blue-700 mt-1">
-              Creato: {formatDate(ordine.data_creazione)}
+              🕒 Creato: {formatDateTime(ordine.data_creazione)}
             </div>
+            {ordine.updated_at && (
+              <div className="text-xs text-orange-600 font-semibold mt-0.5">
+                ✏️ Modificato: {formatDateTime(ordine.updated_at)}
+              </div>
+            )}
           </div>
 
           {/* Status Badge */}

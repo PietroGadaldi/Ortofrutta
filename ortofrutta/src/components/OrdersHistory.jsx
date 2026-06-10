@@ -102,6 +102,15 @@ export function OrdersHistory({
     }
   }
 
+  const formatDateTime = (dateString) => {
+    try {
+      const date = typeof dateString === 'string' ? parseISO(dateString) : dateString
+      return format(date, "dd MMMM yyyy 'alle' HH:mm", { locale: it })
+    } catch {
+      return dateString
+    }
+  }
+
   const formatDateShort = (dateString) => {
     try {
       const date = typeof dateString === 'string' ? parseISO(dateString) : dateString
@@ -214,7 +223,10 @@ export function OrdersHistory({
                     : 'border-amber-300 bg-gradient-to-br from-amber-50 to-white'
               }`}>
                 <div className={`text-left text-xs mb-4 font-bold ${isPast ? 'text-blue-700' : ordine.completato ? 'text-green-700' : 'text-amber-700'}`}>
-                  🕒 Creato il {formatDate(ordine.data_creazione)}
+                  {ordine.updated_at
+                    ? <>🕒 Creato il {formatDateTime(ordine.data_creazione)}<br /><span className="text-orange-600">✏️ Modificato il {formatDateTime(ordine.updated_at)}</span></>
+                    : <>🕒 Creato il {formatDateTime(ordine.data_creazione)}</>
+                  }
                 </div>
                 {/* Products list */}
                 <div className="mb-5">

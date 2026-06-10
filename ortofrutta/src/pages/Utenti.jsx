@@ -262,7 +262,7 @@ export function Utenti() {
                 type="text"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold"
+                className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold text-base"
                 placeholder="Nome completo"
                 disabled={isSubmitting}
               />
@@ -277,7 +277,7 @@ export function Utenti() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold text-base"
                 placeholder="Può essere aggiunta in seguito"
                 disabled={isSubmitting}
               />
@@ -289,7 +289,7 @@ export function Utenti() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold"
+                className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold text-base"
                 placeholder={isModifying ? "Lascia vuoto per non cambiare" : "Min. 6 caratteri"}
                 disabled={isSubmitting}
               />
@@ -300,7 +300,7 @@ export function Utenti() {
               <select
                 value={ruolo}
                 onChange={(e) => setRuolo(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold"
+                className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold text-base"
                 disabled={isSubmitting}
               >
                 <option value="cliente">👤 Cliente</option>
@@ -362,16 +362,16 @@ export function Utenti() {
           ) : clienti.length === 0 ? (
             <div className="text-black font-semibold italic">❌ Nessun {viewingRole === 'cliente' ? 'cliente' : 'titolare'} creato ancora</div>
           ) : (
-            <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
+            <div className="space-y-2 max-h-[500px] overflow-y-auto overscroll-contain pr-2" style={{ WebkitOverflowScrolling: 'touch' }}>
               {clienti.map((cliente) => (
                 <div
                   key={cliente.id}
                   className="flex items-center justify-between p-4 bg-white border-2 border-green-300 rounded-lg shadow-sm hover:shadow-md hover:border-green-400 transition"
                 >
-                  <div className="flex-1">
-                    <p className="font-bold text-black text-left">{cliente.nome}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-black text-left truncate">{cliente.nome}</p>
                     {cliente.email && !cliente.email.endsWith('@noreply.internal') ? (
-                      <p className="text-xs text-green-700 mt-1 font-semibold text-left">{cliente.email}</p>
+                      <p className="text-xs text-green-700 mt-1 font-semibold text-left truncate">{cliente.email}</p>
                     ) : (
                       <p className="text-xs text-gray-400 mt-1 italic text-left">Nessuna email</p>
                     )}
@@ -382,7 +382,8 @@ export function Utenti() {
                     </span>
                     <button
                       onClick={() => handleEditUser(cliente)}
-                      className="p-2 bg-blue-100 text-blue-600 rounded text-sm font-semibold hover:bg-blue-200 transition min-w-[36px] min-h-[36px] flex items-center justify-center"
+                      className="bg-blue-100 text-blue-600 rounded text-sm font-semibold hover:bg-blue-200 transition flex items-center justify-center"
+                      style={{ minWidth: '44px', minHeight: '44px' }}
                     >
                       ✏️
                     </button>
@@ -391,9 +392,10 @@ export function Utenti() {
                         setUserToDelete(cliente)
                         setShowDeleteModal(true)
                       }}
-                      className="p-2 bg-red-100 text-red-600 rounded text-sm font-semibold hover:bg-red-200 transition min-w-[36px] min-h-[36px] flex items-center justify-center"
+                      className="bg-red-100 text-red-600 rounded text-sm font-semibold hover:bg-red-200 transition flex items-center justify-center"
+                      style={{ minWidth: '44px', minHeight: '44px' }}
                     >
-                      ❌
+                      🗑️
                     </button>
                   </div>
                 </div>

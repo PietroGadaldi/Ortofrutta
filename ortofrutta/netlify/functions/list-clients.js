@@ -82,6 +82,7 @@ export async function handler(event) {
           .select(`
             id,
             data_creazione,
+            updated_at,
             data_ordine,
             completato,
             cliente_id,
