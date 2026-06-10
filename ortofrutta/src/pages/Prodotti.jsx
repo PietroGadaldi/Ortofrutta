@@ -193,7 +193,7 @@ export function Prodotti() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8 overflow-x-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-4 shadow-xl">
         <h1 className="text-2xl sm:text-4xl font-black mb-2">🛒 Gestione Prodotti</h1>
@@ -237,9 +237,9 @@ export function Prodotti() {
       </div>
 
       {/* Layout Bicolonna */}
-      <div className="grid md:grid-cols-2 gap-4 sm:gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
         {/* Sezione Sinistra: Form */}
-        <div className={`${mobileTab === 'aggiungi' ? 'block' : 'hidden'} md:block bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-4 sm:p-8`}>
+        <div className={`${mobileTab === 'aggiungi' ? 'block' : 'hidden'} md:block min-w-0 bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-4 sm:p-8`}>
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2">
               <span className="text-2xl sm:text-3xl">➕</span> Aggiungi Prodotto
@@ -329,7 +329,7 @@ export function Prodotti() {
         </div>
 
         {/* Sezione Destra: Lista Prodotti */}
-        <div className={`${mobileTab === 'lista' ? 'block' : 'hidden'} md:block bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl shadow-lg p-4 sm:p-8`}>
+        <div className={`${mobileTab === 'lista' ? 'block' : 'hidden'} md:block min-w-0 bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl shadow-lg p-4 sm:p-8`}>
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2">
               <span className="text-2xl sm:text-3xl">📦</span> Prodotti ({prodotti.length})
@@ -379,7 +379,7 @@ export function Prodotti() {
                     {filteredProdotti.length === 0 && searchFilter ? (
                       <div className="text-black font-semibold italic">❌ Nessun prodotto corrisponde alla ricerca</div>
                     ) : (
-                      <div className="space-y-3 md:max-h-96 md:overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+                      <div className="space-y-3 max-h-[62vh] overflow-y-auto md:max-h-96 overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
                         {filteredProdotti.map((p) => (
                 <div
                   key={p.id}

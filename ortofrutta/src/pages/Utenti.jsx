@@ -221,7 +221,7 @@ export function Utenti() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8 overflow-x-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-4 shadow-xl">
         <h1 className="text-2xl sm:text-4xl font-black mb-2">👤 Gestione Utenti</h1>
@@ -252,9 +252,9 @@ export function Utenti() {
         </button>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4 sm:gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
         {/* Form */}
-        <div className={`${mobileTab === 'form' ? 'block' : 'hidden'} md:block bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl shadow-lg p-6`}>
+        <div className={`${mobileTab === 'form' ? 'block' : 'hidden'} md:block min-w-0 bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl shadow-lg p-6`}>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2">
               <span className="text-2xl sm:text-3xl">{isModifying ? '📝' : '➕'}</span>
@@ -346,7 +346,7 @@ export function Utenti() {
         </div>
 
         {/* Clients List */}
-        <div className={`${mobileTab === 'lista' ? 'block' : 'hidden'} md:block bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-6`}>
+        <div className={`${mobileTab === 'lista' ? 'block' : 'hidden'} md:block min-w-0 bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-6`}>
           <div className="flex justify-between items-center mb-4 gap-2">
             <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2">
               <span className="text-2xl sm:text-3xl">📋</span> {viewingRole === 'cliente' ? 'Clienti' : 'Titolari'} ({clienti.length})
@@ -389,7 +389,7 @@ export function Utenti() {
           ) : clienti.length === 0 ? (
             <div className="text-black font-semibold italic">❌ Nessun {viewingRole === 'cliente' ? 'cliente' : 'titolare'} creato ancora</div>
           ) : (
-            <div className="space-y-2 md:max-h-[500px] md:overflow-y-auto overscroll-contain pr-2" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="space-y-2 max-h-[62vh] overflow-y-auto md:max-h-[500px] overscroll-contain pr-2" style={{ WebkitOverflowScrolling: 'touch' }}>
               {clienti.map((cliente) => (
                 <div
                   key={cliente.id}
