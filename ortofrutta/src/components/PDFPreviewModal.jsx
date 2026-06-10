@@ -92,9 +92,9 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
 
       {/* Modal content */}
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-2">
-        <div className="bg-white rounded-t-2xl sm:rounded-lg shadow-2xl w-full sm:w-[95vw] h-[95vh] flex flex-col">
+        <div className="modal-safe-height bg-white rounded-t-2xl sm:rounded-lg shadow-2xl w-full sm:w-[95vw] flex flex-col">
           {/* Modal header */}
-          <div className="flex justify-between items-center p-4 sm:p-6 border-b border-gray-200">
+          <div className="flex-shrink-0 flex justify-between items-center p-4 sm:p-6 border-b border-gray-200">
             <h2 className="text-lg sm:text-2xl font-bold text-gray-800">Anteprima Ricevuta</h2>
             <button
               onClick={onClose}
@@ -139,24 +139,37 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
           </div>
 
           {/* Modal footer with action buttons */}
-          <div className="flex gap-2 sm:gap-4 justify-end p-3 sm:p-6 border-t border-gray-200 bg-gray-50">
+          <div
+            className="flex-shrink-0 flex flex-wrap gap-2 sm:gap-3 justify-end p-3 sm:p-6 border-t border-gray-200 bg-gray-50"
+            style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+          >
             <button
               onClick={onClose}
-              className="flex-1 sm:flex-none px-4 sm:px-6 py-2 bg-gray-300 text-gray-800 rounded-lg font-semibold hover:bg-gray-400 transition text-sm sm:text-base"
+              className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 bg-gray-300 text-gray-800 rounded-lg font-semibold hover:bg-gray-400 transition text-sm sm:text-base"
             >
               Chiudi
             </button>
+            {iframeUrl && (
+              <a
+                href={iframeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-600 transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
+              >
+                🔗 Apri
+              </a>
+            )}
             <button
               onClick={handleDownload}
-              disabled={loading || error}
-              className="flex-1 sm:flex-none px-4 sm:px-6 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 disabled:bg-gray-400 transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
+              disabled={loading || !!error}
+              className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 disabled:bg-gray-400 transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
             >
               💾 Scarica
             </button>
             <button
               onClick={handlePrint}
-              disabled={loading || error}
-              className="flex-1 sm:flex-none px-4 sm:px-6 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 disabled:bg-gray-400 transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
+              disabled={loading || !!error}
+              className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 disabled:bg-gray-400 transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
             >
               🖨️ Stampa
             </button>

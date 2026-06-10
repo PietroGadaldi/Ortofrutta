@@ -25,6 +25,13 @@ button, a {
   touch-action: manipulation;
 }
 
+/* iOS Safari: vh include la chrome del browser, svh no.
+   Due righe per garantire il fallback su browser più vecchi. */
+.modal-safe-height {
+  height: 92vh;
+  height: 92svh;
+}
+
 #root {
   width: 100%;
   max-width: 100%;
