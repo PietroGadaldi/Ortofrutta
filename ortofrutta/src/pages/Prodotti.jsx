@@ -16,13 +16,30 @@ export function Prodotti() {
   const [isModifying, setIsModifying] = useState(false)
   const [modifyingProdottoId, setModifyingProdottoId] = useState(null)
   const [searchFilter, setSearchFilter] = useState('')
+  const [listLoading, setListLoading] = useState(false)
 
   useEffect(() => {
-    fetchProdotti()
+    fetchProdotti(true)
   }, [])
 
-  const fetchProdotti = async () => {
-    setLoading(true)
+  useEffect(() => {
+    if (!success) return
+    const t = setTimeout(() => setSuccess(null), 3500)
+    return () => clearTimeout(t)
+  }, [success])
+
+  useEffect(() => {
+    if (!error) return
+    const t = setTimeout(() => setError(null), 5000)
+    return () => clearTimeout(t)
+  }, [error])
+
+  const fetchProdotti = async (isInitialLoad = false) => {
+    if (isInitialLoad) {
+      setLoading(true)
+    } else {
+      setListLoading(true)
+    }
     try {
       const { data, error: err } = await supabase.from('prodotti').select('*').order('nome', { ascending: true })
       if (err) throw err
@@ -30,7 +47,11 @@ export function Prodotti() {
     } catch (err) {
       setError(err.message)
     } finally {
-      setLoading(false)
+      if (isInitialLoad) {
+        setLoading(false)
+      } else {
+        setListLoading(false)
+      }
     }
   }
 
@@ -287,11 +308,12 @@ export function Prodotti() {
               <span className="text-2xl sm:text-3xl">📦</span> Prodotti ({prodotti.length})
             </h2>
             <button
-              onClick={fetchProdotti}
-              disabled={loading}
-              className="px-3 sm:px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100"
+              onClick={() => fetchProdotti()}
+              disabled={listLoading}
+              className="px-3 sm:px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100 flex items-center gap-1"
             >
-              🔄 Aggiorna
+              <span className={listLoading ? 'animate-spin inline-block' : ''}>🔄</span>
+              {listLoading ? 'Aggiornamento...' : 'Aggiorna'}
             </button>
           </div>
 
@@ -306,8 +328,11 @@ export function Prodotti() {
             />
           </div>
 
-          {loading ? (
-            <div className="text-black font-semibold">⏳ Caricamento...</div>
+          {listLoading ? (
+            <div className="flex items-center gap-2 text-blue-700 font-semibold py-4">
+              <div className="h-5 w-5 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin flex-shrink-0" />
+              Aggiornamento lista...
+            </div>
           ) : prodotti.length === 0 ? (
             <div className="text-black font-semibold italic">❌ Nessun prodotto presente</div>
           ) : (
