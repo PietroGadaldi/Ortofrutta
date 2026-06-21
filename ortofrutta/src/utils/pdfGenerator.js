@@ -78,7 +78,7 @@ export function generateOrderPDF(order) {
     let productYPosition = yPosition
 
     order.dettagli_ordine.forEach((item, index) => {
-      const productName = item.prodotti?.nome || item.nome_custom || 'Prodotto sconosciuto'
+      const productName = (item.prodotti?.nome || item.nome_custom || 'Prodotto sconosciuto').toUpperCase()
       const quantity = item.quantita
       const tipologia = item.tipologia || 'N/A'
 
@@ -194,7 +194,7 @@ export function generateDayOrdersPDF(ordini, date) {
       pdf.setFontSize(12)
 
       ;(order.dettagli_ordine || []).forEach((item) => {
-        const productName = item.prodotti?.nome || item.nome_custom || 'Prodotto sconosciuto'
+        const productName = (item.prodotti?.nome || item.nome_custom || 'Prodotto sconosciuto').toUpperCase()
         const quantity = item.quantita
         const tipologia = item.tipologia || 'N/A'
 

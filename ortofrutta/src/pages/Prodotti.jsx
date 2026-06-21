@@ -388,7 +388,7 @@ export function Prodotti() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <p className="font-semibold text-gray-900 text-left truncate">{capitalize(p.nome)}</p>
+                        <p className="font-semibold text-gray-900 text-left truncate uppercase">{p.nome}</p>
                         <span className={`px-2 py-0.5 text-xs rounded-full font-bold whitespace-nowrap flex-shrink-0 ${
                           p.attivo ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
                         }`}>

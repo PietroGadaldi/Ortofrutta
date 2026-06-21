@@ -188,7 +188,7 @@ export function ProductAutocomplete({
                       }
                     `}
                   >
-                    <div className="font-bold text-left">{capitalize(product.nome)}</div>
+                    <div className="font-bold text-left uppercase">{product.nome}</div>
                     <div className="text-xs opacity-75 mt-1 text-left">
                       {isActive ? (
                         <>Disponibilità: {parseTipologie(product.tipologie_possibili).map(capitalize).join(', ')}</>

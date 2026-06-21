@@ -10,7 +10,7 @@ export function OrderItemCard({ item, onEdit, onDelete, index }) {
   return (
     <div className="bg-gradient-to-r from-white to-green-50 border-2 border-green-300 rounded-lg p-4 shadow-md flex items-center justify-between hover:shadow-lg hover:border-green-400 transition-all">
       <div className="flex-1 text-left">
-        <div className="font-bold text-green-900 text-sm">{item.prodotto_nome}</div>
+        <div className="font-bold text-green-900 text-sm uppercase">{item.prodotto_nome}</div>
         <div className="text-xs text-green-700 mt-1 font-semibold">
           {item.quantita} {item.tipologia}
         </div>

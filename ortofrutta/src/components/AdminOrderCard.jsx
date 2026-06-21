@@ -145,7 +145,7 @@ export function AdminOrderCard({
                 {ordine.dettagli_ordine && ordine.dettagli_ordine.length > 0 ? (
                   ordine.dettagli_ordine.map((dettaglio) => (
                     <div key={dettaglio.id} className="text-sm text-gray-700 flex justify-between items-start">
-                      <span className="font-semibold">{dettaglio.prodotti?.nome || dettaglio.nome_custom}</span>
+                      <span className="font-semibold uppercase">{dettaglio.prodotti?.nome || dettaglio.nome_custom}</span>
                       <span className="text-gray-600">{dettaglio.quantita} {dettaglio.tipologia}</span>
                     </div>
                   ))
@@ -267,7 +267,7 @@ export function AdminOrderCard({
                 {ordine.dettagli_ordine && ordine.dettagli_ordine.length > 0 ? (
                   ordine.dettagli_ordine.map((dettaglio) => (
                     <li key={dettaglio.id} className="text-sm text-black bg-white px-4 py-3 rounded-lg border-l-4 border-blue-500 shadow-sm font-semibold text-left">
-                      <span className="font-bold block text-left">{dettaglio.prodotti?.nome || dettaglio.nome_custom}</span>
+                      <span className="font-bold block text-left uppercase">{dettaglio.prodotti?.nome || dettaglio.nome_custom}</span>
                       <span className="text-blue-700 text-xs mt-1 block">
                         Quantità: {dettaglio.quantita} {dettaglio.tipologia}
                       </span>

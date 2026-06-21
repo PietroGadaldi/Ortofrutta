@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { format, parseISO, isSameDay, isAfter, startOfDay } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { capitalize, WHATSAPP_NUMBER } from '../utils/constants'
+import { WHATSAPP_NUMBER } from '../utils/constants'
 
 /**
  * OrdersHistory component
@@ -258,7 +258,7 @@ export function OrdersHistory({
                               ? 'text-green-900 border-green-500' 
                               : 'text-amber-900 border-amber-500'
                         }`}>
-                          <span className="font-bold block">{capitalize(dettaglio.prodotti?.nome || dettaglio.nome_custom)}</span>
+                          <span className="font-bold block uppercase">{dettaglio.prodotti?.nome || dettaglio.nome_custom}</span>
                           <span className={`text-xs mt-1 block ${isPast ? 'text-blue-700' : ordine.completato ? 'text-green-700' : 'text-amber-700'}`}>
                             {dettaglio.quantita} {dettaglio.tipologia}
                           </span>

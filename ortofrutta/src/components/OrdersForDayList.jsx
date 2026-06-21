@@ -64,7 +64,7 @@ export function OrdersForDayList({
     const map = new Map()
     filteredOrdini.forEach((ordine) => {
       ;(ordine.dettagli_ordine || []).forEach((item) => {
-        const nome = item.prodotti?.nome || item.nome_custom || 'Prodotto sconosciuto'
+        const nome = (item.prodotti?.nome || item.nome_custom || 'Prodotto sconosciuto').toUpperCase()
         const tipologia = item.tipologia || 'N/A'
         const key = `${nome}||${tipologia}`
         if (map.has(key)) {
