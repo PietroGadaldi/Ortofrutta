@@ -273,7 +273,7 @@ export function Prodotti() {
               <label className="block text-sm font-bold text-black mb-2 text-left">
                 🏷️ Tipologia
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 <input
                   type="text"
                   value={tipologieInput}
@@ -284,7 +284,7 @@ export function Prodotti() {
                       handleAggiungiTipologia()
                     }
                   }}
-                  className="flex-1 px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none text-black font-semibold text-base"
+                  className="flex-1 min-w-0 px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none text-black font-semibold text-base"
                   placeholder="es. kg"
                   disabled={isSubmitting}
                 />
@@ -292,7 +292,8 @@ export function Prodotti() {
                   type="button"
                   onClick={handleAggiungiTipologia}
                   disabled={isSubmitting}
-                  className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold text-xl hover:from-green-700 hover:to-green-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100"
+                  className="flex-none flex items-center justify-center bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold text-2xl hover:from-green-700 hover:to-green-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md active:scale-95"
+                  style={{ minWidth: '48px', minHeight: '48px', width: '48px', height: '48px' }}
                 >
                   +
                 </button>

@@ -100,7 +100,7 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
             onClick={() => !isDisabled && onSelectDate(cloneDay)}
             disabled={isDisabled}
             className={`
-              min-h-[36px] sm:min-h-[40px] p-1 sm:p-2 text-xs sm:text-sm font-semibold rounded-lg transition-colors
+              min-h-[44px] p-1 sm:p-2 text-sm font-semibold rounded-lg transition-colors
               ${!isSameMonth(day, monthStart) ? 'text-gray-300' : ''}
               ${isDisabled && isSameMonth(day, monthStart) ? 'text-gray-400 cursor-not-allowed' : ''}
               ${isSelected ? 'bg-green-600 text-white' : ''}

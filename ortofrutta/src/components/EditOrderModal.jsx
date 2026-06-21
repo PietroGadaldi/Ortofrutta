@@ -45,6 +45,16 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
     }, 60)
   }
 
+  // Blocca scroll del body quando il modal è aperto (iOS fix)
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
+
   // Initialize products and date when modal opens
   useEffect(() => {
     if (isOpen && ordine) {

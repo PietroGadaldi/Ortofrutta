@@ -167,7 +167,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
                 else if (num < 1) setQuantita('1');
               }}
               placeholder="0"
-            className="flex-1 min-w-0 h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all"
+            className="flex-1 min-w-0 h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all text-base"
               disabled={!selectedProduct && !isCustomProduct}
             />
             <button

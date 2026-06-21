@@ -40,7 +40,7 @@ export function ProductAutocomplete({
     setHighlightedIndex(-1)
   }, [value, prodotti])
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking/touching outside (mousedown + touchstart per iOS)
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
@@ -54,7 +54,11 @@ export function ProductAutocomplete({
     }
 
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside, { passive: true })
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
+    }
   }, [])
 
   const handleInputChange = (e) => {
@@ -161,7 +165,7 @@ export function ProductAutocomplete({
         onKeyDown={handleKeyDown}
         onFocus={() => value && setIsOpen(true)}
         placeholder="Cerca un prodotto per nome..."
-        className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-black font-semibold"
+        className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-black font-semibold text-base"
       />
 
       {isOpen && filteredProducts.length > 0 && (

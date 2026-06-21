@@ -26,6 +26,18 @@ export function Utenti() {
   const [viewingRole, setViewingRole] = useState('cliente')
   const [mobileTab, setMobileTab] = useState('lista')
 
+  // Blocca scroll del body quando il modal di eliminazione è aperto (iOS fix)
+  useEffect(() => {
+    if (showDeleteModal) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [showDeleteModal])
+
   // Load clients on mount
   useEffect(() => {
     fetchClienti(viewingRole)

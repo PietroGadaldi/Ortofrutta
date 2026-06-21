@@ -2,21 +2,23 @@ import { useState, useEffect } from 'react'
 import { downloadOrderPDF } from '../services/pdfStorageService'
 import { downloadPDFBlob } from '../utils/pdfGenerator'
 
-/**
- * Modal component to preview and print/download order PDF
- * Uses iframe fallback for maximum compatibility
- * @param {Blob|string} pdfData - PDF blob or URL to display
- * @param {string} fileName - Name for the downloaded file (without extension)
- * @param {Function} onClose - Callback to close modal
- * @param {boolean} isOpen - Whether modal is open
- * @param {string} ordineId - Order ID for status update
- * @param {Function} onStatusChange - Callback to update order status
- * @param {boolean} isCompletato - Whether order is already completed
- */
+const isIOS = typeof navigator !== 'undefined' &&
+  /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window)
+
 export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpen = false, ordineId, onStatusChange, isCompletato = false, showDownload = true }) {
   const [iframeUrl, setIframeUrl] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // Blocca lo scroll del body quando il modal è aperto (iOS fix)
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
 
   useEffect(() => {
     if (!isOpen || !pdfData) {
@@ -30,10 +32,8 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
     try {
       let url
       if (pdfData instanceof Blob) {
-        // Create object URL for blob
         url = URL.createObjectURL(pdfData)
       } else if (typeof pdfData === 'string') {
-        // URL string
         url = pdfData
       } else {
         throw new Error('Invalid PDF data format')
@@ -122,6 +122,26 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
                   </div>
                   <p className="text-gray-600 font-semibold">Caricamento PDF...</p>
                 </div>
+              </div>
+            ) : isIOS && iframeUrl ? (
+              /* iOS Safari non supporta PDF inline in iframe — mostra link diretto */
+              <div className="flex flex-col items-center justify-center h-full p-8 gap-5 text-center bg-gray-50">
+                <div className="text-6xl">📄</div>
+                <div>
+                  <p className="text-gray-800 font-bold text-lg mb-1">PDF pronto</p>
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    Su iPhone/iPad il PDF non può essere mostrato qui.<br />
+                    Usa il pulsante <strong>Apri</strong> per vederlo nel browser.
+                  </p>
+                </div>
+                <a
+                  href={iframeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-xl transition text-base shadow-md active:scale-95"
+                >
+                  🔗 Apri PDF
+                </a>
               </div>
             ) : iframeUrl ? (
               <iframe

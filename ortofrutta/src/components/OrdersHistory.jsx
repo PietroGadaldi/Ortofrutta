@@ -135,19 +135,22 @@ export function OrdersHistory({
           <span className="text-2xl">📜</span> Cronologia Ordini
         </h3>
         <div className="flex items-center gap-2">
-          <label className="hidden sm:block text-sm font-bold text-blue-900 whitespace-nowrap">Filtra per data:</label>
-          <input
-            type="date"
-            value={filterDate}
-            onChange={(e) => setFilterDate(e.target.value)}
-            className="flex-1 min-w-0 px-3 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-black font-semibold"
-          />
+          <label className="hidden sm:block text-sm font-bold text-blue-900 whitespace-nowrap">Filtra:</label>
+          <div className="relative flex-1 min-w-0">
+            <input
+              type="date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="w-full px-3 py-2.5 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base text-black font-semibold bg-white"
+            />
+          </div>
           {filterDate ? (
             <button
               onClick={() => setFilterDate('')}
-              className="flex-shrink-0 px-3 py-2 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-bold"
+              className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-bold text-lg active:scale-95"
+              title="Azzera filtro"
             >
-              ✕ Azzera
+              ✕
             </button>
           ) : null}
         </div>
@@ -169,7 +172,7 @@ export function OrdersHistory({
         </div>
       )}
 
-      <div className="space-y-3 max-h-[550px] overflow-y-auto pr-2">
+      <div className="space-y-3 max-h-[550px] overflow-y-auto pr-2 overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
         {filteredOrdini.map((ordine) => {
           const isPast = !isOrderEditable(ordine.data_ordine);
           return (

@@ -118,7 +118,7 @@ export function OrdersForDayList({
             placeholder="🔍 Filtra per nome cliente..."
             value={filterName}
             onChange={(e) => setFilterName(e.target.value)}
-            className="flex-1 px-4 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-600 text-gray-800 placeholder-gray-500"
+            className="flex-1 px-4 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-600 text-gray-800 placeholder-gray-500 text-base font-semibold"
           />
           {filteredOrdini.length > 0 && (
             <button

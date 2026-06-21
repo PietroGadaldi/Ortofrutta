@@ -149,7 +149,7 @@ export function HorizontalWeekSelector({ selectedDate, onSelectDate }) {
             type="date"
             value={filterDate || format(selectedDate, 'yyyy-MM-dd')}
             onChange={(e) => setFilterDate(e.target.value)}
-            className="px-2 sm:px-4 py-1.5 sm:py-2 border-2 border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-xs sm:text-sm text-black font-semibold"
+            className="px-2 sm:px-4 py-1.5 sm:py-2 border-2 border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-base text-black font-semibold bg-white"
           />
           {filterDate && (
             <button
