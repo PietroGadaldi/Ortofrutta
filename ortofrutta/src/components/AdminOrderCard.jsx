@@ -141,14 +141,26 @@ export function AdminOrderCard({
             </button>
 
             {isProductsExpanded && (
-              <div className="border-t border-gray-200 p-4 space-y-2">
+              <div className="border-t border-gray-200 p-3">
                 {ordine.dettagli_ordine && ordine.dettagli_ordine.length > 0 ? (
-                  ordine.dettagli_ordine.map((dettaglio) => (
-                    <div key={dettaglio.id} className="text-sm text-gray-700 flex justify-between items-start">
-                      <span className="font-semibold uppercase">{dettaglio.prodotti?.nome || dettaglio.nome_custom}</span>
-                      <span className="text-gray-600">{dettaglio.quantita} {dettaglio.tipologia}</span>
-                    </div>
-                  ))
+                  <table className="w-full text-sm border-collapse">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="text-left px-2 py-1.5 font-bold text-gray-700 border border-gray-200">Prodotto</th>
+                        <th className="text-right px-2 py-1.5 font-bold text-gray-700 border border-gray-200">Qtà</th>
+                        <th className="text-left px-2 py-1.5 font-bold text-gray-700 border border-gray-200">Unità</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ordine.dettagli_ordine.map((dettaglio, i) => (
+                        <tr key={dettaglio.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                          <td className="px-2 py-1.5 border border-gray-200 font-semibold uppercase text-gray-800">{dettaglio.prodotti?.nome || dettaglio.nome_custom}</td>
+                          <td className="px-2 py-1.5 border border-gray-200 text-right font-bold text-gray-700">{dettaglio.quantita}</td>
+                          <td className="px-2 py-1.5 border border-gray-200 text-gray-600">{dettaglio.tipologia}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 ) : (
                   <p className="text-sm text-gray-500 italic">Nessun prodotto disponibile</p>
                 )}

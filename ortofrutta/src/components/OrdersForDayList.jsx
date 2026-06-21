@@ -115,16 +115,16 @@ export function OrdersForDayList({
         <div className="mt-4 flex gap-2">
           <input
             type="text"
-            placeholder="🔍 Filtra per nome cliente..."
+            placeholder="🔍 Filtra cliente..."
             value={filterName}
             onChange={(e) => setFilterName(e.target.value)}
-            className="flex-1 px-4 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-600 text-gray-800 placeholder-gray-500 text-base font-semibold"
+            className="flex-1 min-w-0 px-3 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-600 text-gray-800 placeholder-gray-500 text-sm font-semibold"
           />
           {filteredOrdini.length > 0 && (
             <button
               onClick={handleStampaTutti}
               disabled={isPrintingAll}
-              className="flex-shrink-0 px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition text-sm whitespace-nowrap"
+              className="flex-shrink-0 px-3 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition text-sm whitespace-nowrap"
             >
               {isPrintingAll ? '⏳ Generando...' : '🖨️ Stampa Tutti'}
             </button>
