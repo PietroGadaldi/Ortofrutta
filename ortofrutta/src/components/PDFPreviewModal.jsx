@@ -13,7 +13,7 @@ import { downloadPDFBlob } from '../utils/pdfGenerator'
  * @param {Function} onStatusChange - Callback to update order status
  * @param {boolean} isCompletato - Whether order is already completed
  */
-export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpen = false, ordineId, onStatusChange, isCompletato = false }) {
+export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpen = false, ordineId, onStatusChange, isCompletato = false, showDownload = true }) {
   const [iframeUrl, setIframeUrl] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -159,13 +159,15 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
                 🔗 Apri
               </a>
             )}
-            <button
-              onClick={handleDownload}
-              disabled={loading || !!error}
-              className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 disabled:bg-gray-400 transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
-            >
-              💾 Scarica
-            </button>
+            {showDownload && (
+              <button
+                onClick={handleDownload}
+                disabled={loading || !!error}
+                className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 disabled:bg-gray-400 transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
+              >
+                💾 Scarica
+              </button>
+            )}
             <button
               onClick={handlePrint}
               disabled={loading || !!error}

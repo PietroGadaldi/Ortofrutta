@@ -123,6 +123,198 @@ export function generateOrderPDF(order) {
 }
 
 /**
+ * Generate a combined PDF with all orders for a day, one order per page
+ * @param {Array} ordini - Array of orders with client info and details
+ * @param {Date} date - The day date (for display)
+ * @returns {Blob} PDF as Blob
+ */
+export function generateDayOrdersPDF(ordini, date) {
+  try {
+    if (!ordini || ordini.length === 0) {
+      throw new Error('Nessun ordine da stampare')
+    }
+
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+    })
+
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+    const margin = 15
+    const contentWidth = pageWidth - margin * 2
+
+    ordini.forEach((order, orderIndex) => {
+      if (orderIndex > 0) pdf.addPage()
+
+      let yPosition = margin
+
+      // Client name header
+      pdf.setFontSize(26)
+      pdf.setFont(undefined, 'bold')
+      const clientName = order.profili?.nome || 'Cliente'
+      pdf.text(clientName, pageWidth / 2, yPosition, { align: 'center' })
+      yPosition += 14
+
+      // Divider
+      pdf.setDrawColor(100)
+      pdf.setLineWidth(0.5)
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition)
+      yPosition += 10
+
+      // Order date
+      pdf.setFontSize(13)
+      pdf.setFont(undefined, 'bold')
+      pdf.text('Data ordine:', margin, yPosition)
+      pdf.setFont(undefined, 'normal')
+      const formattedOrderDate = format(new Date(order.data_ordine), 'dd/MM/yyyy', { locale: it })
+      pdf.text(formattedOrderDate, margin + 40, yPosition)
+      yPosition += 14
+
+      // Divider
+      pdf.setDrawColor(100)
+      pdf.setLineWidth(0.5)
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition)
+      yPosition += 10
+
+      // Products table header
+      pdf.setFontSize(12)
+      pdf.setFont(undefined, 'bold')
+      pdf.setFillColor(220, 220, 220)
+      pdf.rect(margin, yPosition - 6, contentWidth, 8, 'F')
+      pdf.text('Prodotto', margin + 3, yPosition)
+      pdf.text('Quantità', margin + 70, yPosition)
+      pdf.text('Unità', margin + 105, yPosition)
+      pdf.text('Peso Eff.', margin + 155, yPosition)
+      yPosition += 10
+
+      // Products list
+      pdf.setFont(undefined, 'normal')
+      pdf.setFontSize(12)
+
+      ;(order.dettagli_ordine || []).forEach((item) => {
+        const productName = item.prodotti?.nome || item.nome_custom || 'Prodotto sconosciuto'
+        const quantity = item.quantita
+        const tipologia = item.tipologia || 'N/A'
+
+        if (yPosition > pageHeight - 35) {
+          pdf.addPage()
+          yPosition = margin + 10
+        }
+
+        pdf.text(productName, margin + 3, yPosition)
+        pdf.text(quantity.toString(), margin + 80, yPosition, { align: 'right' })
+        pdf.text(tipologia, margin + 105, yPosition)
+        yPosition += 8
+      })
+
+      // Footer
+      pdf.setFontSize(9)
+      pdf.setFont(undefined, 'italic')
+      pdf.setTextColor(120)
+      pdf.text('Ricevuta generata automaticamente da OrtoFrutta Brescia', pageWidth / 2, pageHeight - 10, { align: 'center' })
+      pdf.setTextColor(0)
+    })
+
+    return pdf.output('blob')
+  } catch (error) {
+    console.error('Error generating day orders PDF:', error)
+    throw error
+  }
+}
+
+/**
+ * Generate a daily product summary PDF
+ * @param {Date} date - The day date
+ * @param {Array} items - Array of { nome, tipologia, totale }
+ * @returns {Blob} PDF as Blob
+ */
+export function generateDaySummaryPDF(date, items) {
+  try {
+    if (!items || items.length === 0) {
+      throw new Error('Nessun prodotto nel riepilogo')
+    }
+
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+    })
+
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+    const margin = 15
+    const contentWidth = pageWidth - margin * 2
+    let yPosition = margin
+
+    // Title
+    pdf.setFontSize(22)
+    pdf.setFont(undefined, 'bold')
+    pdf.text('Riepilogo Prodotti', pageWidth / 2, yPosition, { align: 'center' })
+    yPosition += 10
+
+    // Date subtitle
+    const formattedDate = format(new Date(date), "EEEE d MMMM yyyy", { locale: it })
+    pdf.setFontSize(13)
+    pdf.setFont(undefined, 'normal')
+    pdf.text(formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1), pageWidth / 2, yPosition, { align: 'center' })
+    yPosition += 10
+
+    // Divider
+    pdf.setDrawColor(100)
+    pdf.setLineWidth(0.5)
+    pdf.line(margin, yPosition, pageWidth - margin, yPosition)
+    yPosition += 10
+
+    // Table header
+    pdf.setFontSize(12)
+    pdf.setFont(undefined, 'bold')
+    pdf.setFillColor(220, 220, 220)
+    pdf.rect(margin, yPosition - 6, contentWidth, 8, 'F')
+    pdf.text('Prodotto', margin + 3, yPosition)
+    pdf.text('Totale', margin + 115, yPosition)
+    pdf.text('Unità', margin + 150, yPosition)
+    yPosition += 10
+
+    // Rows
+    pdf.setFont(undefined, 'normal')
+    pdf.setFontSize(12)
+
+    items.forEach((item) => {
+      if (yPosition > pageHeight - 35) {
+        pdf.addPage()
+        yPosition = margin + 10
+      }
+
+      pdf.text(item.nome, margin + 3, yPosition)
+      pdf.text(item.totale.toString(), margin + 125, yPosition, { align: 'right' })
+      pdf.text(item.tipologia, margin + 150, yPosition)
+      yPosition += 8
+    })
+
+    yPosition += 5
+
+    // Divider before footer
+    pdf.setDrawColor(100)
+    pdf.setLineWidth(0.5)
+    pdf.line(margin, yPosition, pageWidth - margin, yPosition)
+
+    // Footer
+    pdf.setFontSize(9)
+    pdf.setFont(undefined, 'italic')
+    pdf.setTextColor(120)
+    pdf.text('Riepilogo generato automaticamente da OrtoFrutta Brescia', pageWidth / 2, pageHeight - 10, { align: 'center' })
+    pdf.setTextColor(0)
+
+    return pdf.output('blob')
+  } catch (error) {
+    console.error('Error generating summary PDF:', error)
+    throw error
+  }
+}
+
+/**
  * Download a PDF blob to user's device
  * @param {Blob} pdfBlob - PDF blob to download
  * @param {string} fileName - Name of the file to save
