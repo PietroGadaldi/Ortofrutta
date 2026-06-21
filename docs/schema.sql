@@ -88,13 +88,31 @@ TO anon, authenticated
 USING (true);
 
 -- Tabella Ordini: ogni cliente gestisce solo i propri ordini
--- (il titolare accede tramite service_role nelle Netlify Functions, che bypassa l'RLS)
 CREATE POLICY "Ordini del cliente"
 ON public.ordini
 FOR ALL
 TO authenticated
 USING (cliente_id = auth.uid())
 WITH CHECK (cliente_id = auth.uid());
+
+-- Tabella Ordini: il titolare vede e gestisce tutti gli ordini
+-- (vale anche per le query dirette al client Supabase dal frontend, es. conteggi dashboard)
+CREATE POLICY "Titolare vede tutti gli ordini"
+ON public.ordini
+FOR ALL
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profili
+    WHERE id = auth.uid() AND ruolo = 'titolare'
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profili
+    WHERE id = auth.uid() AND ruolo = 'titolare'
+  )
+);
 
 -- Tabella Dettagli Ordine: accessibili se l'ordine appartiene al cliente loggato
 CREATE POLICY "Dettagli ordine del cliente"
@@ -109,5 +127,23 @@ USING (
 WITH CHECK (
   ordine_id IN (
     SELECT id FROM public.ordini WHERE cliente_id = auth.uid()
+  )
+);
+
+-- Tabella Dettagli Ordine: il titolare vede e gestisce tutti i dettagli
+CREATE POLICY "Titolare vede tutti i dettagli ordine"
+ON public.dettagli_ordine
+FOR ALL
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profili
+    WHERE id = auth.uid() AND ruolo = 'titolare'
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profili
+    WHERE id = auth.uid() AND ruolo = 'titolare'
   )
 );
