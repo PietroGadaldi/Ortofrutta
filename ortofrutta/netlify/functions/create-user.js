@@ -11,6 +11,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { verifyAuth, verifyUserRole, errorResponse, successResponse } from './auth.js'
+import { encrypt } from './crypto-utils.js'
 
 // Initialize Supabase Admin client with service_role key (server-side secret)
 const supabaseAdmin = createClient(
@@ -112,6 +113,7 @@ export async function handler(event) {
         id: newUserId,
         nome,
         ruolo,
+        password_plain: encrypt(password),
       })
       .select()
 

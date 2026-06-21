@@ -13,6 +13,9 @@ export function Utenti() {
   const [isModifying, setIsModifying] = useState(false)
   const [modifyingUserId, setModifyingUserId] = useState(null)
   
+  const [showPassword, setShowPassword] = useState(false)
+  const [visiblePasswords, setVisiblePasswords] = useState(new Set())
+
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [userToDelete, setUserToDelete] = useState(null)
 
@@ -119,6 +122,18 @@ export function Utenti() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const togglePasswordVisibility = (clienteId) => {
+    setVisiblePasswords(prev => {
+      const next = new Set(prev)
+      if (next.has(clienteId)) {
+        next.delete(clienteId)
+      } else {
+        next.add(clienteId)
+      }
+      return next
+    })
+  }
+
   const resetForm = () => {
     setNome('')
     setEmail('')
@@ -126,6 +141,7 @@ export function Utenti() {
     setRuolo('cliente')
     setIsModifying(false)
     setModifyingUserId(null)
+    setShowPassword(false)
   }
 
   const handleSubmit = async (e) => {
@@ -312,14 +328,24 @@ export function Utenti() {
 
             <div>
               <label className="block text-sm font-bold text-black mb-2 text-left">🔐 Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold text-base"
-                placeholder={isModifying ? "Lascia vuoto per non cambiare" : "Min. 6 caratteri"}
-                disabled={isSubmitting}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 pr-12 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold text-base"
+                  placeholder={isModifying ? "Lascia vuoto per non cambiare" : "Min. 6 caratteri"}
+                  disabled={isSubmitting}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 flex items-center justify-center bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition shadow-sm border border-blue-200"
+                  title={showPassword ? 'Nascondi password' : 'Mostra password'}
+                >
+                  {showPassword ? '🔓' : '🔒'}
+                </button>
+              </div>
             </div>
 
             <div>
@@ -398,9 +424,24 @@ export function Utenti() {
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-black text-left truncate">{cliente.nome}</p>
                     {cliente.email && !cliente.email.endsWith('@noreply.internal') ? (
-                      <p className="text-xs text-green-700 mt-1 font-semibold text-left truncate">{cliente.email}</p>
+                      <p className="text-xs text-green-700 mt-0.5 font-semibold text-left truncate">{cliente.email}</p>
                     ) : (
-                      <p className="text-xs text-gray-400 mt-1 italic text-left">Nessuna email</p>
+                      <p className="text-xs text-gray-400 mt-0.5 italic text-left">Nessuna email</p>
+                    )}
+                    {cliente.password_plain && (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <span className="text-xs font-mono text-gray-700">
+                          {visiblePasswords.has(cliente.id) ? cliente.password_plain : '••••••'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => togglePasswordVisibility(cliente.id)}
+                          className="text-xs text-gray-400 hover:text-gray-700 transition leading-none"
+                          title={visiblePasswords.has(cliente.id) ? 'Nascondi password' : 'Mostra password'}
+                        >
+                          {visiblePasswords.has(cliente.id) ? '🔓' : '🔒'}
+                        </button>
+                      </div>
                     )}
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { verifyAuth, verifyUserRole, errorResponse, successResponse } from './auth.js'
+import { encrypt } from './crypto-utils.js'
 
 // Initialize Supabase Admin client
 const supabaseAdmin = createClient(
@@ -76,12 +77,14 @@ export async function handler(event) {
     }
 
     // 5. Aggiornamento nella tabella Profili
+    const profileUpdate = { nome: nome.trim(), ruolo }
+    if (password && password.trim() !== '') {
+      profileUpdate.password_plain = encrypt(password)
+    }
+
     const { error: profileError } = await supabaseAdmin
       .from('profili')
-      .update({
-        nome: nome.trim(),
-        ruolo: ruolo
-      })
+      .update(profileUpdate)
       .eq('id', userId)
 
     if (profileError) {

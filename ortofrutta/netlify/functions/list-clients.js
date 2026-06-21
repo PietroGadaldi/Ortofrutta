@@ -15,6 +15,7 @@ import { format, parseISO } from 'date-fns'
 
 import { createClient } from '@supabase/supabase-js'
 import { verifyAuth, verifyUserRole, errorResponse, successResponse } from './auth.js'
+import { decrypt } from './crypto-utils.js'
 
 const supabaseAdmin = createClient(
   process.env.VITE_SUPABASE_URL,
@@ -121,7 +122,7 @@ export async function handler(event) {
       // Fetch profiles based on role
       const { data: profiles, error: profilesError } = await supabaseAdmin
         .from('profili')
-        .select('id, nome, ruolo')
+        .select('id, nome, ruolo, password_plain')
         .eq('ruolo', role)
         .order('nome', { ascending: true })
 
@@ -139,12 +140,13 @@ export async function handler(event) {
         // Se fallisce il recupero email, restituiamo comunque i profili senza email
       }
 
-      // Unisce i dati dei profili con le email dell'auth
+      // Unisce i dati dei profili con le email dell'auth e decifra la password
       const clientsWithEmail = (profiles || []).map(profile => {
         const authUser = (users || []).find(u => u.id === profile.id)
         return {
           ...profile,
-          email: authUser ? authUser.email : ''
+          email: authUser ? authUser.email : '',
+          password_plain: decrypt(profile.password_plain),
         }
       })
 
