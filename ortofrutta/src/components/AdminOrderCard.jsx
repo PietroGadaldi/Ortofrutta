@@ -141,28 +141,28 @@ export function AdminOrderCard({
             </button>
 
             {isProductsExpanded && (
-              <div className="border-t border-gray-200 p-3">
+              <div className="border-t border-gray-200 overflow-x-auto">
                 {ordine.dettagli_ordine && ordine.dettagli_ordine.length > 0 ? (
-                  <table className="w-full text-sm border-collapse">
+                  <table className="min-w-full text-sm border-collapse">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="text-left px-2 py-1.5 font-bold text-gray-700 border border-gray-200">Prodotto</th>
-                        <th className="text-right px-2 py-1.5 font-bold text-gray-700 border border-gray-200">Qtà</th>
-                        <th className="text-left px-2 py-1.5 font-bold text-gray-700 border border-gray-200">Unità</th>
+                        <th className="text-left px-3 py-2 font-bold text-gray-700 border border-gray-200">Prodotto</th>
+                        <th className="text-right px-3 py-2 font-bold text-gray-700 border border-gray-200">Qtà</th>
+                        <th className="text-left px-3 py-2 font-bold text-gray-700 border border-gray-200">Unità</th>
                       </tr>
                     </thead>
                     <tbody>
                       {ordine.dettagli_ordine.map((dettaglio, i) => (
                         <tr key={dettaglio.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                          <td className="px-2 py-1.5 border border-gray-200 font-semibold uppercase text-gray-800">{dettaglio.prodotti?.nome || dettaglio.nome_custom}</td>
-                          <td className="px-2 py-1.5 border border-gray-200 text-right font-bold text-gray-700">{dettaglio.quantita}</td>
-                          <td className="px-2 py-1.5 border border-gray-200 text-gray-600">{dettaglio.tipologia}</td>
+                          <td className="px-3 py-2 border border-gray-200 font-semibold uppercase text-gray-800">{dettaglio.prodotti?.nome || dettaglio.nome_custom}</td>
+                          <td className="px-3 py-2 border border-gray-200 text-right font-bold text-gray-700 whitespace-nowrap">{dettaglio.quantita}</td>
+                          <td className="px-3 py-2 border border-gray-200 text-gray-600 whitespace-nowrap">{dettaglio.tipologia}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 ) : (
-                  <p className="text-sm text-gray-500 italic">Nessun prodotto disponibile</p>
+                  <p className="text-sm text-gray-500 italic p-3">Nessun prodotto disponibile</p>
                 )}
               </div>
             )}

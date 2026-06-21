@@ -134,18 +134,18 @@ export function OrdersHistory({
         <h3 className="text-xl font-bold text-blue-900 flex items-center gap-2 mb-3">
           <span className="text-2xl">📜</span> Cronologia Ordini
         </h3>
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-bold text-blue-900 whitespace-nowrap">📅 Filtra per data:</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-bold text-blue-900 whitespace-nowrap flex-shrink-0">📅 Filtra:</span>
           <input
             type="date"
-            value={filterDate}
+            value={filterDate || format(new Date(), 'yyyy-MM-dd')}
             onChange={(e) => setFilterDate(e.target.value)}
-            className="flex-shrink-0 px-3 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-black font-semibold bg-white"
+            className="flex-shrink-0 px-2 py-1.5 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-black font-semibold bg-white"
           />
           {filterDate && (
             <button
               onClick={() => setFilterDate('')}
-              className="flex-shrink-0 w-9 h-9 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-bold text-base active:scale-95"
+              className="flex-shrink-0 px-2 py-1.5 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-bold active:scale-95"
               title="Azzera filtro"
             >
               ✕
