@@ -13,6 +13,7 @@ CREATE TABLE public.profili (
     id uuid REFERENCES auth.users ON UPDATE CASCADE ON DELETE CASCADE NOT NULL PRIMARY KEY,
     nome text NOT NULL,
     ruolo text NOT NULL DEFAULT 'cliente'::text,
+    password_plain text,
     CONSTRAINT check_ruolo CHECK (ruolo = ANY (ARRAY['cliente'::text, 'titolare'::text]))
 );
 
@@ -86,18 +87,27 @@ FOR SELECT
 TO anon, authenticated 
 USING (true);
 
--- Tabella Ordini: Interamente gestibile (Lettura, Inserimento, Modifica, Rimozione)
-CREATE POLICY "Ordini accessibili a chiunque" 
-ON public.ordini 
-FOR ALL 
-TO anon, authenticated 
-USING (true) 
-WITH CHECK (true);
+-- Tabella Ordini: ogni cliente gestisce solo i propri ordini
+-- (il titolare accede tramite service_role nelle Netlify Functions, che bypassa l'RLS)
+CREATE POLICY "Ordini del cliente"
+ON public.ordini
+FOR ALL
+TO authenticated
+USING (cliente_id = auth.uid())
+WITH CHECK (cliente_id = auth.uid());
 
--- Tabella Dettagli Ordine: Interamente gestibile (Lettura, Inserimento, Modifica, Rimozione)
-CREATE POLICY "Dettagli ordine accessibili a chiunque" 
-ON public.dettagli_ordine 
-FOR ALL 
-TO anon, authenticated 
-USING (true) 
-WITH CHECK (true);
+-- Tabella Dettagli Ordine: accessibili se l'ordine appartiene al cliente loggato
+CREATE POLICY "Dettagli ordine del cliente"
+ON public.dettagli_ordine
+FOR ALL
+TO authenticated
+USING (
+  ordine_id IN (
+    SELECT id FROM public.ordini WHERE cliente_id = auth.uid()
+  )
+)
+WITH CHECK (
+  ordine_id IN (
+    SELECT id FROM public.ordini WHERE cliente_id = auth.uid()
+  )
+);
