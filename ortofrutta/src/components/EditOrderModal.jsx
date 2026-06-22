@@ -227,7 +227,7 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
             {ordine && selectedDate && (
               <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
                 <p className="text-sm font-semibold text-gray-700 mb-4">
-                  👤 Cliente: <span className="text-blue-900">{ordine.profili?.nome || 'Sconosciuto'}</span>
+                  👤 Cliente: <span className="text-blue-900 uppercase">{ordine.profili?.nome || 'Sconosciuto'}</span>
                 </p>
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">
                   📅 Data dell'ordine

@@ -99,7 +99,7 @@ export function AdminOrderCard({
           {/* Receipt Header - All left aligned */}
           <div className="mb-4 sm:mb-6 text-left">
             <div className="flex items-start justify-between mb-3 gap-2">
-              <h3 className="text-base sm:text-lg font-bold text-gray-800 min-w-0 break-words">
+              <h3 className="text-base sm:text-lg font-bold text-gray-800 min-w-0 break-words uppercase">
                 👤 {ordine.profili?.nome || 'Cliente Sconosciuto'}
               </h3>
               <div className={`
@@ -234,7 +234,7 @@ export function AdminOrderCard({
           className="w-full flex items-center justify-between p-5 hover:bg-blue-50 transition-all active:scale-95"
         >
           <div className="text-left flex-1">
-            <div className="font-bold text-black text-lg">
+            <div className="font-bold text-black text-lg uppercase">
               👤 {ordine.profili?.nome || 'Cliente Sconosciuto'}
             </div>
             <div className="text-sm text-blue-900 mt-2 font-semibold">

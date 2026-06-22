@@ -463,7 +463,7 @@ export function Utenti() {
                   className="flex items-center justify-between p-4 bg-white border-2 border-green-300 rounded-lg shadow-sm hover:shadow-md hover:border-green-400 transition"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-black text-left truncate">{cliente.nome}</p>
+                    <p className="font-bold text-black text-left truncate uppercase">{cliente.nome}</p>
                     {cliente.email && !cliente.email.endsWith('@noreply.internal') ? (
                       <p className="text-xs text-green-700 mt-0.5 font-semibold text-left truncate">{cliente.email}</p>
                     ) : (

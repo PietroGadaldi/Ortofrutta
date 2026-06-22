@@ -34,7 +34,7 @@ export function generateOrderPDF(order) {
     // Header - Title with client name
     pdf.setFontSize(26)
     pdf.setFont(undefined, 'bold')
-    const clientName = order.profili?.nome || 'Cliente'
+    const clientName = (order.profili?.nome || 'Cliente').toUpperCase()
     pdf.text(clientName, pageWidth / 2, yPosition, { align: 'center' })
     yPosition += 14
 
@@ -153,7 +153,7 @@ export function generateDayOrdersPDF(ordini, date) {
       // Client name header
       pdf.setFontSize(26)
       pdf.setFont(undefined, 'bold')
-      const clientName = order.profili?.nome || 'Cliente'
+      const clientName = (order.profili?.nome || 'Cliente').toUpperCase()
       pdf.text(clientName, pageWidth / 2, yPosition, { align: 'center' })
       yPosition += 14
 

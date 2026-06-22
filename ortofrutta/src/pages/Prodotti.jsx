@@ -244,14 +244,26 @@ export function Prodotti() {
             <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2">
               <span className="text-2xl sm:text-3xl">➕</span> Aggiungi Prodotto
             </h2>
-            <button
-              type="submit"
-              form="form-nuovo-prodotto"
-              disabled={isSubmitting}
-              className="px-3 sm:px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 transition-all shadow-md hover:scale-105 disabled:hover:scale-100 text-sm sm:text-base"
-            >
-              {isSubmitting ? '⏳ Salvando...' : isModifying ? '📝 Modifica' : '✅ Aggiungi'}
-            </button>
+            <div className="flex gap-2">
+              {isModifying && (
+                <button
+                  type="button"
+                  onClick={() => { resetForm(); setMobileTab('lista') }}
+                  disabled={isSubmitting}
+                  className="px-3 sm:px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300 disabled:opacity-50 transition-all shadow-md hover:scale-105 disabled:hover:scale-100 text-sm sm:text-base"
+                >
+                  ✖ Annulla
+                </button>
+              )}
+              <button
+                type="submit"
+                form="form-nuovo-prodotto"
+                disabled={isSubmitting}
+                className="px-3 sm:px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 transition-all shadow-md hover:scale-105 disabled:hover:scale-100 text-sm sm:text-base"
+              >
+                {isSubmitting ? '⏳ Salvando...' : isModifying ? '📝 Modifica' : '✅ Aggiungi'}
+              </button>
+            </div>
           </div>
 
           <form id="form-nuovo-prodotto" onSubmit={handleSubmit} className="space-y-5">

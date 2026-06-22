@@ -103,7 +103,7 @@ export function Ordini() {
               <tbody className="divide-y divide-gray-200">
                 {ordini.map((ordine) => (
                   <tr key={ordine.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-3 text-sm text-gray-900">{ordine.profili?.nome}</td>
+                    <td className="px-6 py-3 text-sm text-gray-900 uppercase">{ordine.profili?.nome}</td>
                     <td className="px-6 py-3 text-sm text-gray-600">
                       {formatDate(ordine.data_creazione)}
                     </td>
