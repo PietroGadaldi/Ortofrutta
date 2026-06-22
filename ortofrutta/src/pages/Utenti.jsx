@@ -25,6 +25,7 @@ export function Utenti() {
   const [errorClienti, setErrorClienti] = useState('')
   const [viewingRole, setViewingRole] = useState('cliente')
   const [mobileTab, setMobileTab] = useState('lista')
+  const [filterNome, setFilterNome] = useState('')
 
   // Blocca scroll del body quando il modal di eliminazione è aperto (iOS fix)
   useEffect(() => {
@@ -75,8 +76,22 @@ export function Utenti() {
   const toggleRole = () => {
     const newRole = viewingRole === 'cliente' ? 'titolare' : 'cliente'
     setViewingRole(newRole)
+    setFilterNome('')
     fetchClienti(newRole)
   }
+
+  const clientiFiltrati = filterNome.trim()
+    ? clienti
+        .filter(c => c.nome.toLowerCase().includes(filterNome.toLowerCase()))
+        .sort((a, b) => {
+          const term = filterNome.toLowerCase()
+          const aStarts = a.nome.toLowerCase().startsWith(term)
+          const bStarts = b.nome.toLowerCase().startsWith(term)
+          if (aStarts && !bStarts) return -1
+          if (!aStarts && bStarts) return 1
+          return a.nome.localeCompare(b.nome)
+        })
+    : clienti
 
   const handleConfirmDelete = async () => {
     if (!userToDelete) return
@@ -387,7 +402,7 @@ export function Utenti() {
         <div className={`${mobileTab === 'lista' ? 'block' : 'hidden'} md:block min-w-0 bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-6`}>
           <div className="flex justify-between items-center mb-4 gap-2">
             <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2">
-              <span className="text-2xl sm:text-3xl">📋</span> {viewingRole === 'cliente' ? 'Clienti' : 'Titolari'} ({clienti.length})
+              <span className="text-2xl sm:text-3xl">📋</span> {viewingRole === 'cliente' ? 'Clienti' : 'Titolari'} ({clientiFiltrati.length}{filterNome ? `/${clienti.length}` : ''})
             </h2>
             <div className="flex gap-2 flex-shrink-0">
               <button
@@ -413,6 +428,18 @@ export function Utenti() {
             </div>
           )}
 
+          {!loadingClienti && clienti.length > 0 && (
+            <div className="mb-3">
+              <input
+                type="text"
+                placeholder="🔍 Cerca per nome..."
+                value={filterNome}
+                onChange={(e) => setFilterNome(e.target.value)}
+                className="w-full px-3 py-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-600 text-gray-800 placeholder-gray-500 text-base font-semibold"
+              />
+            </div>
+          )}
+
           {loadingClienti ? (
             <div className="flex justify-center py-12">
               <div className="text-center">
@@ -426,9 +453,11 @@ export function Utenti() {
             </div>
           ) : clienti.length === 0 ? (
             <div className="text-black font-semibold italic">❌ Nessun {viewingRole === 'cliente' ? 'cliente' : 'titolare'} creato ancora</div>
+          ) : clientiFiltrati.length === 0 ? (
+            <div className="text-black font-semibold italic">❌ Nessun risultato per "{filterNome}"</div>
           ) : (
             <div className="space-y-2 max-h-[62vh] overflow-y-auto md:max-h-[500px] overscroll-contain pr-2" style={{ WebkitOverflowScrolling: 'touch' }}>
-              {clienti.map((cliente) => (
+              {clientiFiltrati.map((cliente) => (
                 <div
                   key={cliente.id}
                   className="flex items-center justify-between p-4 bg-white border-2 border-green-300 rounded-lg shadow-sm hover:shadow-md hover:border-green-400 transition"
