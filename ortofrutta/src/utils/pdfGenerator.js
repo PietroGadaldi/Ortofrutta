@@ -31,10 +31,15 @@ export function generateOrderPDF(order) {
     const contentWidth = pageWidth - margin * 2
     let yPosition = margin
 
-    // Header - Title with client name
-    pdf.setFontSize(26)
+    // Header - Title with client name (font auto-ridotto se il nome è troppo lungo)
     pdf.setFont(undefined, 'bold')
     const clientName = (order.profili?.nome || 'Cliente').toUpperCase()
+    let nameFontSize = 26
+    pdf.setFontSize(nameFontSize)
+    while (pdf.getTextWidth(clientName) > contentWidth && nameFontSize > 10) {
+      nameFontSize -= 1
+      pdf.setFontSize(nameFontSize)
+    }
     pdf.text(clientName, pageWidth / 2, yPosition, { align: 'center' })
     yPosition += 14
 
@@ -66,10 +71,11 @@ export function generateOrderPDF(order) {
     const col3X = margin + 102
     const col4X = margin + 152
     const tableRight = margin + contentWidth
+    const lineSpacing = 5
 
-    const drawRowLines = (y, drawTopBorder = false) => {
+    const drawRowLines = (y, drawTopBorder = false, rowH = 8) => {
       const rowTop = y - 6
-      const rowBottom = y + 2
+      const rowBottom = rowTop + rowH
       pdf.setDrawColor(150)
       pdf.setLineWidth(0.3)
       if (drawTopBorder) pdf.line(margin, rowTop, tableRight, rowTop)
@@ -89,30 +95,37 @@ export function generateOrderPDF(order) {
     pdf.text('Quantità', margin + 70, yPosition)
     pdf.text('Unità', margin + 105, yPosition)
     pdf.text('Peso Eff.', margin + 155, yPosition)
-    drawRowLines(yPosition, true)
+    drawRowLines(yPosition, true, 8)
     yPosition += 10
 
     // Products list
     pdf.setFont(undefined, 'normal')
     pdf.setFontSize(12)
     let productYPosition = yPosition
+    const maxProductWidth = col2X - margin - 5
 
-    order.dettagli_ordine.forEach((item, index) => {
+    order.dettagli_ordine.forEach((item) => {
       const productName = (item.prodotti?.nome || item.nome_custom || 'Prodotto sconosciuto').toUpperCase()
       const quantity = item.quantita
       const tipologia = item.tipologia || 'N/A'
 
-      // Check if we need a new page
-      if (productYPosition > pageHeight - 35) {
+      const lines = pdf.splitTextToSize(productName, maxProductWidth)
+      const extraLines = lines.length - 1
+      const currentRowH = 8 + extraLines * lineSpacing
+
+      if (productYPosition - 6 + currentRowH > pageHeight - 35) {
         pdf.addPage()
         productYPosition = margin + 10
       }
 
-      pdf.text(productName, margin + 3, productYPosition)
-      pdf.text(quantity.toString(), margin + 80, productYPosition, { align: 'right' })
-      pdf.text(tipologia, margin + 105, productYPosition)
-      drawRowLines(productYPosition)
-      productYPosition += 8
+      lines.forEach((line, i) => {
+        pdf.text(line, margin + 3, productYPosition + i * lineSpacing)
+      })
+      const midY = productYPosition + (extraLines * lineSpacing) / 2
+      pdf.text(quantity.toString(), margin + 80, midY, { align: 'right' })
+      pdf.text(tipologia, margin + 105, midY)
+      drawRowLines(productYPosition, false, currentRowH)
+      productYPosition += currentRowH
     })
 
     yPosition = productYPosition + 5
@@ -169,10 +182,15 @@ export function generateDayOrdersPDF(ordini, date) {
 
       let yPosition = margin
 
-      // Client name header
-      pdf.setFontSize(26)
+      // Client name header (font auto-ridotto se il nome è troppo lungo)
       pdf.setFont(undefined, 'bold')
       const clientName = (order.profili?.nome || 'Cliente').toUpperCase()
+      let nameFontSize = 26
+      pdf.setFontSize(nameFontSize)
+      while (pdf.getTextWidth(clientName) > contentWidth && nameFontSize > 10) {
+        nameFontSize -= 1
+        pdf.setFontSize(nameFontSize)
+      }
       pdf.text(clientName, pageWidth / 2, yPosition, { align: 'center' })
       yPosition += 14
 
@@ -202,10 +220,11 @@ export function generateDayOrdersPDF(ordini, date) {
       const col3X = margin + 102
       const col4X = margin + 152
       const tableRight = margin + contentWidth
+      const lineSpacing = 5
 
-      const drawRowLines = (y, drawTopBorder = false) => {
+      const drawRowLines = (y, drawTopBorder = false, rowH = 8) => {
         const rowTop = y - 6
-        const rowBottom = y + 2
+        const rowBottom = rowTop + rowH
         pdf.setDrawColor(150)
         pdf.setLineWidth(0.3)
         if (drawTopBorder) pdf.line(margin, rowTop, tableRight, rowTop)
@@ -225,28 +244,36 @@ export function generateDayOrdersPDF(ordini, date) {
       pdf.text('Quantità', margin + 70, yPosition)
       pdf.text('Unità', margin + 105, yPosition)
       pdf.text('Peso Eff.', margin + 155, yPosition)
-      drawRowLines(yPosition, true)
+      drawRowLines(yPosition, true, 8)
       yPosition += 10
 
       // Products list
       pdf.setFont(undefined, 'normal')
       pdf.setFontSize(12)
+      const maxProductWidth = col2X - margin - 5
 
       ;(order.dettagli_ordine || []).forEach((item) => {
         const productName = (item.prodotti?.nome || item.nome_custom || 'Prodotto sconosciuto').toUpperCase()
         const quantity = item.quantita
         const tipologia = item.tipologia || 'N/A'
 
-        if (yPosition > pageHeight - 35) {
+        const lines = pdf.splitTextToSize(productName, maxProductWidth)
+        const extraLines = lines.length - 1
+        const currentRowH = 8 + extraLines * lineSpacing
+
+        if (yPosition - 6 + currentRowH > pageHeight - 35) {
           pdf.addPage()
           yPosition = margin + 10
         }
 
-        pdf.text(productName, margin + 3, yPosition)
-        pdf.text(quantity.toString(), margin + 80, yPosition, { align: 'right' })
-        pdf.text(tipologia, margin + 105, yPosition)
-        drawRowLines(yPosition)
-        yPosition += 8
+        lines.forEach((line, i) => {
+          pdf.text(line, margin + 3, yPosition + i * lineSpacing)
+        })
+        const midY = yPosition + (extraLines * lineSpacing) / 2
+        pdf.text(quantity.toString(), margin + 80, midY, { align: 'right' })
+        pdf.text(tipologia, margin + 105, midY)
+        drawRowLines(yPosition, false, currentRowH)
+        yPosition += currentRowH
       })
 
       // Footer
@@ -311,10 +338,11 @@ export function generateDaySummaryPDF(date, items) {
     const col2X = margin + 112
     const col3X = margin + 147
     const tableRight = margin + contentWidth
+    const lineSpacing = 5
 
-    const drawRowLines = (y, drawTopBorder = false) => {
+    const drawRowLines = (y, drawTopBorder = false, rowH = 8) => {
       const rowTop = y - 6
-      const rowBottom = y + 2
+      const rowBottom = rowTop + rowH
       pdf.setDrawColor(150)
       pdf.setLineWidth(0.3)
       if (drawTopBorder) pdf.line(margin, rowTop, tableRight, rowTop)
@@ -333,24 +361,32 @@ export function generateDaySummaryPDF(date, items) {
     pdf.text('Prodotto', margin + 3, yPosition)
     pdf.text('Totale', margin + 115, yPosition)
     pdf.text('Unità', margin + 150, yPosition)
-    drawRowLines(yPosition, true)
+    drawRowLines(yPosition, true, 8)
     yPosition += 10
 
     // Rows
     pdf.setFont(undefined, 'normal')
     pdf.setFontSize(12)
+    const maxProductWidth = col2X - margin - 5
 
     items.forEach((item) => {
-      if (yPosition > pageHeight - 35) {
+      const lines = pdf.splitTextToSize(item.nome, maxProductWidth)
+      const extraLines = lines.length - 1
+      const currentRowH = 8 + extraLines * lineSpacing
+
+      if (yPosition - 6 + currentRowH > pageHeight - 35) {
         pdf.addPage()
         yPosition = margin + 10
       }
 
-      pdf.text(item.nome, margin + 3, yPosition)
-      pdf.text(item.totale.toString(), margin + 125, yPosition, { align: 'right' })
-      pdf.text(item.tipologia, margin + 150, yPosition)
-      drawRowLines(yPosition)
-      yPosition += 8
+      lines.forEach((line, i) => {
+        pdf.text(line, margin + 3, yPosition + i * lineSpacing)
+      })
+      const midY = yPosition + (extraLines * lineSpacing) / 2
+      pdf.text(item.totale.toString(), margin + 125, midY, { align: 'right' })
+      pdf.text(item.tipologia, margin + 150, midY)
+      drawRowLines(yPosition, false, currentRowH)
+      yPosition += currentRowH
     })
 
     yPosition += 5
