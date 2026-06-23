@@ -23,6 +23,7 @@ export function OrdersForDayList({
   selectedDate,
   ordini = [],
   onStatusChange,
+  onMarkAllCompleted,
   onDeleteOrder,
   onOrderModified,
   onDateChanged,
@@ -32,6 +33,7 @@ export function OrdersForDayList({
   showAsReceiptCards = false,
 }) {
   const [filterName, setFilterName] = useState('')
+  const [showOnlyDaStampare, setShowOnlyDaStampare] = useState(false)
   const [isPrintingAll, setIsPrintingAll] = useState(false)
   const [printAllPdfData, setPrintAllPdfData] = useState(null)
   const [showPrintAllModal, setShowPrintAllModal] = useState(false)
@@ -50,14 +52,18 @@ export function OrdersForDayList({
 
   const dayName = format(selectedDate, 'EEEE', { locale: it }).toUpperCase()
   const totalOrders = ordini.length
-  
+
   // Filter orders by client name
-  const filteredOrdini = ordini.filter(o => {
+  const filteredOrdini = ordini.filter((o) => {
     const clientName = o.profili?.nome || ''
     return clientName.toLowerCase().includes(filterName.toLowerCase())
   })
-  
-  const ordiniDaStampare = filteredOrdini.filter(o => !o.completato).length
+
+  // Ordini non ancora stampati (completato = false)
+  const ordiniDaStampare = filteredOrdini.filter((o) => !o.completato)
+
+  // Lista effettivamente mostrata (con eventuale filtro "solo da stampare")
+  const displayOrdini = showOnlyDaStampare ? ordiniDaStampare : filteredOrdini
 
   // Riepilogo prodotti: raggruppa per (nome + tipologia), somma le quantità
   const riepilogoProdotti = useMemo(() => {
@@ -80,11 +86,16 @@ export function OrdersForDayList({
   }, [filteredOrdini])
 
   const handleStampaTutti = async () => {
+    if (ordiniDaStampare.length === 0) return
     setIsPrintingAll(true)
     try {
-      const blob = generateDayOrdersPDF(filteredOrdini, selectedDate)
+      const blob = generateDayOrdersPDF(ordiniDaStampare, selectedDate)
       setPrintAllPdfData(blob)
       setShowPrintAllModal(true)
+      // Segna tutti gli ordini stampati come completato
+      if (onMarkAllCompleted) {
+        await onMarkAllCompleted(ordiniDaStampare.map((o) => o.id))
+      }
     } catch (err) {
       console.error('Errore nella generazione del PDF combinato:', err)
     } finally {
@@ -110,7 +121,7 @@ export function OrdersForDayList({
     <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl p-4 sm:p-6 shadow-lg">
       {/* Header */}
       <div className="mb-6">
-    
+
         {/* Filter Input + Stampa Tutti */}
         <div className="mt-4 flex gap-2">
           <input
@@ -121,15 +132,43 @@ export function OrdersForDayList({
             className="flex-1 min-w-0 px-3 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-600 text-gray-800 placeholder-gray-500 text-sm font-semibold"
           />
           {filteredOrdini.length > 0 && (
-            <button
-              onClick={handleStampaTutti}
-              disabled={isPrintingAll}
-              className="flex-shrink-0 px-3 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition text-sm whitespace-nowrap"
-            >
-              {isPrintingAll ? '⏳ Generando...' : '🖨️ Stampa Tutti'}
-            </button>
+            ordiniDaStampare.length > 0 ? (
+              <button
+                onClick={handleStampaTutti}
+                disabled={isPrintingAll}
+                className="flex-shrink-0 px-3 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition text-sm whitespace-nowrap"
+              >
+                {isPrintingAll ? '⏳ Generando...' : `🖨️ Stampa (${ordiniDaStampare.length})`}
+              </button>
+            ) : (
+              <span className="flex-shrink-0 px-3 py-2 bg-green-100 text-green-700 font-bold rounded-lg text-sm whitespace-nowrap border-2 border-green-300">
+                ✅ Tutti stampati
+              </span>
+            )
           )}
         </div>
+
+        {/* Toggle: solo da stampare */}
+        {filteredOrdini.length > 0 && (
+          <div className="mt-3 flex items-center gap-2">
+            <button
+              onClick={() => setShowOnlyDaStampare((v) => !v)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 text-xs font-bold transition-all ${
+                showOnlyDaStampare
+                  ? 'bg-orange-500 border-orange-500 text-white'
+                  : 'bg-white border-orange-300 text-orange-700 hover:bg-orange-50'
+              }`}
+            >
+              <span>{showOnlyDaStampare ? '✓' : '○'}</span>
+              Solo da stampare ({ordiniDaStampare.length})
+            </button>
+            {showOnlyDaStampare && (
+              <span className="text-xs text-gray-500 font-semibold">
+                — {filteredOrdini.length - ordiniDaStampare.length} già stampati nascosti
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Riepilogo Prodotti */}
@@ -186,16 +225,18 @@ export function OrdersForDayList({
             ❌ Nessun ordine per il {dayName.toLowerCase()} {formatDate(selectedDate.toISOString())}
           </p>
         </div>
-      ) : filteredOrdini.length === 0 ? (
+      ) : displayOrdini.length === 0 ? (
         <div className="p-8 text-center bg-yellow-100 border-l-4 border-yellow-500 rounded-lg">
           <p className="text-black font-semibold">
-            ⚠️ Nessun ordine corrisponde al filtro "{filterName}"
+            {showOnlyDaStampare
+              ? '✅ Tutti gli ordini sono già stati stampati'
+              : `⚠️ Nessun ordine corrisponde al filtro "${filterName}"`}
           </p>
         </div>
       ) : (
         /* Orders List */
         <div className="space-y-4 max-h-[600px] overflow-y-auto">
-          {filteredOrdini.map((ordine) => (
+          {displayOrdini.map((ordine) => (
             <AdminOrderCard
               key={ordine.id}
               ordine={ordine}

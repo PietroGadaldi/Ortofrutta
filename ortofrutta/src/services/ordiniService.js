@@ -138,10 +138,10 @@ export const updateOrdineDettagli = async (ordineId, dettagli) => {
 
     if (dettagliError) throw dettagliError
 
-    // Aggiorna il timestamp di modifica sull'ordine padre
+    // Aggiorna timestamp e reimposta completato a false (ordine modificato = da ristampare)
     await supabase
       .from('ordini')
-      .update({ updated_at: new Date().toISOString() })
+      .update({ updated_at: new Date().toISOString(), completato: false })
       .eq('id', ordineId)
 
     return { data: dettagliData, error: null }

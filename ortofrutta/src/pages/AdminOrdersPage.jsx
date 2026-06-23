@@ -117,6 +117,21 @@ export function AdminOrdersPage() {
     }
   }
 
+  const handleMarkAllCompleted = async (ordineIds) => {
+    setIsUpdating(true)
+    try {
+      await Promise.all(ordineIds.map((id) => updateOrdineStatus(id, true)))
+      setOrdini((prev) =>
+        prev.map((o) => (ordineIds.includes(o.id) ? { ...o, completato: true } : o))
+      )
+    } catch (err) {
+      console.error('Error marking all as completed:', err)
+      setError('Errore nell\'aggiornamento degli stati')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
   const handleDeleteOrder = async (ordineId) => {
     setIsUpdating(true)
     try {
@@ -196,6 +211,7 @@ export function AdminOrdersPage() {
             selectedDate={selectedDate}
             ordini={filteredOrdini}
             onStatusChange={handleStatusChange}
+            onMarkAllCompleted={handleMarkAllCompleted}
             onDeleteOrder={handleDeleteOrder}
             onOrderModified={handleOrderModified}
             onDateChanged={handleDateChanged}

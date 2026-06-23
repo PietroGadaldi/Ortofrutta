@@ -271,8 +271,8 @@ export function OrdersHistory({
                   </ul>
                 </div>
 
-                {/* Action buttons (only if NOT archived and NOT completed) */}
-                {!isPast && !ordine.completato && (
+                {/* Action buttons (only if NOT archived — completato non blocca il cliente) */}
+                {!isPast && (
                   <div className="flex gap-3 border-t-2 border-amber-300 pt-5 mt-5">
                     <button
                       onClick={() => onEditOrder(ordine)}
