@@ -61,6 +61,25 @@ export function generateOrderPDF(order) {
     pdf.line(margin, yPosition, pageWidth - margin, yPosition)
     yPosition += 10
 
+    // Column separator x positions
+    const col2X = margin + 67
+    const col3X = margin + 102
+    const col4X = margin + 152
+    const tableRight = margin + contentWidth
+
+    const drawRowLines = (y, drawTopBorder = false) => {
+      const rowTop = y - 6
+      const rowBottom = y + 2
+      pdf.setDrawColor(150)
+      pdf.setLineWidth(0.3)
+      if (drawTopBorder) pdf.line(margin, rowTop, tableRight, rowTop)
+      pdf.line(margin, rowBottom, tableRight, rowBottom)
+      pdf.line(margin, rowTop, margin, rowBottom)
+      pdf.line(tableRight, rowTop, tableRight, rowBottom)
+      ;[col2X, col3X, col4X].forEach((x) => pdf.line(x, rowTop, x, rowBottom))
+      pdf.setDrawColor(100)
+    }
+
     // Products table header
     pdf.setFontSize(12)
     pdf.setFont(undefined, 'bold')
@@ -70,6 +89,7 @@ export function generateOrderPDF(order) {
     pdf.text('Quantità', margin + 70, yPosition)
     pdf.text('Unità', margin + 105, yPosition)
     pdf.text('Peso Eff.', margin + 155, yPosition)
+    drawRowLines(yPosition, true)
     yPosition += 10
 
     // Products list
@@ -88,11 +108,10 @@ export function generateOrderPDF(order) {
         productYPosition = margin + 10
       }
 
-      // Product row with better spacing
       pdf.text(productName, margin + 3, productYPosition)
       pdf.text(quantity.toString(), margin + 80, productYPosition, { align: 'right' })
       pdf.text(tipologia, margin + 105, productYPosition)
-      // Peso Effettivo column is left blank for manual entry
+      drawRowLines(productYPosition)
       productYPosition += 8
     })
 
@@ -178,6 +197,25 @@ export function generateDayOrdersPDF(ordini, date) {
       pdf.line(margin, yPosition, pageWidth - margin, yPosition)
       yPosition += 10
 
+      // Column separator x positions
+      const col2X = margin + 67
+      const col3X = margin + 102
+      const col4X = margin + 152
+      const tableRight = margin + contentWidth
+
+      const drawRowLines = (y, drawTopBorder = false) => {
+        const rowTop = y - 6
+        const rowBottom = y + 2
+        pdf.setDrawColor(150)
+        pdf.setLineWidth(0.3)
+        if (drawTopBorder) pdf.line(margin, rowTop, tableRight, rowTop)
+        pdf.line(margin, rowBottom, tableRight, rowBottom)
+        pdf.line(margin, rowTop, margin, rowBottom)
+        pdf.line(tableRight, rowTop, tableRight, rowBottom)
+        ;[col2X, col3X, col4X].forEach((x) => pdf.line(x, rowTop, x, rowBottom))
+        pdf.setDrawColor(100)
+      }
+
       // Products table header
       pdf.setFontSize(12)
       pdf.setFont(undefined, 'bold')
@@ -187,6 +225,7 @@ export function generateDayOrdersPDF(ordini, date) {
       pdf.text('Quantità', margin + 70, yPosition)
       pdf.text('Unità', margin + 105, yPosition)
       pdf.text('Peso Eff.', margin + 155, yPosition)
+      drawRowLines(yPosition, true)
       yPosition += 10
 
       // Products list
@@ -206,6 +245,7 @@ export function generateDayOrdersPDF(ordini, date) {
         pdf.text(productName, margin + 3, yPosition)
         pdf.text(quantity.toString(), margin + 80, yPosition, { align: 'right' })
         pdf.text(tipologia, margin + 105, yPosition)
+        drawRowLines(yPosition)
         yPosition += 8
       })
 
@@ -267,6 +307,24 @@ export function generateDaySummaryPDF(date, items) {
     pdf.line(margin, yPosition, pageWidth - margin, yPosition)
     yPosition += 10
 
+    // Column separator x positions
+    const col2X = margin + 112
+    const col3X = margin + 147
+    const tableRight = margin + contentWidth
+
+    const drawRowLines = (y, drawTopBorder = false) => {
+      const rowTop = y - 6
+      const rowBottom = y + 2
+      pdf.setDrawColor(150)
+      pdf.setLineWidth(0.3)
+      if (drawTopBorder) pdf.line(margin, rowTop, tableRight, rowTop)
+      pdf.line(margin, rowBottom, tableRight, rowBottom)
+      pdf.line(margin, rowTop, margin, rowBottom)
+      pdf.line(tableRight, rowTop, tableRight, rowBottom)
+      ;[col2X, col3X].forEach((x) => pdf.line(x, rowTop, x, rowBottom))
+      pdf.setDrawColor(100)
+    }
+
     // Table header
     pdf.setFontSize(12)
     pdf.setFont(undefined, 'bold')
@@ -275,6 +333,7 @@ export function generateDaySummaryPDF(date, items) {
     pdf.text('Prodotto', margin + 3, yPosition)
     pdf.text('Totale', margin + 115, yPosition)
     pdf.text('Unità', margin + 150, yPosition)
+    drawRowLines(yPosition, true)
     yPosition += 10
 
     // Rows
@@ -290,6 +349,7 @@ export function generateDaySummaryPDF(date, items) {
       pdf.text(item.nome, margin + 3, yPosition)
       pdf.text(item.totale.toString(), margin + 125, yPosition, { align: 'right' })
       pdf.text(item.tipologia, margin + 150, yPosition)
+      drawRowLines(yPosition)
       yPosition += 8
     })
 

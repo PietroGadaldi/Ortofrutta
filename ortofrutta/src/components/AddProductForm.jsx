@@ -12,7 +12,7 @@ import { parseTipologie, capitalize } from '../utils/constants'
  * @param {Function} onSetTomorrow - Callback to set order date to tomorrow
  * @param {boolean} isAdminMode - When true, allows free-text product entry without catalog lookup
  */
-export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null, onReorderLast, onSetTomorrow, isAdminMode = false }) {
+export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null, onReorderLast, onSetTomorrow, isAdminMode = false, disabledMessage = null }) {
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [inputValue, setInputValue] = useState('')
   const [quantita, setQuantita] = useState('')
@@ -130,96 +130,105 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
       </h3>
 
       <div className="space-y-5 flex-1">
-        {/* Product Autocomplete */}
-        <ProductAutocomplete
-          prodotti={formattedProdotti}
-          onSelectProduct={handleProductSelect}
-          value={inputValue}
-          onInputChange={(val) => {
-            setInputValue(val)
-            if (selectedProduct && val !== selectedProduct.nome) {
-              setSelectedProduct(null)
-              setTipologieDisponibili([])
-            }
-          }}
-          isAdminMode={isAdminMode}
-        />
-
-        {/* Quantity Input */}
-        <div>
-          <label className="block text-sm font-bold text-green-900 mb-2 text-left">
-            📦 Quantità
-          </label>
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              min="1"
-              max="100"
-              step="any"
-              value={quantita}
-              onChange={(e) => setQuantita(e.target.value)}
-              onBlur={() => {
-                if (quantita === '') return;
-                const num = parseFloat(quantita);
-                if (isNaN(num)) return;
-
-                if (num > 100) setQuantita('100');
-                else if (num < 1) setQuantita('1');
-              }}
-              placeholder="0"
-            className="flex-1 min-w-0 h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all text-base"
-              disabled={!selectedProduct && !isCustomProduct}
-            />
-            <button
-              type="button"
-              onClick={handleDecrement}
-              disabled={(!selectedProduct && !isCustomProduct) || Number(quantita) <= 1}
-            className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
-            >
-              -
-            </button>
-            <button
-              type="button"
-              onClick={handleIncrement}
-              disabled={(!selectedProduct && !isCustomProduct) || Number(quantita) >= 100}
-            className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
-            >
-              +
-            </button>
+        {disabledMessage ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="p-5 bg-orange-50 border-2 border-orange-300 rounded-xl text-center">
+              <p className="text-orange-900 font-bold text-sm">{disabledMessage}</p>
+            </div>
           </div>
-        </div>
-
-        {/* Tipologia */}
-        <div>
-          <label className="block text-sm font-bold text-green-900 mb-2 text-left">
-            🏷️ Tipologia
-          </label>
-          {isCustomProduct ? (
-            <input
-              type="text"
-              value={tipologia}
-              onChange={(e) => setTipologia(e.target.value)}
-              placeholder="es: kg, pezzo, cassetta..."
-              className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all"
+        ) : (
+          <>
+            {/* Product Autocomplete */}
+            <ProductAutocomplete
+              prodotti={formattedProdotti}
+              onSelectProduct={handleProductSelect}
+              value={inputValue}
+              onInputChange={(val) => {
+                setInputValue(val)
+                if (selectedProduct && val !== selectedProduct.nome) {
+                  setSelectedProduct(null)
+                  setTipologieDisponibili([])
+                }
+              }}
+              isAdminMode={isAdminMode}
             />
-          ) : (
-            <select
-              value={tipologia}
-              onChange={(e) => setTipologia(e.target.value)}
-              className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-black font-semibold transition-all"
-              disabled={!selectedProduct}
-            >
-              <option value="">-- Seleziona tipologia --</option>
-              {tipologieDisponibili.map((tipo) => (
-                <option key={tipo} value={tipo}>
-                  {capitalize(tipo)}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
 
-        {/* Quick Actions */}
+            {/* Quantity Input */}
+            <div>
+              <label className="block text-sm font-bold text-green-900 mb-2 text-left">
+                📦 Quantità
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  step="any"
+                  value={quantita}
+                  onChange={(e) => setQuantita(e.target.value)}
+                  onBlur={() => {
+                    if (quantita === '') return;
+                    const num = parseFloat(quantita);
+                    if (isNaN(num)) return;
+                    if (num > 100) setQuantita('100');
+                    else if (num < 1) setQuantita('1');
+                  }}
+                  placeholder="0"
+                  className="flex-1 min-w-0 h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all text-base"
+                  disabled={!selectedProduct && !isCustomProduct}
+                />
+                <button
+                  type="button"
+                  onClick={handleDecrement}
+                  disabled={(!selectedProduct && !isCustomProduct) || Number(quantita) <= 1}
+                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
+                >
+                  -
+                </button>
+                <button
+                  type="button"
+                  onClick={handleIncrement}
+                  disabled={(!selectedProduct && !isCustomProduct) || Number(quantita) >= 100}
+                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Tipologia */}
+            <div>
+              <label className="block text-sm font-bold text-green-900 mb-2 text-left">
+                🏷️ Tipologia
+              </label>
+              {isCustomProduct ? (
+                <input
+                  type="text"
+                  value={tipologia}
+                  onChange={(e) => setTipologia(e.target.value)}
+                  placeholder="es: kg, pezzo, cassetta..."
+                  className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all"
+                />
+              ) : (
+                <select
+                  value={tipologia}
+                  onChange={(e) => setTipologia(e.target.value)}
+                  className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-black font-semibold transition-all"
+                  disabled={!selectedProduct}
+                >
+                  <option value="">-- Seleziona tipologia --</option>
+                  {tipologieDisponibili.map((tipo) => (
+                    <option key={tipo} value={tipo}>
+                      {capitalize(tipo)}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Quick Actions — sempre visibili */}
         <div className="pt-2 flex gap-3">
           {onReorderLast && (
             <button
@@ -247,14 +256,16 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
         </div>
       )}
 
-      {/* Add button */}
-      <button
-        type="submit"
-        disabled={(!selectedProduct && !isCustomProduct) || !quantita || !tipologia}
-        className="mt-5 w-full py-3 px-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-lg hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
-      >
-        ✅ Aggiungi al Riepilogo
-      </button>
+      {/* Add button — nascosto se disabilitato */}
+      {!disabledMessage && (
+        <button
+          type="submit"
+          disabled={(!selectedProduct && !isCustomProduct) || !quantita || !tipologia}
+          className="mt-5 w-full py-3 px-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-lg hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
+        >
+          ✅ Aggiungi al Riepilogo
+        </button>
+      )}
     </form>
   )
 }
