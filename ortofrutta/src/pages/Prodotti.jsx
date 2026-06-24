@@ -18,6 +18,8 @@ export function Prodotti() {
   const [searchFilter, setSearchFilter] = useState('')
   const [listLoading, setListLoading] = useState(false)
   const [mobileTab, setMobileTab] = useState('lista')
+  const [pendingToggle, setPendingToggle] = useState(null)
+  const [statusFilter, setStatusFilter] = useState('tutti')
 
   useEffect(() => {
     fetchProdotti(true)
@@ -169,13 +171,18 @@ export function Prodotti() {
     }
   }
 
-  const handleToggleAttivo = async (prodotto) => {
+  const handleToggleAttivo = (prodotto) => {
+    setPendingToggle(prodotto)
+  }
+
+  const handleConfirmToggle = async () => {
+    if (!pendingToggle) return
+    const prodotto = pendingToggle
+    setPendingToggle(null)
     try {
       const { error: err } = await updateProdottoStatus(prodotto.id, !prodotto.attivo)
-
       if (err) throw err
       setSuccess(`Prodotto ${!prodotto.attivo ? 'attivato' : 'disattivato'} con successo!`)
-      // Aggiorna solo il prodotto locale senza refetch
       setProdotti(prodotti.map(p => p.id === prodotto.id ? { ...p, attivo: !p.attivo } : p))
     } catch (err) {
       setError('Errore: ' + err.message)
@@ -358,7 +365,7 @@ export function Prodotti() {
           </div>
 
           {/* Filtro di Ricerca */}
-          <div className="mb-4">
+          <div className="mb-4 space-y-2">
             <input
               type="text"
               placeholder="🔍 Cerca prodotto..."
@@ -366,6 +373,49 @@ export function Prodotti() {
               onChange={(e) => setSearchFilter(e.target.value)}
               className="w-full px-4 py-2 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold"
             />
+            <div className="flex gap-1 flex-wrap">
+              {[
+                { value: 'tutti', label: `Tutti (${prodotti.length})` },
+                { value: 'attivi', label: `Solo attivi (${prodotti.filter(p => p.attivo).length})` },
+                { value: 'non_attivi', label: `Solo non attivi (${prodotti.filter(p => !p.attivo).length})` },
+              ].map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setStatusFilter(value)}
+                  className={`px-3 py-1.5 rounded-lg border-2 text-xs font-bold transition-all ${
+                    statusFilter === value
+                      ? 'bg-blue-600 border-blue-600 text-white'
+                      : 'bg-white border-blue-300 text-blue-700 hover:bg-blue-50'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* Dialogo conferma attiva/disattiva */}
+            {pendingToggle && (
+              <div className="p-3 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
+                <p className="text-yellow-900 font-bold text-sm mb-2">
+                  ⚠️ Sei sicuro di voler {pendingToggle.attivo ? 'disattivare' : 'attivare'}{' '}
+                  <span className="uppercase">{pendingToggle.nome}</span>?
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleConfirmToggle}
+                    className="px-3 py-1.5 bg-yellow-500 text-white font-bold rounded-lg hover:bg-yellow-600 transition text-sm"
+                  >
+                    {pendingToggle.attivo ? '🔴 Disattiva' : '🟢 Attiva'}
+                  </button>
+                  <button
+                    onClick={() => setPendingToggle(null)}
+                    className="px-3 py-1.5 bg-white text-yellow-800 font-bold rounded-lg border-2 border-yellow-400 hover:bg-yellow-100 transition text-sm"
+                  >
+                    Annulla
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {listLoading ? (
@@ -384,7 +434,9 @@ export function Prodotti() {
                   const tipologieMatch = parseTipologie(p.tipologie_possibili).some(tip =>
                     tip.toLowerCase().includes(searchLower)
                   )
-                  return nomeMatch || tipologieMatch
+                  const searchOk = nomeMatch || tipologieMatch
+                  const statusOk = statusFilter === 'tutti' || (statusFilter === 'attivi' ? p.attivo : !p.attivo)
+                  return searchOk && statusOk
                 })
 
                 return (
