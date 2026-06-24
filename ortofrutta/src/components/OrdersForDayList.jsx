@@ -41,6 +41,7 @@ export function OrdersForDayList({
   const [riepilogoPdfData, setRiepilogoPdfData] = useState(null)
   const [showRiepilogoModal, setShowRiepilogoModal] = useState(false)
   const [isGeneratingRiepilogo, setIsGeneratingRiepilogo] = useState(false)
+  const [showReprintConfirm, setShowReprintConfirm] = useState(false)
 
   const formatDate = (date) => {
     try {
@@ -103,6 +104,20 @@ export function OrdersForDayList({
     }
   }
 
+  const handleRistampaTutti = async () => {
+    setShowReprintConfirm(false)
+    setIsPrintingAll(true)
+    try {
+      const blob = generateDayOrdersPDF(filteredOrdini, selectedDate)
+      setPrintAllPdfData(blob)
+      setShowPrintAllModal(true)
+    } catch (err) {
+      console.error('Errore nella generazione del PDF per ristampa:', err)
+    } finally {
+      setIsPrintingAll(false)
+    }
+  }
+
   const handleGeneraRiepilogoPDF = async () => {
     setIsGeneratingRiepilogo(true)
     try {
@@ -141,12 +156,39 @@ export function OrdersForDayList({
                 {isPrintingAll ? '⏳ Generando...' : `🖨️ Stampa (${ordiniDaStampare.length})`}
               </button>
             ) : (
-              <span className="flex-shrink-0 px-3 py-2 bg-green-100 text-green-700 font-bold rounded-lg text-sm whitespace-nowrap border-2 border-green-300">
+              <button
+                onClick={() => setShowReprintConfirm(true)}
+                className="flex-shrink-0 px-3 py-2 bg-green-100 text-green-700 font-bold rounded-lg text-sm whitespace-nowrap border-2 border-green-300 hover:bg-green-200 transition"
+              >
                 ✅ Tutti stampati
-              </span>
+              </button>
             )
           )}
         </div>
+
+        {/* Conferma ristampa */}
+        {showReprintConfirm && (
+          <div className="mt-3 p-3 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
+            <p className="text-yellow-900 font-bold text-sm mb-2">
+              ⚠️ Tutti gli ordini di questa giornata sono già stati stampati. Vuoi ristamparli tutti?
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={handleRistampaTutti}
+                disabled={isPrintingAll}
+                className="px-3 py-1.5 bg-yellow-500 text-white font-bold rounded-lg hover:bg-yellow-600 disabled:bg-gray-400 transition text-sm"
+              >
+                {isPrintingAll ? '⏳ Generando...' : '🖨️ Ristampa tutti'}
+              </button>
+              <button
+                onClick={() => setShowReprintConfirm(false)}
+                className="px-3 py-1.5 bg-white text-yellow-800 font-bold rounded-lg border-2 border-yellow-400 hover:bg-yellow-100 transition text-sm"
+              >
+                Annulla
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Toggle: solo da stampare */}
         {filteredOrdini.length > 0 && (
