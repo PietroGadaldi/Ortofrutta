@@ -54,9 +54,7 @@ export function generateOrderPDF(order) {
     pdf.setFont(undefined, 'bold')
     pdf.text('Data ordine:', margin, yPosition)
     pdf.setFont(undefined, 'normal')
-    const formattedOrderDate = format(new Date(order.data_ordine), 'dd/MM/yyyy', {
-      locale: it,
-    })
+    const formattedOrderDate = format(new Date(order.data_ordine), 'EEEE dd/MM/yyyy', { locale: it }).toUpperCase()
     pdf.text(formattedOrderDate, margin + 40, yPosition)
     yPosition += 14
 
@@ -205,7 +203,7 @@ export function generateDayOrdersPDF(ordini, date) {
       pdf.setFont(undefined, 'bold')
       pdf.text('Data ordine:', margin, yPosition)
       pdf.setFont(undefined, 'normal')
-      const formattedOrderDate = format(new Date(order.data_ordine), 'dd/MM/yyyy', { locale: it })
+      const formattedOrderDate = format(new Date(order.data_ordine), 'EEEE dd/MM/yyyy', { locale: it }).toUpperCase()
       pdf.text(formattedOrderDate, margin + 40, yPosition)
       yPosition += 14
 

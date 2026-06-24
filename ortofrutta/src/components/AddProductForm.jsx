@@ -69,9 +69,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
 
   const handleIncrement = () => {
     const val = parseQuantita(quantita) || 0;
-    if (val < 100) {
-      setQuantita((val + 1).toString());
-    }
+    setQuantita((val + 1).toString());
   };
 
   const handleDecrement = () => {
@@ -92,8 +90,8 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
     }
 
     const numQuantita = parseQuantita(quantita);
-    if (!quantita || isNaN(numQuantita) || numQuantita <= 0 || numQuantita > 100) {
-      setError('Inserisci una quantità valida (es: 0,5 oppure 1 — massimo 100)')
+    if (!quantita || isNaN(numQuantita) || numQuantita <= 0) {
+      setError('Inserisci una quantità valida (es: 1 oppure 0,5)')
       return false
     }
 
@@ -169,8 +167,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
                   onBlur={() => {
                     if (quantita === '') return;
                     const num = parseQuantita(quantita);
-                    if (isNaN(num) || num <= 0) return;
-                    if (num > 100) setQuantita('100');
+                    if (isNaN(num) || num <= 0) setQuantita('');
                   }}
                   placeholder="es: 1 o 0,5"
                   className="flex-1 min-w-0 h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all text-base"
@@ -187,7 +184,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
                 <button
                   type="button"
                   onClick={handleIncrement}
-                  disabled={(!selectedProduct && !isCustomProduct) || parseQuantita(quantita) >= 100}
+                  disabled={!selectedProduct && !isCustomProduct}
                   className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
                 >
                   +
