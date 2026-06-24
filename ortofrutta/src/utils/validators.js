@@ -9,7 +9,7 @@ export const validateEmail = (email) => {
 }
 
 /**
- * Validate password (min 6 chars)
+ * Validate password (min 6 chars — Supabase minimum)
  * @param {string} password
  * @returns {boolean}
  */

@@ -30,5 +30,8 @@ dist-ssr
 .env
 ortofrutta/.env
 
+# Scripts con credenziali e dati sensibili
+ortofrutta/scripts/
+
 # Claude Code project instructions
 CLAUDE.md

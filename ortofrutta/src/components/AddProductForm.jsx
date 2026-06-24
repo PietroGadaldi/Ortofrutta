@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { ProductAutocomplete } from './ProductAutocomplete'
 import { parseTipologie, capitalize } from '../utils/constants'
 
+const parseQuantita = (val) => parseFloat(String(val).replace(',', '.'))
+
 /**
  * AddProductForm component
  * Form to add new products to order with product autocomplete, quantity, and type selection
@@ -66,14 +68,14 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
   }
 
   const handleIncrement = () => {
-    const val = parseFloat(quantita) || 0;
+    const val = parseQuantita(quantita) || 0;
     if (val < 100) {
       setQuantita((val + 1).toString());
     }
   };
 
   const handleDecrement = () => {
-    const val = parseFloat(quantita) || 0;
+    const val = parseQuantita(quantita) || 0;
     if (val > 1) {
       setQuantita((val - 1).toString());
     }
@@ -89,9 +91,9 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
       return false
     }
 
-    const numQuantita = Number(quantita);
-    if (!quantita || numQuantita < 1 || numQuantita > 100) {
-      setError('Inserisci una quantità valida tra 1 e 100')
+    const numQuantita = parseQuantita(quantita);
+    if (!quantita || isNaN(numQuantita) || numQuantita <= 0 || numQuantita > 100) {
+      setError('Inserisci una quantità valida (es: 0,5 oppure 1 — massimo 100)')
       return false
     }
 
@@ -111,7 +113,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
     onAddProduct({
       prodotto_id: isCustomProduct ? null : selectedProduct.id,
       prodotto_nome: isCustomProduct ? inputValue.trim() : selectedProduct.nome,
-      quantita: Number(quantita),
+      quantita: parseQuantita(quantita),
       tipologia,
     })
 
@@ -160,27 +162,24 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
               </label>
               <div className="flex items-center gap-2">
                 <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  step="any"
+                  type="text"
+                  inputMode="decimal"
                   value={quantita}
                   onChange={(e) => setQuantita(e.target.value)}
                   onBlur={() => {
                     if (quantita === '') return;
-                    const num = parseFloat(quantita);
-                    if (isNaN(num)) return;
+                    const num = parseQuantita(quantita);
+                    if (isNaN(num) || num <= 0) return;
                     if (num > 100) setQuantita('100');
-                    else if (num < 1) setQuantita('1');
                   }}
-                  placeholder="0"
+                  placeholder="es: 1 o 0,5"
                   className="flex-1 min-w-0 h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all text-base"
                   disabled={!selectedProduct && !isCustomProduct}
                 />
                 <button
                   type="button"
                   onClick={handleDecrement}
-                  disabled={(!selectedProduct && !isCustomProduct) || Number(quantita) <= 1}
+                  disabled={(!selectedProduct && !isCustomProduct) || parseQuantita(quantita) <= 1}
                   className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
                 >
                   -
@@ -188,7 +187,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
                 <button
                   type="button"
                   onClick={handleIncrement}
-                  disabled={(!selectedProduct && !isCustomProduct) || Number(quantita) >= 100}
+                  disabled={(!selectedProduct && !isCustomProduct) || parseQuantita(quantita) >= 100}
                   className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
                 >
                   +

@@ -77,9 +77,9 @@ export async function handler(event) {
       return errorResponse(400, 'Formato email non valido')
     }
 
-    // Validate password length
+    // Validate password length (Supabase minimum is 6)
     if (password.length < 6) {
-      return errorResponse(400, 'Password must be at least 6 characters')
+      return errorResponse(400, 'La password deve avere almeno 6 caratteri')
     }
 
     // Use provided email or generate a unique internal placeholder
