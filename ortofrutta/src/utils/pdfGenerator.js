@@ -24,47 +24,11 @@ export function generateOrderPDF(order) {
       format: 'a4',
     })
 
-    // Font setup
     const pageWidth = pdf.internal.pageSize.getWidth()
     const pageHeight = pdf.internal.pageSize.getHeight()
     const margin = 15
     const contentWidth = pageWidth - margin * 2
-    let yPosition = margin
 
-    // Header - Title with client name (font auto-ridotto se il nome è troppo lungo)
-    pdf.setFont(undefined, 'bold')
-    const clientName = (order.profili?.nome || 'Cliente').toUpperCase()
-    let nameFontSize = 26
-    pdf.setFontSize(nameFontSize)
-    while (pdf.getTextWidth(clientName) > contentWidth && nameFontSize > 10) {
-      nameFontSize -= 1
-      pdf.setFontSize(nameFontSize)
-    }
-    pdf.text(clientName, pageWidth / 2, yPosition, { align: 'center' })
-    yPosition += 14
-
-    // Divider
-    pdf.setDrawColor(100)
-    pdf.setLineWidth(0.5)
-    pdf.line(margin, yPosition, pageWidth - margin, yPosition)
-    yPosition += 10
-
-    // Order date (data_ordine) on single line
-    pdf.setFontSize(13)
-    pdf.setFont(undefined, 'bold')
-    pdf.text('Data ordine:', margin, yPosition)
-    pdf.setFont(undefined, 'normal')
-    const formattedOrderDate = format(new Date(order.data_ordine), 'EEEE dd/MM/yyyy', { locale: it }).toUpperCase()
-    pdf.text(formattedOrderDate, margin + 40, yPosition)
-    yPosition += 14
-
-    // Divider
-    pdf.setDrawColor(100)
-    pdf.setLineWidth(0.5)
-    pdf.line(margin, yPosition, pageWidth - margin, yPosition)
-    yPosition += 10
-
-    // Column separator x positions
     const col2X = margin + 67
     const col3X = margin + 102
     const col4X = margin + 152
@@ -84,22 +48,57 @@ export function generateOrderPDF(order) {
       pdf.setDrawColor(100)
     }
 
-    // Products table header
-    pdf.setFontSize(12)
-    pdf.setFont(undefined, 'bold')
-    pdf.setFillColor(220, 220, 220)
-    pdf.rect(margin, yPosition - 6, contentWidth, 8, 'F')
-    pdf.text('Prodotto', margin + 3, yPosition)
-    pdf.text('Quantità', margin + 70, yPosition)
-    pdf.text('Unità', margin + 105, yPosition)
-    pdf.text('Peso Eff.', margin + 155, yPosition)
-    drawRowLines(yPosition, true, 8)
-    yPosition += 10
+    const clientName = (order.profili?.nome || 'Cliente').toUpperCase()
+    const formattedOrderDate = format(new Date(order.data_ordine), 'EEEE dd/MM/yyyy', { locale: it }).toUpperCase()
 
-    // Products list
+    const drawPageHeader = (nameSuffix) => {
+      let y = margin
+      pdf.setFont(undefined, 'bold')
+      const displayName = nameSuffix ? `${clientName} ${nameSuffix}` : clientName
+      let nameFontSize = 26
+      pdf.setFontSize(nameFontSize)
+      while (pdf.getTextWidth(displayName) > contentWidth && nameFontSize > 10) {
+        nameFontSize--
+        pdf.setFontSize(nameFontSize)
+      }
+      pdf.text(displayName, pageWidth / 2, y, { align: 'center' })
+      y += 14
+
+      pdf.setDrawColor(100)
+      pdf.setLineWidth(0.5)
+      pdf.line(margin, y, pageWidth - margin, y)
+      y += 10
+
+      pdf.setFontSize(13)
+      pdf.setFont(undefined, 'bold')
+      pdf.text('Data ordine:', margin, y)
+      pdf.setFont(undefined, 'normal')
+      pdf.text(formattedOrderDate, margin + 40, y)
+      y += 14
+
+      pdf.setDrawColor(100)
+      pdf.setLineWidth(0.5)
+      pdf.line(margin, y, pageWidth - margin, y)
+      y += 10
+
+      pdf.setFontSize(12)
+      pdf.setFont(undefined, 'bold')
+      pdf.setFillColor(220, 220, 220)
+      pdf.rect(margin, y - 6, contentWidth, 8, 'F')
+      pdf.text('Prodotto', margin + 3, y)
+      pdf.text('Quantità', margin + 70, y)
+      pdf.text('Unità', margin + 105, y)
+      pdf.text('Peso Eff.', margin + 155, y)
+      drawRowLines(y, true, 8)
+      y += 10
+      return y
+    }
+
+    let yPosition = drawPageHeader(null)
+    let orderPageCount = 1
+
     pdf.setFont(undefined, 'normal')
     pdf.setFontSize(12)
-    let productYPosition = yPosition
     const maxProductWidth = col2X - margin - 5
 
     order.dettagli_ordine.forEach((item) => {
@@ -111,40 +110,54 @@ export function generateOrderPDF(order) {
       const extraLines = lines.length - 1
       const currentRowH = 8 + extraLines * lineSpacing
 
-      if (productYPosition - 6 + currentRowH > pageHeight - 35) {
+      if (yPosition - 6 + currentRowH > pageHeight - 35) {
         pdf.addPage()
-        productYPosition = margin + 10
+        orderPageCount++
+        yPosition = drawPageHeader(`(${orderPageCount})`)
+        pdf.setFont(undefined, 'normal')
+        pdf.setFontSize(12)
       }
 
       lines.forEach((line, i) => {
-        pdf.text(line, margin + 3, productYPosition + i * lineSpacing)
+        pdf.text(line, margin + 3, yPosition + i * lineSpacing)
       })
-      const midY = productYPosition + (extraLines * lineSpacing) / 2
+      const midY = yPosition + (extraLines * lineSpacing) / 2
       pdf.text(quantity.toString(), margin + 80, midY, { align: 'right' })
       pdf.text(tipologia, margin + 105, midY)
-      drawRowLines(productYPosition, false, currentRowH)
-      productYPosition += currentRowH
+      drawRowLines(yPosition, false, currentRowH)
+      yPosition += currentRowH
     })
 
-    yPosition = productYPosition + 5
+    // Se multi-pagina: torna a pagina 1 e aggiungi (1) al nome
+    if (orderPageCount > 1) {
+      const lastPage = pdf.internal.getNumberOfPages()
+      pdf.setPage(1)
+      pdf.setFillColor(255, 255, 255)
+      pdf.rect(0, 0, pageWidth, margin + 5, 'F')
+      pdf.setFont(undefined, 'bold')
+      const displayName = `${clientName} (1)`
+      let nameFontSize = 26
+      pdf.setFontSize(nameFontSize)
+      while (pdf.getTextWidth(displayName) > contentWidth && nameFontSize > 10) {
+        nameFontSize--
+        pdf.setFontSize(nameFontSize)
+      }
+      pdf.text(displayName, pageWidth / 2, margin, { align: 'center' })
+      pdf.setPage(lastPage)
+    }
 
-    // Divider before footer
+    yPosition += 5
     pdf.setDrawColor(100)
     pdf.setLineWidth(0.5)
     pdf.line(margin, yPosition, pageWidth - margin, yPosition)
     yPosition += 8
 
-    // Footer
     pdf.setFontSize(9)
     pdf.setFont(undefined, 'italic')
     pdf.setTextColor(120)
-    const footerText = 'Ricevuta generata automaticamente da OrtoFrutta Brescia'
-    pdf.text(footerText, pageWidth / 2, pageHeight - 10, { align: 'center' })
-
-    // Reset text color
+    pdf.text('Ricevuta generata automaticamente da OrtoFrutta Brescia', pageWidth / 2, pageHeight - 10, { align: 'center' })
     pdf.setTextColor(0)
 
-    // Return as Blob
     return pdf.output('blob')
   } catch (error) {
     console.error('Error generating PDF:', error)
@@ -175,77 +188,80 @@ export function generateDayOrdersPDF(ordini, date) {
     const margin = 15
     const contentWidth = pageWidth - margin * 2
 
+    const col2X = margin + 67
+    const col3X = margin + 102
+    const col4X = margin + 152
+    const tableRight = margin + contentWidth
+    const lineSpacing = 5
+
+    const drawRowLines = (y, drawTopBorder = false, rowH = 8) => {
+      const rowTop = y - 6
+      const rowBottom = rowTop + rowH
+      pdf.setDrawColor(150)
+      pdf.setLineWidth(0.3)
+      if (drawTopBorder) pdf.line(margin, rowTop, tableRight, rowTop)
+      pdf.line(margin, rowBottom, tableRight, rowBottom)
+      pdf.line(margin, rowTop, margin, rowBottom)
+      pdf.line(tableRight, rowTop, tableRight, rowBottom)
+      ;[col2X, col3X, col4X].forEach((x) => pdf.line(x, rowTop, x, rowBottom))
+      pdf.setDrawColor(100)
+    }
+
     ordini.forEach((order, orderIndex) => {
       if (orderIndex > 0) pdf.addPage()
 
+      const orderStartPage = pdf.internal.getNumberOfPages()
+      let orderPageCount = 1
       let yPosition = margin
 
-      // Client name header (font auto-ridotto se il nome è troppo lungo)
-      pdf.setFont(undefined, 'bold')
       const clientName = (order.profili?.nome || 'Cliente').toUpperCase()
-      let nameFontSize = 26
-      pdf.setFontSize(nameFontSize)
-      while (pdf.getTextWidth(clientName) > contentWidth && nameFontSize > 10) {
-        nameFontSize -= 1
-        pdf.setFontSize(nameFontSize)
-      }
-      pdf.text(clientName, pageWidth / 2, yPosition, { align: 'center' })
-      yPosition += 14
-
-      // Divider
-      pdf.setDrawColor(100)
-      pdf.setLineWidth(0.5)
-      pdf.line(margin, yPosition, pageWidth - margin, yPosition)
-      yPosition += 10
-
-      // Order date
-      pdf.setFontSize(13)
-      pdf.setFont(undefined, 'bold')
-      pdf.text('Data ordine:', margin, yPosition)
-      pdf.setFont(undefined, 'normal')
       const formattedOrderDate = format(new Date(order.data_ordine), 'EEEE dd/MM/yyyy', { locale: it }).toUpperCase()
-      pdf.text(formattedOrderDate, margin + 40, yPosition)
-      yPosition += 14
 
-      // Divider
-      pdf.setDrawColor(100)
-      pdf.setLineWidth(0.5)
-      pdf.line(margin, yPosition, pageWidth - margin, yPosition)
-      yPosition += 10
+      const drawPageHeader = (nameSuffix) => {
+        let y = margin
+        pdf.setFont(undefined, 'bold')
+        const displayName = nameSuffix ? `${clientName} ${nameSuffix}` : clientName
+        let nameFontSize = 26
+        pdf.setFontSize(nameFontSize)
+        while (pdf.getTextWidth(displayName) > contentWidth && nameFontSize > 10) {
+          nameFontSize--
+          pdf.setFontSize(nameFontSize)
+        }
+        pdf.text(displayName, pageWidth / 2, y, { align: 'center' })
+        y += 14
 
-      // Column separator x positions
-      const col2X = margin + 67
-      const col3X = margin + 102
-      const col4X = margin + 152
-      const tableRight = margin + contentWidth
-      const lineSpacing = 5
-
-      const drawRowLines = (y, drawTopBorder = false, rowH = 8) => {
-        const rowTop = y - 6
-        const rowBottom = rowTop + rowH
-        pdf.setDrawColor(150)
-        pdf.setLineWidth(0.3)
-        if (drawTopBorder) pdf.line(margin, rowTop, tableRight, rowTop)
-        pdf.line(margin, rowBottom, tableRight, rowBottom)
-        pdf.line(margin, rowTop, margin, rowBottom)
-        pdf.line(tableRight, rowTop, tableRight, rowBottom)
-        ;[col2X, col3X, col4X].forEach((x) => pdf.line(x, rowTop, x, rowBottom))
         pdf.setDrawColor(100)
+        pdf.setLineWidth(0.5)
+        pdf.line(margin, y, pageWidth - margin, y)
+        y += 10
+
+        pdf.setFontSize(13)
+        pdf.setFont(undefined, 'bold')
+        pdf.text('Data ordine:', margin, y)
+        pdf.setFont(undefined, 'normal')
+        pdf.text(formattedOrderDate, margin + 40, y)
+        y += 14
+
+        pdf.setDrawColor(100)
+        pdf.setLineWidth(0.5)
+        pdf.line(margin, y, pageWidth - margin, y)
+        y += 10
+
+        pdf.setFontSize(12)
+        pdf.setFont(undefined, 'bold')
+        pdf.setFillColor(220, 220, 220)
+        pdf.rect(margin, y - 6, contentWidth, 8, 'F')
+        pdf.text('Prodotto', margin + 3, y)
+        pdf.text('Quantità', margin + 70, y)
+        pdf.text('Unità', margin + 105, y)
+        pdf.text('Peso Eff.', margin + 155, y)
+        drawRowLines(y, true, 8)
+        y += 10
+        return y
       }
 
-      // Products table header
-      pdf.setFontSize(12)
-      pdf.setFont(undefined, 'bold')
-      pdf.setFillColor(220, 220, 220)
-      pdf.rect(margin, yPosition - 6, contentWidth, 8, 'F')
-      pdf.text('Prodotto', margin + 3, yPosition)
-      pdf.text('Quantità', margin + 70, yPosition)
-      pdf.text('Unità', margin + 105, yPosition)
-      pdf.text('Peso Eff.', margin + 155, yPosition)
-      drawRowLines(yPosition, true, 8)
-      yPosition += 10
+      yPosition = drawPageHeader(null)
 
-      // Products list
       pdf.setFont(undefined, 'normal')
       pdf.setFontSize(12)
       const maxProductWidth = col2X - margin - 5
@@ -261,7 +277,10 @@ export function generateDayOrdersPDF(ordini, date) {
 
         if (yPosition - 6 + currentRowH > pageHeight - 35) {
           pdf.addPage()
-          yPosition = margin + 10
+          orderPageCount++
+          yPosition = drawPageHeader(`(${orderPageCount})`)
+          pdf.setFont(undefined, 'normal')
+          pdf.setFontSize(12)
         }
 
         lines.forEach((line, i) => {
@@ -274,7 +293,24 @@ export function generateDayOrdersPDF(ordini, date) {
         yPosition += currentRowH
       })
 
-      // Footer
+      // Se multi-pagina: torna alla prima pagina di questo ordine e aggiungi (1)
+      if (orderPageCount > 1) {
+        const lastPage = pdf.internal.getNumberOfPages()
+        pdf.setPage(orderStartPage)
+        pdf.setFillColor(255, 255, 255)
+        pdf.rect(0, 0, pageWidth, margin + 5, 'F')
+        pdf.setFont(undefined, 'bold')
+        const displayName = `${clientName} (1)`
+        let nameFontSize = 26
+        pdf.setFontSize(nameFontSize)
+        while (pdf.getTextWidth(displayName) > contentWidth && nameFontSize > 10) {
+          nameFontSize--
+          pdf.setFontSize(nameFontSize)
+        }
+        pdf.text(displayName, pageWidth / 2, margin, { align: 'center' })
+        pdf.setPage(lastPage)
+      }
+
       pdf.setFontSize(9)
       pdf.setFont(undefined, 'italic')
       pdf.setTextColor(120)
