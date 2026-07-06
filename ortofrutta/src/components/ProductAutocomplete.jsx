@@ -23,6 +23,7 @@ export function ProductAutocomplete({
   const inputRef = useRef(null)
   const dropdownRef = useRef(null)
   const justSelectedRef = useRef(false)
+  const itemRefs = useRef([])
 
   // Filter products based on input
   useEffect(() => {
@@ -32,9 +33,16 @@ export function ProductAutocomplete({
       return
     }
 
-    const filtered = prodotti.filter((p) =>
-      p.nome.toLowerCase().includes(value.toLowerCase())
-    )
+    const term = value.toLowerCase()
+    const filtered = prodotti
+      .filter((p) => p.nome.toLowerCase().includes(term))
+      .sort((a, b) => {
+        const aStarts = a.nome.toLowerCase().startsWith(term)
+        const bStarts = b.nome.toLowerCase().startsWith(term)
+        if (aStarts && !bStarts) return -1
+        if (!aStarts && bStarts) return 1
+        return a.nome.localeCompare(b.nome)
+      })
 
     setFilteredProducts(filtered)
     setHighlightedIndex(-1)
@@ -60,6 +68,12 @@ export function ProductAutocomplete({
       document.removeEventListener('touchstart', handleClickOutside)
     }
   }, [])
+
+  // Scroll automatico dell'elemento evidenziato quando si naviga con le frecce
+  useEffect(() => {
+    if (highlightedIndex < 0) return
+    itemRefs.current[highlightedIndex]?.scrollIntoView({ block: 'nearest' })
+  }, [highlightedIndex])
 
   const handleInputChange = (e) => {
     const val = e.target.value
@@ -177,7 +191,7 @@ export function ProductAutocomplete({
             {filteredProducts.map((product, index) => {
               const isActive = product.attivo !== false
               return (
-                <li key={product.id}>
+                <li key={product.id} ref={(el) => (itemRefs.current[index] = el)}>
                   <button
                     onClick={() => isActive && handleSelectProduct(product)}
                     disabled={!isActive}
@@ -193,13 +207,16 @@ export function ProductAutocomplete({
                     `}
                   >
                     <div className="font-bold text-left uppercase">{product.nome}</div>
-                    <div className="text-xs opacity-75 mt-1 text-left">
-                      {isActive ? (
-                        <>Disponibilità: {parseTipologie(product.tipologie_possibili).map(capitalize).join(', ')}</>
-                      ) : (
-                        <>🚫 Prodotto non di stagione</>
-                      )}
-                    </div>
+                    {!isActive && (
+                      <div className="text-xs opacity-75 mt-1 text-left">
+                        🚫 Prodotto non di stagione
+                      </div>
+                    )}
+                    {isActive && isAdminMode && (
+                      <div className="text-xs opacity-75 mt-1 text-left">
+                        Disponibilità: {parseTipologie(product.tipologie_possibili).map(capitalize).join(', ')}
+                      </div>
+                    )}
                   </button>
                 </li>
               )

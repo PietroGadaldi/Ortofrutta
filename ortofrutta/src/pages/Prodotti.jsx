@@ -428,16 +428,25 @@ export function Prodotti() {
           ) : (
             <>
               {(() => {
-                const filteredProdotti = prodotti.filter((p) => {
-                  const searchLower = searchFilter.toLowerCase()
-                  const nomeMatch = p.nome.toLowerCase().includes(searchLower)
-                  const tipologieMatch = parseTipologie(p.tipologie_possibili).some(tip =>
-                    tip.toLowerCase().includes(searchLower)
-                  )
-                  const searchOk = nomeMatch || tipologieMatch
-                  const statusOk = statusFilter === 'tutti' || (statusFilter === 'attivi' ? p.attivo : !p.attivo)
-                  return searchOk && statusOk
-                })
+                const searchLower = searchFilter.toLowerCase()
+                const filteredProdotti = prodotti
+                  .filter((p) => {
+                    const nomeMatch = p.nome.toLowerCase().includes(searchLower)
+                    const tipologieMatch = parseTipologie(p.tipologie_possibili).some(tip =>
+                      tip.toLowerCase().includes(searchLower)
+                    )
+                    const searchOk = nomeMatch || tipologieMatch
+                    const statusOk = statusFilter === 'tutti' || (statusFilter === 'attivi' ? p.attivo : !p.attivo)
+                    return searchOk && statusOk
+                  })
+                  .sort((a, b) => {
+                    if (!searchLower) return 0
+                    const aStarts = a.nome.toLowerCase().startsWith(searchLower)
+                    const bStarts = b.nome.toLowerCase().startsWith(searchLower)
+                    if (aStarts && !bStarts) return -1
+                    if (!aStarts && bStarts) return 1
+                    return a.nome.localeCompare(b.nome)
+                  })
 
                 return (
                   <>
