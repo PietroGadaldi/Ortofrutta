@@ -2,6 +2,16 @@ import { jsPDF } from 'jspdf'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 
+// Un dettaglio è "fuori catalogo" se non è collegato a un prodotto del catalogo
+const isCustomItem = (item) => !item.prodotti?.nome && !!item.nome_custom
+
+// Prodotti fuori catalogo sempre in cima alla tabella del PDF
+const sortCustomFirst = (dettagli) =>
+  [...(dettagli || [])].sort((a, b) => (isCustomItem(a) ? 0 : 1) - (isCustomItem(b) ? 0 : 1))
+
+// Giallo evidenziatore per le righe dei prodotti fuori catalogo
+const HIGHLIGHT_COLOR = [255, 240, 120]
+
 /**
  * Generate an order receipt PDF using jsPDF
  * @param {Object} order - Order object with client info and details
@@ -29,9 +39,10 @@ export function generateOrderPDF(order) {
     const margin = 15
     const contentWidth = pageWidth - margin * 2
 
-    const col2X = margin + 67
-    const col3X = margin + 102
-    const col4X = margin + 152
+    const col2X = margin + 62
+    const col3X = margin + 87
+    const col4X = margin + 112
+    const col5X = margin + 146
     const tableRight = margin + contentWidth
     const lineSpacing = 5
 
@@ -44,11 +55,12 @@ export function generateOrderPDF(order) {
       pdf.line(margin, rowBottom, tableRight, rowBottom)
       pdf.line(margin, rowTop, margin, rowBottom)
       pdf.line(tableRight, rowTop, tableRight, rowBottom)
-      ;[col2X, col3X, col4X].forEach((x) => pdf.line(x, rowTop, x, rowBottom))
+      ;[col2X, col3X, col4X, col5X].forEach((x) => pdf.line(x, rowTop, x, rowBottom))
       pdf.setDrawColor(100)
     }
 
     const clientName = (order.profili?.nome || 'Cliente').toUpperCase()
+    const provenienza = (order.profili?.provenienza || '').toUpperCase()
     const formattedOrderDate = format(new Date(order.data_ordine), 'EEEE dd/MM/yyyy', { locale: it }).toUpperCase()
 
     const drawPageHeader = (nameSuffix) => {
@@ -74,6 +86,12 @@ export function generateOrderPDF(order) {
       pdf.text('Data ordine:', margin, y)
       pdf.setFont(undefined, 'normal')
       pdf.text(formattedOrderDate, margin + 40, y)
+      y += 8
+
+      pdf.setFont(undefined, 'bold')
+      pdf.text('Provenienza:', margin, y)
+      pdf.setFont(undefined, 'normal')
+      if (provenienza) pdf.text(provenienza, margin + 40, y)
       y += 14
 
       pdf.setDrawColor(100)
@@ -86,9 +104,10 @@ export function generateOrderPDF(order) {
       pdf.setFillColor(220, 220, 220)
       pdf.rect(margin, y - 6, contentWidth, 8, 'F')
       pdf.text('Prodotto', margin + 3, y)
-      pdf.text('Quantità', margin + 70, y)
-      pdf.text('Unità', margin + 105, y)
-      pdf.text('Peso Eff.', margin + 155, y)
+      pdf.text('Quantità', margin + 64, y)
+      pdf.text('Unità', margin + 89, y)
+      pdf.text('Peso Eff.', margin + 114, y)
+      pdf.text('Prezzo', margin + 148, y)
       drawRowLines(y, true, 8)
       y += 10
       return y
@@ -101,7 +120,8 @@ export function generateOrderPDF(order) {
     pdf.setFontSize(12)
     const maxProductWidth = col2X - margin - 5
 
-    order.dettagli_ordine.forEach((item) => {
+    sortCustomFirst(order.dettagli_ordine).forEach((item) => {
+      const isCustom = isCustomItem(item)
       const productName = (item.prodotti?.nome || item.nome_custom || 'Prodotto sconosciuto').toUpperCase()
       const quantity = item.quantita
       const tipologia = item.tipologia || 'N/A'
@@ -118,12 +138,19 @@ export function generateOrderPDF(order) {
         pdf.setFontSize(12)
       }
 
+      if (isCustom) {
+        pdf.setFillColor(...HIGHLIGHT_COLOR)
+        pdf.rect(margin, yPosition - 6, contentWidth, currentRowH, 'F')
+        pdf.setFont(undefined, 'bold')
+      }
+
       lines.forEach((line, i) => {
         pdf.text(line, margin + 3, yPosition + i * lineSpacing)
       })
       const midY = yPosition + (extraLines * lineSpacing) / 2
-      pdf.text(quantity.toString(), margin + 80, midY, { align: 'right' })
-      pdf.text(tipologia, margin + 105, midY)
+      pdf.text(quantity.toString(), margin + 84, midY, { align: 'right' })
+      pdf.text(tipologia, margin + 89, midY)
+      if (isCustom) pdf.setFont(undefined, 'normal')
       drawRowLines(yPosition, false, currentRowH)
       yPosition += currentRowH
     })
@@ -188,9 +215,10 @@ export function generateDayOrdersPDF(ordini, date) {
     const margin = 15
     const contentWidth = pageWidth - margin * 2
 
-    const col2X = margin + 67
-    const col3X = margin + 102
-    const col4X = margin + 152
+    const col2X = margin + 62
+    const col3X = margin + 87
+    const col4X = margin + 112
+    const col5X = margin + 146
     const tableRight = margin + contentWidth
     const lineSpacing = 5
 
@@ -203,7 +231,7 @@ export function generateDayOrdersPDF(ordini, date) {
       pdf.line(margin, rowBottom, tableRight, rowBottom)
       pdf.line(margin, rowTop, margin, rowBottom)
       pdf.line(tableRight, rowTop, tableRight, rowBottom)
-      ;[col2X, col3X, col4X].forEach((x) => pdf.line(x, rowTop, x, rowBottom))
+      ;[col2X, col3X, col4X, col5X].forEach((x) => pdf.line(x, rowTop, x, rowBottom))
       pdf.setDrawColor(100)
     }
 
@@ -215,6 +243,7 @@ export function generateDayOrdersPDF(ordini, date) {
       let yPosition = margin
 
       const clientName = (order.profili?.nome || 'Cliente').toUpperCase()
+      const provenienza = (order.profili?.provenienza || '').toUpperCase()
       const formattedOrderDate = format(new Date(order.data_ordine), 'EEEE dd/MM/yyyy', { locale: it }).toUpperCase()
 
       const drawPageHeader = (nameSuffix) => {
@@ -240,6 +269,12 @@ export function generateDayOrdersPDF(ordini, date) {
         pdf.text('Data ordine:', margin, y)
         pdf.setFont(undefined, 'normal')
         pdf.text(formattedOrderDate, margin + 40, y)
+        y += 8
+
+        pdf.setFont(undefined, 'bold')
+        pdf.text('Provenienza:', margin, y)
+        pdf.setFont(undefined, 'normal')
+        if (provenienza) pdf.text(provenienza, margin + 40, y)
         y += 14
 
         pdf.setDrawColor(100)
@@ -252,9 +287,10 @@ export function generateDayOrdersPDF(ordini, date) {
         pdf.setFillColor(220, 220, 220)
         pdf.rect(margin, y - 6, contentWidth, 8, 'F')
         pdf.text('Prodotto', margin + 3, y)
-        pdf.text('Quantità', margin + 70, y)
-        pdf.text('Unità', margin + 105, y)
-        pdf.text('Peso Eff.', margin + 155, y)
+        pdf.text('Quantità', margin + 64, y)
+        pdf.text('Unità', margin + 89, y)
+        pdf.text('Peso Eff.', margin + 114, y)
+        pdf.text('Prezzo', margin + 148, y)
         drawRowLines(y, true, 8)
         y += 10
         return y
@@ -266,7 +302,8 @@ export function generateDayOrdersPDF(ordini, date) {
       pdf.setFontSize(12)
       const maxProductWidth = col2X - margin - 5
 
-      ;(order.dettagli_ordine || []).forEach((item) => {
+      sortCustomFirst(order.dettagli_ordine).forEach((item) => {
+        const isCustom = isCustomItem(item)
         const productName = (item.prodotti?.nome || item.nome_custom || 'Prodotto sconosciuto').toUpperCase()
         const quantity = item.quantita
         const tipologia = item.tipologia || 'N/A'
@@ -283,12 +320,19 @@ export function generateDayOrdersPDF(ordini, date) {
           pdf.setFontSize(12)
         }
 
+        if (isCustom) {
+          pdf.setFillColor(...HIGHLIGHT_COLOR)
+          pdf.rect(margin, yPosition - 6, contentWidth, currentRowH, 'F')
+          pdf.setFont(undefined, 'bold')
+        }
+
         lines.forEach((line, i) => {
           pdf.text(line, margin + 3, yPosition + i * lineSpacing)
         })
         const midY = yPosition + (extraLines * lineSpacing) / 2
-        pdf.text(quantity.toString(), margin + 80, midY, { align: 'right' })
-        pdf.text(tipologia, margin + 105, midY)
+        pdf.text(quantity.toString(), margin + 84, midY, { align: 'right' })
+        pdf.text(tipologia, margin + 89, midY)
+        if (isCustom) pdf.setFont(undefined, 'normal')
         drawRowLines(yPosition, false, currentRowH)
         yPosition += currentRowH
       })
@@ -413,12 +457,19 @@ export function generateDaySummaryPDF(date, items) {
         yPosition = margin + 10
       }
 
+      if (item.custom) {
+        pdf.setFillColor(...HIGHLIGHT_COLOR)
+        pdf.rect(margin, yPosition - 6, contentWidth, currentRowH, 'F')
+        pdf.setFont(undefined, 'bold')
+      }
+
       lines.forEach((line, i) => {
         pdf.text(line, margin + 3, yPosition + i * lineSpacing)
       })
       const midY = yPosition + (extraLines * lineSpacing) / 2
       pdf.text(item.totale.toString(), margin + 125, midY, { align: 'right' })
       pdf.text(item.tipologia, margin + 150, midY)
+      if (item.custom) pdf.setFont(undefined, 'normal')
       drawRowLines(yPosition, false, currentRowH)
       yPosition += currentRowH
     })

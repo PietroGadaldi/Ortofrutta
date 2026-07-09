@@ -14,6 +14,7 @@ CREATE TABLE public.profili (
     nome text NOT NULL,
     ruolo text NOT NULL DEFAULT 'cliente'::text,
     password_plain text,
+    provenienza text DEFAULT NULL, -- Localizzazione del cliente (es. paese), mostrata nel PDF dell'ordine
     CONSTRAINT check_ruolo CHECK (ruolo = ANY (ARRAY['cliente'::text, 'titolare'::text]))
 );
 

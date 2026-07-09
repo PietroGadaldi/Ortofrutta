@@ -18,7 +18,6 @@ export function Prodotti() {
   const [searchFilter, setSearchFilter] = useState('')
   const [listLoading, setListLoading] = useState(false)
   const [mobileTab, setMobileTab] = useState('lista')
-  const [pendingToggle, setPendingToggle] = useState(null)
   const [statusFilter, setStatusFilter] = useState('tutti')
 
   useEffect(() => {
@@ -171,14 +170,9 @@ export function Prodotti() {
     }
   }
 
-  const handleToggleAttivo = (prodotto) => {
-    setPendingToggle(prodotto)
-  }
-
-  const handleConfirmToggle = async () => {
-    if (!pendingToggle) return
-    const prodotto = pendingToggle
-    setPendingToggle(null)
+  const handleToggleAttivo = async (prodotto) => {
+    const azione = prodotto.attivo ? 'disattivare' : 'attivare'
+    if (!window.confirm(`Sei sicuro di voler ${azione} "${prodotto.nome.toUpperCase()}"?`)) return
     try {
       const { error: err } = await updateProdottoStatus(prodotto.id, !prodotto.attivo)
       if (err) throw err
@@ -393,29 +387,6 @@ export function Prodotti() {
               ))}
             </div>
 
-            {/* Dialogo conferma attiva/disattiva */}
-            {pendingToggle && (
-              <div className="p-3 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
-                <p className="text-yellow-900 font-bold text-sm mb-2">
-                  ⚠️ Sei sicuro di voler {pendingToggle.attivo ? 'disattivare' : 'attivare'}{' '}
-                  <span className="uppercase">{pendingToggle.nome}</span>?
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleConfirmToggle}
-                    className="px-3 py-1.5 bg-yellow-500 text-white font-bold rounded-lg hover:bg-yellow-600 transition text-sm"
-                  >
-                    {pendingToggle.attivo ? '🔴 Disattiva' : '🟢 Attiva'}
-                  </button>
-                  <button
-                    onClick={() => setPendingToggle(null)}
-                    className="px-3 py-1.5 bg-white text-yellow-800 font-bold rounded-lg border-2 border-yellow-400 hover:bg-yellow-100 transition text-sm"
-                  >
-                    Annulla
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
           {listLoading ? (

@@ -73,11 +73,13 @@ export function OrdersForDayList({
       ;(ordine.dettagli_ordine || []).forEach((item) => {
         const nome = (item.prodotti?.nome || item.nome_custom || 'Prodotto sconosciuto').toUpperCase()
         const tipologia = item.tipologia || 'N/A'
+        const isCustom = !item.prodotti?.nome && !!item.nome_custom
         const key = `${nome}||${tipologia}`
         if (map.has(key)) {
           map.get(key).totale += Number(item.quantita)
+          if (isCustom) map.get(key).custom = true
         } else {
-          map.set(key, { nome, tipologia, totale: Number(item.quantita) })
+          map.set(key, { nome, tipologia, totale: Number(item.quantita), custom: isCustom })
         }
       })
     })
@@ -239,8 +241,13 @@ export function OrdersForDayList({
                   </thead>
                   <tbody>
                     {riepilogoProdotti.map((item, i) => (
-                      <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-amber-50'}>
-                        <td className="px-3 py-1.5 border border-amber-200 text-gray-800 font-medium">{item.nome}</td>
+                      <tr key={i} className={item.custom ? 'bg-yellow-100' : i % 2 === 0 ? 'bg-white' : 'bg-amber-50'}>
+                        <td className="px-3 py-1.5 border border-amber-200 text-gray-800 font-medium">
+                          {item.nome}
+                          {item.custom && (
+                            <span className="block text-[10px] font-bold text-yellow-800">⭐ Fuori catalogo</span>
+                          )}
+                        </td>
                         <td className="px-3 py-1.5 border border-amber-200 text-gray-800 text-right font-bold">{item.totale}</td>
                         <td className="px-3 py-1.5 border border-amber-200 text-gray-600">{item.tipologia}</td>
                       </tr>

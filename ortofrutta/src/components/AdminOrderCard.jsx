@@ -29,6 +29,10 @@ export function AdminOrderCard({
   showAsReceiptCards = false 
 }) {
   const [isExpanded, setIsExpanded] = useState(false)
+
+  // Dettaglio "fuori catalogo": nessun prodotto del catalogo collegato
+  const isCustomDettaglio = (d) => !d.prodotti?.nome && !!d.nome_custom
+  const hasCustomProducts = (ordine.dettagli_ordine || []).some(isCustomDettaglio)
   const [isProductsExpanded, setIsProductsExpanded] = useState(false)
   const [showPDFModal, setShowPDFModal] = useState(false)
   const [pdfData, setPdfData] = useState(null)
@@ -102,14 +106,21 @@ export function AdminOrderCard({
               <h3 className="text-base sm:text-lg font-bold text-gray-800 min-w-0 break-words uppercase">
                 👤 {ordine.profili?.nome || 'Cliente Sconosciuto'}
               </h3>
-              <div className={`
-                flex-shrink-0 px-2 sm:px-3 py-1 rounded-full font-bold text-xs sm:text-sm
-                ${ordine.completato
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-orange-100 text-orange-800'
-                }
-              `}>
-                {ordine.completato ? '✅ Completato' : '🖨️ Da stampare'}
+              <div className="flex-shrink-0 flex flex-col items-end gap-1">
+                <div className={`
+                  px-2 sm:px-3 py-1 rounded-full font-bold text-xs sm:text-sm
+                  ${ordine.completato
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-orange-100 text-orange-800'
+                  }
+                `}>
+                  {ordine.completato ? '✅ Completato' : '🖨️ Da stampare'}
+                </div>
+                {hasCustomProducts && (
+                  <div className="px-2 sm:px-3 py-1 rounded-full font-bold text-xs bg-yellow-200 text-yellow-900 border border-yellow-400 whitespace-nowrap">
+                    ⭐ Fuori catalogo
+                  </div>
+                )}
               </div>
             </div>
 
@@ -152,13 +163,21 @@ export function AdminOrderCard({
                       </tr>
                     </thead>
                     <tbody>
-                      {ordine.dettagli_ordine.map((dettaglio, i) => (
-                        <tr key={dettaglio.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                          <td className="px-3 py-2 border border-gray-200 font-semibold uppercase text-gray-800">{dettaglio.prodotti?.nome || dettaglio.nome_custom}</td>
-                          <td className="px-3 py-2 border border-gray-200 text-right font-bold text-gray-700 whitespace-nowrap">{dettaglio.quantita}</td>
-                          <td className="px-3 py-2 border border-gray-200 text-gray-600 whitespace-nowrap">{dettaglio.tipologia}</td>
-                        </tr>
-                      ))}
+                      {ordine.dettagli_ordine.map((dettaglio, i) => {
+                        const isCustom = isCustomDettaglio(dettaglio)
+                        return (
+                          <tr key={dettaglio.id} className={isCustom ? 'bg-yellow-100' : i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                            <td className="px-3 py-2 border border-gray-200 font-semibold uppercase text-gray-800">
+                              {dettaglio.prodotti?.nome || dettaglio.nome_custom}
+                              {isCustom && (
+                                <span className="block text-[10px] normal-case font-bold text-yellow-800 mt-0.5">⭐ Fuori catalogo</span>
+                              )}
+                            </td>
+                            <td className="px-3 py-2 border border-gray-200 text-right font-bold text-gray-700 whitespace-nowrap">{dettaglio.quantita}</td>
+                            <td className="px-3 py-2 border border-gray-200 text-gray-600 whitespace-nowrap">{dettaglio.tipologia}</td>
+                          </tr>
+                        )
+                      })}
                     </tbody>
                   </table>
                 ) : (
@@ -251,14 +270,21 @@ export function AdminOrderCard({
           </div>
 
           {/* Status Badge */}
-          <div className={`
-            px-3 py-1 rounded-full font-bold text-sm mr-4
-            ${ordine.completato 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-orange-100 text-orange-800'
-            }
-          `}>
-            {ordine.completato ? '✅ Completato' : '⏳ In Corso'}
+          <div className="flex flex-col items-end gap-1 mr-2 sm:mr-4">
+            <div className={`
+              px-2 sm:px-3 py-1 rounded-full font-bold text-xs sm:text-sm
+              ${ordine.completato
+                ? 'bg-green-100 text-green-800'
+                : 'bg-orange-100 text-orange-800'
+              }
+            `}>
+              {ordine.completato ? '✅ Completato' : '⏳ In Corso'}
+            </div>
+            {hasCustomProducts && (
+              <div className="px-2 sm:px-3 py-1 rounded-full font-bold text-xs bg-yellow-200 text-yellow-900 border border-yellow-400 whitespace-nowrap">
+                ⭐ Fuori catalogo
+              </div>
+            )}
           </div>
 
           {/* Expand Arrow */}
@@ -277,14 +303,25 @@ export function AdminOrderCard({
               </h4>
               <ul className="space-y-3 ml-2">
                 {ordine.dettagli_ordine && ordine.dettagli_ordine.length > 0 ? (
-                  ordine.dettagli_ordine.map((dettaglio) => (
-                    <li key={dettaglio.id} className="text-sm text-black bg-white px-4 py-3 rounded-lg border-l-4 border-blue-500 shadow-sm font-semibold text-left">
-                      <span className="font-bold block text-left uppercase">{dettaglio.prodotti?.nome || dettaglio.nome_custom}</span>
-                      <span className="text-blue-700 text-xs mt-1 block">
-                        Quantità: {dettaglio.quantita} {dettaglio.tipologia}
-                      </span>
-                    </li>
-                  ))
+                  ordine.dettagli_ordine.map((dettaglio) => {
+                    const isCustom = isCustomDettaglio(dettaglio)
+                    return (
+                      <li
+                        key={dettaglio.id}
+                        className={`text-sm text-black px-4 py-3 rounded-lg border-l-4 shadow-sm font-semibold text-left ${
+                          isCustom ? 'bg-yellow-100 border-yellow-500' : 'bg-white border-blue-500'
+                        }`}
+                      >
+                        <span className="font-bold block text-left uppercase">{dettaglio.prodotti?.nome || dettaglio.nome_custom}</span>
+                        {isCustom && (
+                          <span className="text-yellow-800 text-xs font-bold mt-1 block">⭐ Prodotto fuori catalogo</span>
+                        )}
+                        <span className={`text-xs mt-1 block ${isCustom ? 'text-yellow-900' : 'text-blue-700'}`}>
+                          Quantità: {dettaglio.quantita} {dettaglio.tipologia}
+                        </span>
+                      </li>
+                    )
+                  })
                 ) : (
                   <li className="text-sm text-gray-500 italic">Nessun prodotto disponibile</li>
                 )}

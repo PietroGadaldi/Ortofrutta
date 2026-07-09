@@ -150,7 +150,7 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
           data_creazione,
           data_ordine,
           completato,
-          profili (nome),
+          profili (nome, provenienza),
           dettagli_ordine (
             id,
             quantita,

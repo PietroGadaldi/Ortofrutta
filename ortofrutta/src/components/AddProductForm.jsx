@@ -40,7 +40,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
         setQuantita(editingItem.quantita.toString())
         setTipologia(editingItem.tipologia)
         setTipologieDisponibili(parseTipologie(product.tipologie_possibili))
-      } else if (isAdminMode && editingItem.prodotto_nome) {
+      } else if (editingItem.prodotto_nome) {
         // Custom product (no catalog entry)
         setSelectedProduct(null)
         setInputValue(editingItem.prodotto_nome)
@@ -79,13 +79,14 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
     }
   };
 
-  const isCustomProduct = isAdminMode && !selectedProduct && inputValue.trim()
+  // Anche i clienti possono aggiungere prodotti fuori catalogo (testo libero)
+  const isCustomProduct = !selectedProduct && inputValue.trim()
 
   const validateForm = () => {
     setError('')
 
     if (!selectedProduct && !isCustomProduct) {
-      setError(isAdminMode ? 'Inserisci il nome del prodotto' : 'Seleziona un prodotto')
+      setError('Inserisci il nome del prodotto')
       return false
     }
 
@@ -107,6 +108,14 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
     e.preventDefault()
 
     if (!validateForm()) return
+
+    // Conferma esplicita prima di aggiungere un prodotto fuori catalogo
+    if (isCustomProduct) {
+      const confirmed = window.confirm(
+        `"${inputValue.trim().toUpperCase()}" non è presente nel catalogo.\n\nSei sicuro di voler aggiungere questo prodotto fuori catalogo all'ordine?`
+      )
+      if (!confirmed) return
+    }
 
     onAddProduct({
       prodotto_id: isCustomProduct ? null : selectedProduct.id,

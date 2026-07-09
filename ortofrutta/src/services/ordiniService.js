@@ -15,7 +15,7 @@ export const getAllOrdini = async (userId, role) => {
     data_ordine,
     completato,
     cliente_id,
-    profili (nome),
+    profili (nome, provenienza),
     dettagli_ordine (
       id,
       quantita,
@@ -165,7 +165,7 @@ export const getOrdiniByDate = async (dataOrdine) => {
       data_ordine,
       completato,
       cliente_id,
-      profili (nome),
+      profili (nome, provenienza),
       dettagli_ordine (
         id,
         quantita,

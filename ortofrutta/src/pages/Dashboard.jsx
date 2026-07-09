@@ -221,7 +221,7 @@ export function Dashboard() {
                 data_creazione,
                 data_ordine,
                 completato,
-                profili (nome),
+                profili (nome, provenienza),
                 dettagli_ordine (
                   id,
                   quantita,
@@ -311,11 +311,24 @@ export function Dashboard() {
     setLastCreatedOrderId(null)
     setEditingOrderId(null) // Fondamentale: non stiamo modificando il vecchio ordine, ma creandone uno nuovo
     
-    // Filtriamo i prodotti per assicurarci che esistano ancora nel catalogo corrente
-    // e formattiamo i nomi correttamente (iniziale maiuscola e resto minuscolo)
+    // Manteniamo i prodotti fuori catalogo (prodotto_id null) e quelli ancora
+    // presenti nel catalogo corrente; formattiamo i nomi (iniziale maiuscola)
     const validItems = (ordine.dettagli_ordine || [])
-      .filter((dettaglio) => prodotti.some((p) => p.id === dettaglio.prodotto_id))
+      .filter((dettaglio) =>
+        dettaglio.prodotto_id
+          ? prodotti.some((p) => p.id === dettaglio.prodotto_id)
+          : !!dettaglio.nome_custom
+      )
       .map((dettaglio) => {
+        if (!dettaglio.prodotto_id) {
+          // Prodotto fuori catalogo: riportiamo il nome custom così com'è
+          return {
+            prodotto_id: null,
+            prodotto_nome: dettaglio.nome_custom,
+            quantita: dettaglio.quantita,
+            tipologia: dettaglio.tipologia,
+          }
+        }
         // Recuperiamo il nome aggiornato dal catalogo per consistenza
         const prodottoCatalogo = prodotti.find((p) => p.id === dettaglio.prodotto_id)
         return {
