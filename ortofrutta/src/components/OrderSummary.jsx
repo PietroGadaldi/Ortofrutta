@@ -1,5 +1,6 @@
 import { OrderItemCard } from './OrderItemCard'
 import { format } from 'date-fns'
+import { IconClipboard } from './icons'
 
 /**
  * OrderSummary component
@@ -22,17 +23,18 @@ export function OrderSummary({
   selectedDate,
 }) {
   return (
-    <div className="md:h-[550px] h-auto flex flex-col bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl p-6 shadow-lg">
-      <h3 className="text-xl font-bold text-green-900 mb-6 flex items-center gap-2">
-        <span className="text-2xl">✅</span> Riepilogo Ordine
+    <div className="md:h-[550px] h-auto flex flex-col card p-5 sm:p-6">
+      <h3 className="section-title mb-5 flex items-center gap-2">
+        <IconClipboard className="w-5 h-5 text-verde-orto-600" />
+        Riepilogo ordine
         {items.length > 0 && (
-          <span className="ml-auto bg-green-200 text-green-900 px-3 py-1 rounded-full text-sm font-bold">
+          <span className="ml-auto badge-green">
             {items.length} {items.length === 1 ? 'prodotto' : 'prodotti'}
           </span>
         )}
       </h3>
 
-      <div className="flex-1 space-y-3 mb-5 overflow-y-auto pr-2">
+      <div className="flex-1 space-y-2.5 mb-4 overflow-y-auto pr-1">
         {[...items].reverse().map((item, index) => {
           // Calcoliamo l'indice originale per mantenere le referenze corrette per onEdit e onDelete
           const originalIndex = items.length - 1 - index;
@@ -47,34 +49,35 @@ export function OrderSummary({
           );
         })}
         {items.length === 0 && (
-          <div className="bg-gradient-to-br from-green-50 to-white border-2 border-green-300 rounded-lg p-4 text-center shadow-md">
-            <p className="text-green-900 font-semibold">
-              Aggiungi dei prodotti per visualizzare il Riepilogo del Ordine.
+          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+            <p className="text-sm text-slate-500 font-medium">
+              Aggiungi dei prodotti per visualizzare il riepilogo dell'ordine.
             </p>
           </div>
         )}
       </div>
 
       {/* Summary stats */}
-      <div className="border-t-2 border-green-300 pt-4 mb-5">
-        <div className="text-sm text-green-900 font-semibold">
-          Data di consegna selezionata: {selectedDate ? format(selectedDate, 'dd/MM/yyyy') : '--/--/----'}
-        </div>
+      <div className="border-t border-slate-200 pt-3.5 mb-4 text-left">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Data di consegna</p>
+        <p className="text-sm font-semibold text-slate-800 mt-0.5">
+          {selectedDate ? format(selectedDate, 'dd/MM/yyyy') : '--/--/----'}
+        </p>
       </div>
 
       {/* Action buttons */}
-      <div className="flex gap-3">
+      <div className="flex gap-2.5">
         <button
           onClick={onConfirmOrder}
           disabled={isLoading || items.length === 0}
-          className="flex-1 py-3 px-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-lg hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
+          className="btn-primary flex-1 py-3"
         >
-          {isLoading ? 'Invio in corso...' : 'Conferma e Ordina'}
+          {isLoading ? 'Invio in corso...' : 'Conferma e ordina'}
         </button>
         <button
           onClick={onClearOrder}
           disabled={isLoading || items.length === 0}
-          className="py-3 px-4 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 disabled:bg-gray-400 disabled:text-gray-500 transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
+          className="btn-danger-soft py-3"
           title="Cancella riepilogo"
         >
           Annulla

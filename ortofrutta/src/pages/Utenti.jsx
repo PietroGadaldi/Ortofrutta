@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { validateEmail } from '../utils/validators'
 import { getClientList } from '../services/profiliService'
+import { IconPlus, IconPencil, IconTrash, IconRefresh, IconSearch, IconUsers, IconEye, IconEyeOff, IconAlertTriangle } from '../components/icons'
 
 export function Utenti() {
   const [nome, setNome] = useState('')
@@ -252,190 +253,189 @@ export function Utenti() {
     return (
       <div className="flex justify-center items-center py-24">
         <div className="text-center">
-          <div className="flex justify-center mb-6">
-            <div className="animate-spin">
-              <div className="h-16 w-16 border-4 border-blue-300 border-t-blue-600 rounded-full"></div>
-            </div>
-          </div>
-          <p className="text-blue-700 font-bold text-lg">Caricamento utenti...</p>
+          <div className="spinner mx-auto mb-4"></div>
+          <p className="text-slate-500 font-medium">Caricamento utenti...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4 md:space-y-8 overflow-x-hidden">
+    <div className="space-y-4 md:space-y-6 overflow-x-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-4 shadow-xl">
-        <h1 className="text-2xl sm:text-4xl font-black mb-2">👤 Gestione Utenti</h1>
-        <p className="text-blue-100 text-sm sm:text-lg font-semibold">Crea nuovi account per clienti e titolari</p>
+      <div>
+        <h1 className="page-title">Gestione utenti</h1>
+        <p className="page-subtitle">Crea nuovi account per clienti e titolari</p>
       </div>
 
       {/* Tab mobile */}
-      <div className="flex md:hidden rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm">
+      <div className="flex md:hidden rounded-lg overflow-hidden border border-slate-200 bg-white shadow-sm p-1 gap-1">
         <button
           onClick={() => setMobileTab('form')}
-          className={`flex-1 py-3 font-bold text-sm transition-all ${
+          className={`flex-1 py-2.5 rounded-md font-semibold text-sm transition-colors ${
             mobileTab === 'form'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-500 hover:bg-gray-50'
+              ? 'bg-verde-orto-600 text-white shadow-sm'
+              : 'text-slate-500 hover:bg-slate-50'
           }`}
         >
-          {isModifying ? '📝 Modifica' : '➕ Crea Account'}
+          {isModifying ? 'Modifica' : 'Crea account'}
         </button>
         <button
           onClick={() => setMobileTab('lista')}
-          className={`flex-1 py-3 font-bold text-sm transition-all ${
+          className={`flex-1 py-2.5 rounded-md font-semibold text-sm transition-colors ${
             mobileTab === 'lista'
-              ? 'bg-green-600 text-white'
-              : 'bg-white text-gray-500 hover:bg-gray-50'
+              ? 'bg-verde-orto-600 text-white shadow-sm'
+              : 'text-slate-500 hover:bg-slate-50'
           }`}
         >
-          📋 {viewingRole === 'cliente' ? 'Clienti' : 'Titolari'} ({clienti.length})
+          {viewingRole === 'cliente' ? 'Clienti' : 'Titolari'} ({clienti.length})
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {/* Form */}
-        <div className={`${mobileTab === 'form' ? 'block' : 'hidden'} md:block min-w-0 bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl shadow-lg p-6`}>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2">
-              <span className="text-2xl sm:text-3xl">{isModifying ? '📝' : '➕'}</span>
-              {isModifying ? 'Modifica Account' : 'Crea Nuovo Account'}
+        <div className={`${mobileTab === 'form' ? 'block' : 'hidden'} md:block min-w-0 card p-4 sm:p-6`}>
+          <div className="flex justify-between items-center mb-5 gap-2">
+            <h2 className="section-title flex items-center gap-2">
+              {isModifying ? <IconPencil className="w-5 h-5 text-verde-orto-600" /> : <IconPlus className="w-5 h-5 text-verde-orto-600" />}
+              {isModifying ? 'Modifica account' : 'Nuovo account'}
             </h2>
             {isModifying && (
               <button
                 onClick={() => { resetForm(); setMobileTab('lista') }}
-                className="px-3 sm:px-4 py-2 text-xs sm:text-sm bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-bold hover:from-red-700 hover:to-red-800 transition shadow-md hover:scale-105 active:scale-95"
+                className="btn-secondary px-3 py-2 text-sm"
               >
-                ✖ Annulla
+                Annulla
               </button>
             )}
           </div>
 
           {error && (
-            <div className="mb-3 p-3 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-900 text-xs font-semibold">
-              ⚠️ {error}
+            <div className="alert-error mb-4">
+              {error}
             </div>
           )}
 
           {success && (
-            <div className="mb-3 p-3 bg-green-100 border-l-4 border-green-500 rounded-lg text-green-900 text-xs font-semibold">
-              ✅ {success}
+            <div className="alert-success mb-4">
+              {success}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-black mb-2 text-left">👤 Nome</label>
+              <label className="label">Nome</label>
               <input
                 type="text"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold text-base"
+                className="input"
                 placeholder="Nome completo"
                 disabled={isSubmitting}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-black mb-2 text-left">
-                📧 Email
-                <span className="ml-2 text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">facoltativa</span>
+              <label className="label">
+                Email
+                <span className="ml-2 text-[11px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">facoltativa</span>
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold text-base"
+                className="input"
                 placeholder="Può essere aggiunta in seguito"
                 disabled={isSubmitting}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-black mb-2 text-left">🔐 Password</label>
+              <label className="label">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-12 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold text-base"
+                  className="input pr-12"
                   placeholder={isModifying ? "Lascia vuoto per non cambiare" : "Min. 6 caratteri"}
                   disabled={isSubmitting}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 flex items-center justify-center bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition shadow-sm border border-blue-200"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-lg transition-colors"
                   title={showPassword ? 'Nascondi password' : 'Mostra password'}
                 >
-                  {showPassword ? '🔓' : '🔒'}
+                  {showPassword ? <IconEyeOff className="w-5 h-5" /> : <IconEye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-black mb-2 text-left">👑 Ruolo</label>
+              <label className="label">Ruolo</label>
               <select
                 value={ruolo}
                 onChange={(e) => setRuolo(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold text-base"
+                className="input"
                 disabled={isSubmitting}
               >
-                <option value="cliente">👤 Cliente</option>
-                <option value="titolare">🏪 Titolare</option>
+                <option value="cliente">Cliente</option>
+                <option value="titolare">Titolare</option>
               </select>
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100 text-lg"
+              className="btn-primary w-full py-3"
             >
-              {isSubmitting ? '⏳ Salvataggio...' : isModifying ? '💾 Aggiorna Account' : '✅ Crea Account'}
+              {isSubmitting ? 'Salvataggio...' : isModifying ? 'Aggiorna account' : 'Crea account'}
             </button>
           </form>
         </div>
 
         {/* Clients List */}
-        <div className={`${mobileTab === 'lista' ? 'block' : 'hidden'} md:block min-w-0 bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-6`}>
-          <div className="flex justify-between items-center mb-4 gap-2">
-            <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2">
-              <span className="text-2xl sm:text-3xl">📋</span> {viewingRole === 'cliente' ? 'Clienti' : 'Titolari'} ({clientiFiltrati.length}{filterNome ? `/${clienti.length}` : ''})
+        <div className={`${mobileTab === 'lista' ? 'block' : 'hidden'} md:block min-w-0 card p-4 sm:p-6`}>
+          <div className="flex justify-between items-center mb-5 gap-2">
+            <h2 className="section-title flex items-center gap-2 min-w-0">
+              <IconUsers className="w-5 h-5 text-verde-orto-600 flex-shrink-0" />
+              <span className="truncate">{viewingRole === 'cliente' ? 'Clienti' : 'Titolari'} ({clientiFiltrati.length}{filterNome ? `/${clienti.length}` : ''})</span>
             </h2>
             <div className="flex gap-2 flex-shrink-0">
               <button
                 onClick={toggleRole}
                 disabled={loadingClienti}
-                className="px-2 sm:px-4 py-2 text-xs sm:text-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100"
+                className="btn-secondary px-2.5 sm:px-3 py-2 text-xs sm:text-sm"
               >
-                {viewingRole === 'cliente' ? '👑 Titolari' : '👤 Clienti'}
+                {viewingRole === 'cliente' ? 'Vedi titolari' : 'Vedi clienti'}
               </button>
               <button
                 onClick={() => fetchClienti(viewingRole)}
                 disabled={loadingClienti}
-                className="px-2 sm:px-4 py-2 text-xs sm:text-sm bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100"
+                className="btn-icon border border-slate-300 bg-white text-slate-500 hover:bg-slate-50 shadow-sm disabled:opacity-50"
+                title="Aggiorna lista"
               >
-                🔄
+                <IconRefresh className={`w-4 h-4 ${loadingClienti ? 'animate-spin' : ''}`} />
               </button>
             </div>
           </div>
 
           {errorClienti && (
-            <div className="p-4 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-900 text-sm mb-4 font-semibold">
-              ⚠️ {errorClienti}
+            <div className="alert-error mb-4">
+              {errorClienti}
             </div>
           )}
 
           {!loadingClienti && clienti.length > 0 && (
-            <div className="mb-3">
+            <div className="mb-3 relative">
+              <IconSearch className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
-                placeholder="🔍 Cerca per nome..."
+                placeholder="Cerca per nome..."
                 value={filterNome}
                 onChange={(e) => setFilterNome(e.target.value)}
-                className="w-full px-3 py-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-600 text-gray-800 placeholder-gray-500 text-base font-semibold"
+                className="input pl-9 py-2"
               />
             </div>
           )}
@@ -443,68 +443,66 @@ export function Utenti() {
           {loadingClienti ? (
             <div className="flex justify-center py-12">
               <div className="text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="animate-spin">
-                    <div className="h-12 w-12 border-4 border-blue-300 border-t-blue-600 rounded-full"></div>
-                  </div>
-                </div>
-                <p className="text-blue-700 font-bold">Caricamento...</p>
+                <div className="spinner mx-auto mb-4"></div>
+                <p className="text-slate-500 font-medium">Caricamento...</p>
               </div>
             </div>
           ) : clienti.length === 0 ? (
-            <div className="text-black font-semibold italic">❌ Nessun {viewingRole === 'cliente' ? 'cliente' : 'titolare'} creato ancora</div>
+            <div className="text-slate-500 font-medium italic">Nessun {viewingRole === 'cliente' ? 'cliente' : 'titolare'} creato ancora</div>
           ) : clientiFiltrati.length === 0 ? (
-            <div className="text-black font-semibold italic">❌ Nessun risultato per "{filterNome}"</div>
+            <div className="text-slate-500 font-medium italic">Nessun risultato per "{filterNome}"</div>
           ) : (
-            <div className="space-y-2 max-h-[62vh] overflow-y-auto md:max-h-[500px] overscroll-contain pr-2" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="space-y-2 max-h-[62vh] overflow-y-auto md:max-h-[500px] overscroll-contain pr-1" style={{ WebkitOverflowScrolling: 'touch' }}>
               {clientiFiltrati.map((cliente) => (
                 <div
                   key={cliente.id}
-                  className="flex items-center justify-between p-4 bg-white border-2 border-green-300 rounded-lg shadow-sm hover:shadow-md hover:border-green-400 transition"
+                  className="flex items-center justify-between p-3.5 bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-black text-left truncate uppercase">{cliente.nome}</p>
+                    <p className="font-semibold text-slate-900 text-sm text-left truncate uppercase">{cliente.nome}</p>
                     {cliente.email && !cliente.email.endsWith('@noreply.internal') ? (
-                      <p className="text-xs text-green-700 mt-0.5 font-semibold text-left truncate">{cliente.email}</p>
+                      <p className="text-xs text-slate-500 mt-0.5 font-medium text-left truncate">{cliente.email}</p>
                     ) : (
-                      <p className="text-xs text-gray-400 mt-0.5 italic text-left">Nessuna email</p>
+                      <p className="text-xs text-slate-400 mt-0.5 italic text-left">Nessuna email</p>
                     )}
                     {cliente.password_plain && (
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <span className="text-xs font-mono text-gray-700">
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-xs font-mono text-slate-600">
                           {visiblePasswords.has(cliente.id) ? cliente.password_plain : '••••••'}
                         </span>
                         <button
                           type="button"
                           onClick={() => togglePasswordVisibility(cliente.id)}
-                          className="text-xs text-gray-400 hover:text-gray-700 transition leading-none"
+                          className="text-slate-400 hover:text-slate-600 transition-colors leading-none"
                           title={visiblePasswords.has(cliente.id) ? 'Nascondi password' : 'Mostra password'}
                         >
-                          {visiblePasswords.has(cliente.id) ? '🔓' : '🔒'}
+                          {visiblePasswords.has(cliente.id) ? <IconEyeOff className="w-3.5 h-3.5" /> : <IconEye className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="hidden sm:inline px-3 py-1 text-xs bg-gradient-to-r from-green-200 to-green-100 text-green-900 rounded-full font-bold">
-                      {cliente.ruolo === 'cliente' ? '👤 Cliente' : '🏪 Titolare'}
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <span className={`hidden sm:inline-flex ${cliente.ruolo === 'cliente' ? 'badge-slate' : 'badge-green'}`}>
+                      {cliente.ruolo === 'cliente' ? 'Cliente' : 'Titolare'}
                     </span>
                     <button
                       onClick={() => handleEditUser(cliente)}
-                      className="bg-blue-100 text-blue-600 rounded text-sm font-semibold hover:bg-blue-200 transition flex items-center justify-center"
+                      className="btn-icon text-slate-400 hover:text-blue-600 hover:bg-blue-50"
                       style={{ minWidth: '44px', minHeight: '44px' }}
+                      title="Modifica utente"
                     >
-                      ✏️
+                      <IconPencil className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => {
                         setUserToDelete(cliente)
                         setShowDeleteModal(true)
                       }}
-                      className="bg-red-100 text-red-600 rounded text-sm font-semibold hover:bg-red-200 transition flex items-center justify-center"
+                      className="btn-icon text-slate-400 hover:text-red-600 hover:bg-red-50"
                       style={{ minWidth: '44px', minHeight: '44px' }}
+                      title="Elimina utente"
                     >
-                      🗑️
+                      <IconTrash className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -516,38 +514,39 @@ export function Utenti() {
 
       {/* Modal di Conferma Eliminazione */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border-2 border-red-300">
-            <h3 className="text-xl font-bold text-red-600 mb-4 flex items-center gap-2 text-left">
-              ⚠️ Conferma Eliminazione
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="card max-w-md w-full p-6 shadow-2xl">
+            <h3 className="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2 text-left">
+              <IconAlertTriangle className="w-5 h-5 text-red-600" />
+              Conferma eliminazione
             </h3>
-            <p className="text-gray-700 mb-4 text-left">
-              Sei sicuro di voler eliminare l'utente <strong>{userToDelete?.nome}</strong>
+            <p className="text-sm text-slate-600 mb-4 text-left">
+              Sei sicuro di voler eliminare l'utente <strong className="text-slate-900">{userToDelete?.nome}</strong>
               {userToDelete?.email && !userToDelete.email.endsWith('@noreply.internal') && (
                 <> ({userToDelete.email})</>
               )}?
             </p>
-            <div className="bg-red-50 border-l-4 border-red-500 p-3 mb-6">
-              <p className="text-xs text-red-800 font-bold text-left">
-                ATTENZIONE: Questa operazione è irreversibile e rimuoverà permanentemente il profilo e TUTTI gli ordini associati a questo utente dal database.
+            <div className="alert-error mb-6">
+              <p className="text-xs font-semibold">
+                ATTENZIONE: questa operazione è irreversibile e rimuoverà permanentemente il profilo e TUTTI gli ordini associati a questo utente dal database.
               </p>
             </div>
-            <div className="flex gap-3 justify-end">
+            <div className="flex gap-2.5 justify-end">
               <button
                 onClick={() => {
                   setShowDeleteModal(false)
                   setUserToDelete(null)
                 }}
-                className="px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded-lg transition"
+                className="btn-ghost px-4 py-2 text-sm"
               >
                 Annulla
               </button>
               <button
                 onClick={handleConfirmDelete}
                 disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:bg-gray-400"
+                className="btn-danger px-4 py-2 text-sm"
               >
-                {isSubmitting ? 'Eliminazione...' : 'Sì, Elimina Tutto'}
+                {isSubmitting ? 'Eliminazione...' : 'Sì, elimina tutto'}
               </button>
             </div>
           </div>

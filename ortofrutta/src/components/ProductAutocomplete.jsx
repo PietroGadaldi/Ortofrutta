@@ -184,8 +184,8 @@ export function ProductAutocomplete({
 
   return (
     <div className="relative w-full">
-      <label className="block text-sm font-bold text-green-900 mb-2 text-left">
-        🌱 Prodotto
+      <label className="label">
+        Prodotto
       </label>
       <input
         ref={inputRef}
@@ -195,13 +195,13 @@ export function ProductAutocomplete({
         onKeyDown={handleKeyDown}
         onFocus={() => value && setIsOpen(true)}
         placeholder="Cerca un prodotto per nome..."
-        className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-black font-semibold text-base"
+        className="input h-12"
       />
 
       {isOpen && filteredProducts.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-10 w-full mt-2 bg-white border-2 border-green-300 rounded-lg shadow-xl"
+          className="absolute z-10 w-full mt-1.5 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden"
         >
           <ul className="max-h-60 overflow-y-auto">
             {filteredProducts.map((product, index) => {
@@ -212,24 +212,24 @@ export function ProductAutocomplete({
                     onClick={() => isActive && handleSelectProduct(product)}
                     disabled={!isActive}
                     className={`
-                      w-full text-left px-4 py-3 transition-all border-b border-green-100 last:border-b-0
+                      w-full text-left px-4 py-3 transition-colors border-b border-slate-100 last:border-b-0
                       ${
                         !isActive
-                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
+                          ? 'bg-slate-50 text-slate-400 cursor-not-allowed'
                           : index === highlightedIndex
-                          ? 'bg-green-500 text-white font-semibold'
-                          : 'hover:bg-green-100 text-green-900'
+                          ? 'bg-verde-orto-600 text-white'
+                          : 'hover:bg-verde-orto-50 text-slate-800'
                       }
                     `}
                   >
-                    <div className="font-bold text-left uppercase">{product.nome}</div>
+                    <div className="font-semibold text-left text-sm uppercase">{product.nome}</div>
                     {!isActive && (
-                      <div className="text-xs opacity-75 mt-1 text-left">
-                        🚫 Prodotto non di stagione
+                      <div className="text-xs mt-0.5 text-left">
+                        Prodotto non di stagione
                       </div>
                     )}
                     {isActive && isAdminMode && (
-                      <div className="text-xs opacity-75 mt-1 text-left">
+                      <div className="text-xs opacity-75 mt-0.5 text-left">
                         Disponibilità: {parseTipologie(product.tipologie_possibili).map(capitalize).join(', ')}
                       </div>
                     )}
@@ -242,9 +242,9 @@ export function ProductAutocomplete({
       )}
 
       {value.trim() && filteredProducts.length === 0 && showNoMatchNotice && (
-        <div className="absolute z-10 w-full mt-2 bg-white rounded-lg shadow-xl p-4 border-2 border-amber-400">
-          <p className="text-sm text-amber-700 font-semibold">
-            ⚠️ "{value}" non è nel catalogo — verrà aggiunto all'ordine come <strong>prodotto fuori catalogo</strong>. Compila quantità e tipologia e premi "Aggiungi".
+        <div className="absolute z-10 w-full mt-1.5 alert-warn shadow-lg">
+          <p className="text-sm">
+            "{value}" non è nel catalogo — verrà aggiunto all'ordine come <strong>prodotto fuori catalogo</strong>. Compila quantità e tipologia e premi "Aggiungi".
           </p>
         </div>
       )}

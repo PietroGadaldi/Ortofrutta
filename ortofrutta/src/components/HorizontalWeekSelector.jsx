@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { format, addDays, subDays, addWeeks, subWeeks, addMonths, subMonths, isSameDay, startOfDay, startOfWeek, startOfMonth, getDate, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { getOrdiniCountsByDates } from '../services/ordiniService'
+import { IconChevronLeft, IconChevronRight, IconChevronDoubleLeft, IconChevronDoubleRight } from './icons'
 
 /**
  * HorizontalWeekSelector component
@@ -137,19 +138,19 @@ export function HorizontalWeekSelector({ selectedDate, onSelectDate }) {
   const monthYear = format(weekStart, 'MMMM yyyy', { locale: it })
 
   return (
-    <div className="bg-gradient-to-r from-amber-50 to-amber-100 border-2 border-amber-300 rounded-xl p-3 sm:p-4 shadow-lg">
+    <div className="card p-3 sm:p-4">
       {/* Header with month/year and filter */}
-      <div className="flex items-center justify-between mb-3 sm:mb-4 pb-3 sm:pb-4 border-b-2 border-amber-300 gap-2">
-        <p className="text-base sm:text-lg font-bold text-amber-900 flex-shrink-0">
+      <div className="flex items-center justify-between mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-slate-200 gap-2">
+        <p className="text-sm sm:text-base font-semibold text-slate-900 flex-shrink-0">
           {monthYear.charAt(0).toUpperCase() + monthYear.slice(1)}
         </p>
         <div className="flex items-center gap-2">
-          <label className="hidden md:block text-sm font-bold text-amber-900">Filtra per data:</label>
+          <label className="hidden md:block text-[13px] font-semibold text-slate-600">Filtra per data:</label>
           <input
             type="date"
             value={filterDate || format(selectedDate, 'yyyy-MM-dd')}
             onChange={(e) => setFilterDate(e.target.value)}
-            className="px-2 sm:px-4 py-1.5 sm:py-2 border-2 border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-base text-black font-semibold bg-white"
+            className="input w-auto px-2 sm:px-3 py-1.5 sm:py-2 text-sm"
           />
           {filterDate && (
             <button
@@ -159,7 +160,7 @@ export function HorizontalWeekSelector({ selectedDate, onSelectDate }) {
                 onSelectDate(today)
                 setWeekStart(startOfWeek(today, { weekStartsOn: 1 }))
               }}
-              className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-bold"
+              className="btn-danger-soft px-2.5 py-1.5 text-xs"
             >
               ✕
             </button>
@@ -168,23 +169,23 @@ export function HorizontalWeekSelector({ selectedDate, onSelectDate }) {
       </div>
 
       {/* Navigation controls and days */}
-      <div className="flex items-center justify-center gap-1 sm:gap-3">
+      <div className="flex items-center justify-center gap-1 sm:gap-2">
         {/* Previous Month Button (Outer) - hidden on mobile */}
         <button
           onClick={handlePrevMonth}
-          className="hidden sm:flex flex-shrink-0 p-2 sm:p-3 bg-white border-2 border-amber-300 text-amber-700 hover:bg-amber-100 rounded-lg transition-all hover:scale-110 font-bold shadow-md text-base sm:text-lg"
+          className="hidden sm:inline-flex btn-icon flex-shrink-0 border border-slate-300 bg-white text-slate-500 hover:bg-slate-50 shadow-sm"
           title="Mese precedente"
         >
-          {'<<'}
+          <IconChevronDoubleLeft className="w-4 h-4" />
         </button>
 
         {/* Previous Week Button (Inner) */}
         <button
           onClick={handlePrevWeek}
-          className="flex-shrink-0 p-2 sm:p-3 bg-white border-2 border-amber-300 text-amber-700 hover:bg-amber-100 rounded-lg transition-all hover:scale-110 font-bold shadow-md text-sm sm:text-base"
+          className="btn-icon flex-shrink-0 border border-slate-300 bg-white text-slate-500 hover:bg-slate-50 shadow-sm"
           title="Settimana precedente"
         >
-          {'<'}
+          <IconChevronLeft className="w-4 h-4" />
         </button>
 
         {/* Days Scroll Container */}
@@ -208,27 +209,29 @@ export function HorizontalWeekSelector({ selectedDate, onSelectDate }) {
                   key={dateKey}
                   onClick={() => handleDayClick(day)}
                   className={`
-                    flex-shrink-0 w-11 sm:w-20 md:w-28 py-2 sm:py-3 px-1 sm:px-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 sm:gap-2
+                    flex-shrink-0 w-11 sm:w-20 md:w-28 py-2 sm:py-3 px-1 sm:px-2 rounded-lg border transition-colors flex flex-col items-center justify-center gap-1 sm:gap-1.5
                     ${
                       isSelected
-                        ? 'bg-gradient-to-b from-amber-600 to-amber-700 text-white border-amber-800 shadow-lg'
+                        ? 'bg-verde-orto-600 text-white border-verde-orto-700 shadow-sm'
                         : isToday
-                        ? 'bg-white text-amber-900 border-amber-400 shadow-md'
-                        : 'bg-white text-amber-700 border-amber-200 hover:border-amber-400'
+                        ? 'bg-verde-orto-50 text-slate-900 border-verde-orto-400'
+                        : 'bg-white text-slate-600 border-slate-200 hover:border-verde-orto-400 hover:bg-verde-orto-50/50'
                     }
                   `}
                 >
-                  <div className="text-xs font-bold leading-none">{dayName}</div>
-                  <div className={`text-xs sm:text-base font-bold ${isSelected ? 'text-white' : 'text-amber-600'}`}>
+                  <div className={`text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide leading-none ${isSelected ? 'text-verde-orto-100' : 'text-slate-400'}`}>{dayName}</div>
+                  <div className={`text-xs sm:text-[15px] font-bold tabular-nums ${isSelected ? 'text-white' : 'text-slate-800'}`}>
                     {dayDate}
                   </div>
                   <div
                     className={`
-                      text-xs font-bold px-1 sm:px-2 py-0.5 sm:py-1 rounded-full
+                      text-[11px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-full tabular-nums
                       ${
                         isSelected
-                          ? 'bg-white text-amber-700'
-                          : 'bg-amber-100 text-amber-800'
+                          ? 'bg-white/20 text-white'
+                          : count > 0
+                            ? 'bg-verde-orto-50 text-verde-orto-700 ring-1 ring-inset ring-verde-orto-600/20'
+                            : 'bg-slate-100 text-slate-400'
                       }
                     `}
                   >
@@ -243,19 +246,19 @@ export function HorizontalWeekSelector({ selectedDate, onSelectDate }) {
         {/* Next Week Button (Inner) */}
         <button
           onClick={handleNextWeek}
-          className="flex-shrink-0 p-2 sm:p-3 bg-white border-2 border-amber-300 text-amber-700 hover:bg-amber-100 rounded-lg transition-all hover:scale-110 font-bold shadow-md text-sm sm:text-base"
+          className="btn-icon flex-shrink-0 border border-slate-300 bg-white text-slate-500 hover:bg-slate-50 shadow-sm"
           title="Settimana successiva"
         >
-          {'>'}
+          <IconChevronRight className="w-4 h-4" />
         </button>
 
         {/* Next Month Button (Outer) - hidden on mobile */}
         <button
           onClick={handleNextMonth}
-          className="hidden sm:flex flex-shrink-0 p-2 sm:p-3 bg-white border-2 border-amber-300 text-amber-700 hover:bg-amber-100 rounded-lg transition-all hover:scale-110 font-bold shadow-md text-base sm:text-lg"
+          className="hidden sm:inline-flex btn-icon flex-shrink-0 border border-slate-300 bg-white text-slate-500 hover:bg-slate-50 shadow-sm"
           title="Mese successivo"
         >
-          {'>>'}
+          <IconChevronDoubleRight className="w-4 h-4" />
         </button>
       </div>
     </div>

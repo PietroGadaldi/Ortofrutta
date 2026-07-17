@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { ProductAutocomplete } from './ProductAutocomplete'
 import { parseTipologie, capitalize } from '../utils/constants'
+import { IconPlus, IconMinus, IconRefresh, IconCalendar, IconPencil } from './icons'
 
 const parseQuantita = (val) => parseFloat(String(val).replace(',', '.'))
 
@@ -133,16 +134,17 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
   }
 
   return (
-    <form onSubmit={handleAddProduct} className="md:h-[550px] h-auto flex flex-col bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl p-6 shadow-lg">
-      <h3 className="text-xl font-bold text-green-900 mb-6 flex items-center gap-2">
-        <span className="text-2xl">📝</span> Aggiungi Prodotto
+    <form onSubmit={handleAddProduct} className="md:h-[550px] h-auto flex flex-col card p-5 sm:p-6">
+      <h3 className="section-title mb-5 flex items-center gap-2">
+        <IconPencil className="w-5 h-5 text-verde-orto-600" />
+        Aggiungi prodotto
       </h3>
 
-      <div className="space-y-5 flex-1">
+      <div className="space-y-4 flex-1">
         {disabledMessage ? (
           <div className="flex-1 flex items-center justify-center">
-            <div className="p-5 bg-orange-50 border-2 border-orange-300 rounded-xl text-center">
-              <p className="text-orange-900 font-bold text-sm">{disabledMessage}</p>
+            <div className="alert-warn text-center">
+              <p className="font-semibold text-sm">{disabledMessage}</p>
             </div>
           </div>
         ) : (
@@ -164,8 +166,8 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
 
             {/* Quantity Input */}
             <div>
-              <label className="block text-sm font-bold text-green-900 mb-2 text-left">
-                📦 Quantità
+              <label className="label">
+                Quantità
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -179,32 +181,32 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
                     if (isNaN(num) || num <= 0) setQuantita('');
                   }}
                   placeholder="es: 1 o 0,5"
-                  className="flex-1 min-w-0 h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all text-base"
+                  className="input flex-1 min-w-0 h-12"
                   disabled={!selectedProduct && !isCustomProduct}
                 />
                 <button
                   type="button"
                   onClick={handleDecrement}
                   disabled={(!selectedProduct && !isCustomProduct) || parseQuantita(quantita) <= 1}
-                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
+                  className="btn-icon w-12 h-12 flex-shrink-0 bg-white border border-slate-300 text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  -
+                  <IconMinus className="w-5 h-5" />
                 </button>
                 <button
                   type="button"
                   onClick={handleIncrement}
                   disabled={!selectedProduct && !isCustomProduct}
-                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white border-2 border-green-300 rounded-lg text-green-700 font-bold hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
+                  className="btn-icon w-12 h-12 flex-shrink-0 bg-white border border-slate-300 text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  +
+                  <IconPlus className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
             {/* Tipologia */}
             <div>
-              <label className="block text-sm font-bold text-green-900 mb-2 text-left">
-                🏷️ Tipologia
+              <label className="label">
+                Tipologia
               </label>
               {isCustomProduct ? (
                 <input
@@ -212,13 +214,13 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
                   value={tipologia}
                   onChange={(e) => setTipologia(e.target.value)}
                   placeholder="es: kg, pezzo, cassetta..."
-                  className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black font-semibold transition-all"
+                  className="input h-12"
                 />
               ) : (
                 <select
                   value={tipologia}
                   onChange={(e) => setTipologia(e.target.value)}
-                  className="w-full h-12 px-4 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-black font-semibold transition-all"
+                  className="input h-12"
                   disabled={!selectedProduct}
                 >
                   <option value="">-- Seleziona tipologia --</option>
@@ -234,30 +236,32 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
         )}
 
         {/* Quick Actions — sempre visibili */}
-        <div className="pt-2 flex gap-3">
+        <div className="pt-2 flex gap-2.5">
           {onReorderLast && (
             <button
               type="button"
               onClick={onReorderLast}
-              className="flex-1 h-12 px-2 bg-amber-50 border-2 border-amber-300 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-100 transition-all flex items-center justify-center gap-1 shadow-sm hover:shadow-md transform active:scale-95"
+              className="btn-secondary flex-1 h-11 px-2 text-xs"
             >
-              🔄 Ripeti ultimo ordine
+              <IconRefresh className="w-4 h-4 flex-shrink-0" />
+              Ripeti ultimo ordine
             </button>
           )}
           <button
             type="button"
             onClick={onSetTomorrow}
-            className="flex-1 h-12 px-2 bg-blue-50 border-2 border-blue-300 text-blue-800 rounded-lg text-xs font-bold hover:bg-blue-100 transition-all flex items-center justify-center gap-1 shadow-sm hover:shadow-md transform active:scale-95"
+            className="btn-secondary flex-1 h-11 px-2 text-xs"
           >
-            📅 Ordina per domani
+            <IconCalendar className="w-4 h-4 flex-shrink-0" />
+            Ordina per domani
           </button>
         </div>
       </div>
 
       {/* Error message */}
       {error && (
-        <div className="mt-4 p-3 bg-red-100 border-l-4 border-red-500 rounded-lg">
-          <p className="text-sm text-red-800 font-semibold">⚠️ {error}</p>
+        <div className="alert-error mt-4">
+          {error}
         </div>
       )}
 
@@ -266,9 +270,9 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
         <button
           type="submit"
           disabled={(!selectedProduct && !isCustomProduct) || !quantita || !tipologia}
-          className="mt-5 w-full py-3 px-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-lg hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
+          className="btn-primary mt-5 w-full py-3"
         >
-          ✅ Aggiungi al Riepilogo
+          Aggiungi al riepilogo
         </button>
       )}
     </form>

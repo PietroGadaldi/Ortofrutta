@@ -11,6 +11,7 @@ import { uploadOrderPDF } from '../services/pdfStorageService'
 import { capitalize, WHATSAPP_NUMBER } from '../utils/constants'
 import { format, addDays, startOfDay, isSameDay } from 'date-fns'
 import { it } from 'date-fns/locale'
+import { IconWhatsApp, IconPencil } from '../components/icons'
 
 export function Dashboard() {
   const { user } = useAuth()
@@ -375,40 +376,36 @@ export function Dashboard() {
     return (
       <div className="flex justify-center items-center py-24">
         <div className="text-center">
-          <div className="inline-block mb-6">
-            <div className="animate-spin">
-              <div className="h-16 w-16 border-4 border-green-300 border-t-green-600 rounded-full"></div>
-            </div>
-          </div>
-          <p className="text-green-700 font-bold text-lg">Caricamento dashboard...</p>
+          <div className="spinner mx-auto mb-4"></div>
+          <p className="text-slate-500 font-medium">Caricamento dashboard...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 sm:space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-4 sm:p-8 shadow-xl">
-        <h1 className="text-2xl sm:text-4xl font-black mb-2">📦 Gestione Ordini</h1>
-        <p className="text-green-100 text-sm sm:text-lg font-semibold">Crea, modifica e visualizza i tuoi ordini in modo semplice e intuitivo</p>
+      <div>
+        <h1 className="page-title">I miei ordini</h1>
+        <p className="page-subtitle">Crea, modifica e consulta i tuoi ordini</p>
       </div>
 
       {/* Error alert */}
       {error && (
-        <div className="p-5 bg-red-100 border-l-4 border-red-500 rounded-lg shadow-md">
-          <p className="text-red-900 font-bold">⚠️ {error}</p>
+        <div className="alert-error">
+          {error}
         </div>
       )}
 
       {/* Success alert */}
       {success && (
-        <div className="p-5 bg-green-100 border-l-4 border-green-500 rounded-lg shadow-md flex justify-between items-center">
-          <p className="text-green-900 font-bold">✅ {success}</p>
+        <div className="alert-success flex justify-between items-center gap-3">
+          <span>{success}</span>
           {success === 'Ordine inviato con successo!' && lastCreatedOrderId && (
             <button
               onClick={handleViewLastOrder}
-              className="text-green-700 underline font-bold hover:text-green-900 transition-colors"
+              className="flex-shrink-0 font-semibold text-verde-orto-700 underline hover:text-verde-orto-900 transition-colors"
             >
               Visualizza
             </button>
@@ -426,50 +423,48 @@ export function Dashboard() {
 
       {/* Banner: ordine già presente per la data selezionata */}
       {!editingOrderId && existingOrderForDate && (
-        <div className="p-5 bg-amber-50 border-l-4 border-amber-500 rounded-lg shadow-md">
-          <p className="text-amber-900 font-bold text-sm">
-            📋 Hai già un ordine per {format(selectedDate, 'EEEE dd MMMM yyyy', { locale: it })}.
+        <div className="alert-warn">
+          <p className="font-semibold text-sm">
+            Hai già un ordine per {format(selectedDate, 'EEEE dd MMMM yyyy', { locale: it })}.
           </p>
-          <p className="text-amber-800 text-sm mt-1 font-semibold">
-            Per aggiungere o modificare i prodotti, usa il tasto <strong>"Modifica Ordine"</strong> presente nella cronologia qui sotto.
+          <p className="text-sm mt-1">
+            Per aggiungere o modificare i prodotti, usa il tasto <strong>"Modifica ordine"</strong> presente nella cronologia qui sotto.
           </p>
           <button
             onClick={() => {
               handleEditOrder(existingOrderForDate)
             }}
-            className="mt-3 inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold py-2 px-4 rounded-lg transition-all"
+            className="mt-3 inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors active:scale-[0.98]"
           >
-            ✏️ Vai all'ordine esistente
+            <IconPencil className="w-4 h-4" />
+            Vai all'ordine esistente
           </button>
         </div>
       )}
 
       {/* Banner: oggi ma oltre le 02:00 */}
       {!editingOrderId && isTodayAfter2AM && !existingOrderForDate && (
-        <div className="p-5 bg-orange-50 border-l-4 border-orange-500 rounded-lg shadow-md">
-          <p className="text-orange-900 font-bold text-sm">
-            ⏰ Non è più possibile ordinare per oggi.
+        <div className="alert-warn">
+          <p className="font-semibold text-sm">
+            Non è più possibile ordinare per oggi.
           </p>
-          <p className="text-orange-800 text-sm mt-1 font-semibold leading-relaxed">
+          <p className="text-sm mt-1 leading-relaxed">
             Il termine per creare ordini per il giorno stesso è <strong>le ore 02:00 di mattina</strong>. Se hai bisogno di un ordine urgente, contatta direttamente il titolare su WhatsApp.
           </p>
           <a
             href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Salve, vorrei fare un ordine urgente per oggi.')}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-3 inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-bold py-2 px-4 rounded-lg transition-all"
+            className="mt-3 inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1eb958] text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors active:scale-[0.98]"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 flex-shrink-0">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-              <path d="M12 0C5.373 0 0 5.373 0 12c0 2.115.554 4.1 1.523 5.823L.057 23.486a.5.5 0 0 0 .612.612l5.663-1.466A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.502-.502-5.176-1.381l-.372-.217-3.863 1 1-3.863-.217-.372A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
-            </svg>
+            <IconWhatsApp className="w-4 h-4 flex-shrink-0" />
             Contatta il titolare su WhatsApp
           </a>
         </div>
       )}
 
       {/* Form + Summary Section (Grid layout) */}
-      <div ref={summaryRef} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div ref={summaryRef} className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
         {/* AddProductForm (left) */}
         <div>
           <AddProductForm
@@ -484,9 +479,9 @@ export function Dashboard() {
             onSetTomorrow={handleSetTomorrow}
             disabledMessage={
               !editingOrderId && existingOrderForDate
-                ? '📋 Hai già un ordine per questa giornata. Per aggiungere o modificare i prodotti, usa il tasto "✏️ Vai all\'ordine esistente" qui sopra oppure "Modifica Ordine" nella cronologia.'
+                ? 'Hai già un ordine per questa giornata. Per aggiungere o modificare i prodotti, usa il tasto "Vai all\'ordine esistente" qui sopra oppure "Modifica ordine" nella cronologia.'
                 : !editingOrderId && isTodayAfter2AM
-                ? '⏰ Il termine per ordinare per oggi è scaduto alle 02:00. Puoi usare i tasti qui sotto per riordinare o selezionare un altro giorno.'
+                ? 'Il termine per ordinare per oggi è scaduto alle 02:00. Puoi usare i tasti qui sotto per riordinare o selezionare un altro giorno.'
                 : null
             }
           />
@@ -507,9 +502,9 @@ export function Dashboard() {
       </div>
 
       {editingOrderId && (
-        <div className="p-5 bg-blue-100 border-l-4 border-blue-500 rounded-lg shadow-md text-left">
-          <p className="text-blue-900 font-bold">
-            ℹ️ Stai modificando un ordine. Clicca "Conferma e Ordina" per salvare le modifiche.
+        <div className="alert-info">
+          <p className="font-semibold">
+            Stai modificando un ordine. Clicca "Conferma e ordina" per salvare le modifiche.
           </p>
         </div>
       )}

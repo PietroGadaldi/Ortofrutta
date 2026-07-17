@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { format, parseISO, isSameDay, isAfter, startOfDay } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { WHATSAPP_NUMBER } from '../utils/constants'
+import { IconChevronDown, IconClock, IconRefresh, IconWhatsApp, IconInfo, IconDocument } from './icons'
 
 /**
  * OrdersHistory component
@@ -13,11 +14,11 @@ import { WHATSAPP_NUMBER } from '../utils/constants'
  * @param {string} expandedOrderId - ID of the order to expand (controlled from parent)
  * @param {Function} onToggleExpanded - Callback to toggle expansion (controlled from parent)
  */
-export function OrdersHistory({ 
-  ordini = [], 
-  onEditOrder, 
-  onReorder, 
-  onDeleteOrder, 
+export function OrdersHistory({
+  ordini = [],
+  onEditOrder,
+  onReorder,
+  onDeleteOrder,
   isLoading = false,
   expandedOrderId: expandedOrderIdProp,
   onToggleExpanded
@@ -122,30 +123,31 @@ export function OrdersHistory({
 
   if (ordini.length === 0) {
     return (
-      <div className="bg-blue-50 border border-blue-300 rounded-lg p-6 text-center">
-        <p className="text-blue-700">📭 Non hai ancora creato nessun ordine</p>
+      <div className="card p-8 text-center">
+        <p className="text-slate-500 font-medium">Non hai ancora creato nessun ordine.</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl p-6 shadow-lg">
-      <div className="mb-6">
-        <h3 className="text-xl font-bold text-blue-900 flex items-center gap-2 mb-3">
-          <span className="text-2xl">📜</span> Cronologia Ordini
+    <div className="card card-pad">
+      <div className="mb-5">
+        <h3 className="section-title flex items-center gap-2 mb-3">
+          <IconDocument className="w-5 h-5 text-verde-orto-600" />
+          Cronologia ordini
         </h3>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-blue-900 whitespace-nowrap flex-shrink-0">📅 Filtra:</span>
+          <span className="text-[13px] font-semibold text-slate-600 whitespace-nowrap flex-shrink-0">Filtra per data:</span>
           <input
             type="date"
             value={filterDate || format(new Date(), 'yyyy-MM-dd')}
             onChange={(e) => setFilterDate(e.target.value)}
-            className="flex-shrink-0 px-2 py-1.5 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-black font-semibold bg-white"
+            className="input w-auto flex-shrink-0 px-2.5 py-1.5 text-sm"
           />
           {filterDate && (
             <button
               onClick={() => setFilterDate('')}
-              className="flex-shrink-0 px-2 py-1.5 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all font-bold active:scale-95"
+              className="btn-danger-soft flex-shrink-0 px-2.5 py-1.5 text-xs"
               title="Azzera filtro"
             >
               ✕
@@ -155,58 +157,53 @@ export function OrdersHistory({
       </div>
 
       {/* Avviso vincolo orario modifiche */}
-      <div className="mb-6 p-4 bg-blue-100 border-l-4 border-blue-500 rounded-lg shadow-sm text-left">
-        <p className="text-sm text-blue-900 font-bold flex items-center gap-2">
-          <span>ℹ️</span> Informazione importante:
-        </p>
-        <p className="text-xs text-blue-800 mt-1 font-semibold">
-          Puoi modificare o annullare i tuoi ordini in autonomia fino alle <strong>02:00</strong> del giorno di consegna.
-        </p>
+      <div className="alert-info mb-5 flex gap-2.5">
+        <IconInfo className="w-5 h-5 flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-semibold">Informazione importante</p>
+          <p className="text-xs mt-0.5">
+            Puoi modificare o annullare i tuoi ordini in autonomia fino alle <strong>02:00</strong> del giorno di consegna.
+          </p>
+        </div>
       </div>
 
       {filteredOrdini.length === 0 && filterDate && (
-        <div className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg mb-4">
-          <p className="text-sm text-yellow-900 font-semibold">❌ Nessun ordine trovato per la data {formatDateShort(filterDate)}</p>
+        <div className="alert-warn mb-4">
+          <p className="text-sm">Nessun ordine trovato per la data {formatDateShort(filterDate)}</p>
         </div>
       )}
 
-      <div className="space-y-3 max-h-[550px] overflow-y-auto pr-2 overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <div className="space-y-2.5 max-h-[550px] overflow-y-auto pr-1 overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
         {filteredOrdini.map((ordine) => {
           const isPast = !isOrderEditable(ordine.data_ordine);
+          const statusBadge = isPast
+            ? <span className="badge-slate">Archiviato</span>
+            : ordine.completato
+              ? <span className="badge-green">Completato</span>
+              : <span className="badge-amber">In corso</span>
           return (
           <div
             key={ordine.id}
-            className={`border-2 rounded-xl overflow-hidden transition-all hover:shadow-lg ${
-              isPast
-                ? 'bg-gradient-to-r from-blue-50 to-white border-blue-300 hover:border-blue-400'
-                : ordine.completato
-                ? 'bg-gradient-to-r from-green-50 to-white border-green-300 hover:border-green-400'
-                : 'bg-gradient-to-r from-amber-50 to-white border-amber-300 hover:border-amber-400'
-            }`}
+            className="border border-slate-200 rounded-xl overflow-hidden bg-white transition-shadow hover:shadow-sm"
           >
             {/* Order header (always visible) */}
             <button
               onClick={() => toggleExpanded(ordine.id)}
-              className={`w-full flex items-center justify-between p-5 transition-all active:scale-95 ${
-                isPast ? 'hover:bg-blue-100' : ordine.completato ? 'hover:bg-green-100' : 'hover:bg-amber-100'
-              }`}
+              className="w-full flex items-center justify-between px-4 py-3.5 transition-colors hover:bg-slate-50"
             >
-              <div className="text-left flex-1">
-                <div className={`font-bold text-lg ${isPast ? 'text-blue-900' : ordine.completato ? 'text-green-900' : 'text-amber-900'}`}>
-                  📅 {formatDate(ordine.data_ordine)}
+              <div className="text-left flex-1 min-w-0">
+                <div className="font-semibold text-slate-900 text-[15px]">
+                  {formatDate(ordine.data_ordine)}
                 </div>
-                <div className={`text-xs mt-2 font-bold ${isPast ? 'text-blue-700' : ordine.completato ? 'text-green-700' : 'text-amber-700'}`}>
-                  {isPast ? '📁 Archiviato' : ordine.completato ? '✅ Completato!' : '⏳ Ordine in corso...'}
+                <div className="mt-1.5">
+                  {statusBadge}
                 </div>
               </div>
-              <svg
-                className={`w-5 h-5 ml-4 flex-shrink-0 transition-transform duration-300 ease-in-out ${
+              <IconChevronDown
+                className={`w-5 h-5 ml-4 flex-shrink-0 text-slate-400 transition-transform duration-300 ease-in-out ${
                   expandedOrderId === ordine.id ? 'rotate-180' : 'rotate-0'
-                } ${isPast ? 'text-blue-600' : ordine.completato ? 'text-green-600' : 'text-amber-600'}`}
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
+                }`}
+              />
             </button>
 
             {/* Order details (expandable) */}
@@ -214,72 +211,61 @@ export function OrdersHistory({
               expandedOrderId === ordine.id ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
             }`}>
               <div className="overflow-hidden">
-              <div className={`border-t-2 p-5 transition-opacity duration-200 ${
+              <div className={`border-t border-slate-200 bg-slate-50/60 p-4 transition-opacity duration-200 ${
                 expandedOrderId === ordine.id ? 'opacity-100 delay-100' : 'opacity-0'
-              } ${
-                isPast
-                  ? 'border-blue-300 bg-gradient-to-br from-blue-50 to-white'
-                  : ordine.completato
-                    ? 'border-green-300 bg-gradient-to-br from-green-50 to-white'
-                    : 'border-amber-300 bg-gradient-to-br from-amber-50 to-white'
               }`}>
-                <div className={`text-left text-xs mb-4 font-bold ${isPast ? 'text-blue-700' : ordine.completato ? 'text-green-700' : 'text-amber-700'}`}>
-                  {ordine.updated_at
-                    ? <>🕒 Creato il {formatDateTime(ordine.data_creazione)}<br /><span className="text-orange-600">✏️ Modificato il {formatDateTime(ordine.updated_at)}</span></>
-                    : <>🕒 Creato il {formatDateTime(ordine.data_creazione)}</>
-                  }
+                <div className="text-left text-xs mb-4 text-slate-500 font-medium flex items-start gap-1.5">
+                  <IconClock className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                  <span>
+                    Creato il {formatDateTime(ordine.data_creazione)}
+                    {ordine.updated_at && (
+                      <>
+                        <br />
+                        <span className="text-amber-700">Modificato il {formatDateTime(ordine.updated_at)}</span>
+                      </>
+                    )}
+                  </span>
                 </div>
                 {/* Products list */}
-                <div className="mb-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className={`font-bold text-sm flex items-center gap-2 ${isPast ? 'text-blue-900' : ordine.completato ? 'text-green-900' : 'text-amber-900'}`}>
-                      <span>📦</span> Prodotti ordinati:
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-[13px] font-semibold text-slate-600 uppercase tracking-wide">
+                      Prodotti ordinati
                     </h4>
                     <button
                       onClick={() => onReorder(ordine)}
-                      className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm hover:shadow-md transform hover:scale-105 active:scale-95 flex items-center gap-1 ${
-                        isPast 
-                          ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                          : ordine.completato 
-                            ? 'bg-green-600 text-white hover:bg-green-700' 
-                            : 'bg-amber-600 text-white hover:bg-amber-700'
-                      }`}
+                      className="btn-secondary px-3 py-1.5 text-xs"
                       title="Copia questi prodotti nel riepilogo per un nuovo ordine"
                     >
-                      <span></span> Ripeti Ordine
+                      <IconRefresh className="w-3.5 h-3.5" />
+                      Ripeti ordine
                     </button>
                   </div>
-                  <ul className="space-y-3 ml-2">
+                  <ul className="space-y-2">
                     {ordine.dettagli_ordine && ordine.dettagli_ordine.length > 0 ? (
                       ordine.dettagli_ordine.map((dettaglio) => (
-                        <li key={dettaglio.id} className={`text-sm bg-white px-4 py-3 rounded-lg border-l-4 shadow-sm font-semibold text-left ${
-                          isPast 
-                            ? 'text-blue-900 border-blue-500' 
-                            : ordine.completato 
-                              ? 'text-green-900 border-green-500' 
-                              : 'text-amber-900 border-amber-500'
-                        }`}>
-                          <span className="font-bold block uppercase">{dettaglio.prodotti?.nome || dettaglio.nome_custom}</span>
-                          <span className={`text-xs mt-1 block ${isPast ? 'text-blue-700' : ordine.completato ? 'text-green-700' : 'text-amber-700'}`}>
+                        <li key={dettaglio.id} className="text-sm bg-white px-3.5 py-2.5 rounded-lg border border-slate-200 text-left">
+                          <span className="font-semibold block uppercase text-slate-900">{dettaglio.prodotti?.nome || dettaglio.nome_custom}</span>
+                          <span className="text-xs mt-0.5 block text-slate-500 tabular-nums">
                             {dettaglio.quantita} {dettaglio.tipologia}
                           </span>
                         </li>
                       ))
                     ) : (
-                      <li className="text-sm text-gray-500">Nessun dettaglio disponibile</li>
+                      <li className="text-sm text-slate-400">Nessun dettaglio disponibile</li>
                     )}
                   </ul>
                 </div>
 
                 {/* Action buttons (only if NOT archived — completato non blocca il cliente) */}
                 {!isPast && (
-                  <div className="flex gap-3 border-t-2 border-amber-300 pt-5 mt-5">
+                  <div className="flex gap-2.5 border-t border-slate-200 pt-4 mt-4">
                     <button
                       onClick={() => onEditOrder(ordine)}
                       disabled={isLoading}
-                      className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-bold rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
+                      className="btn-secondary flex-1 py-2.5"
                     >
-                      Modifica Ordine
+                      Modifica ordine
                     </button>
                     <button
                       onClick={() => {
@@ -288,33 +274,30 @@ export function OrdersHistory({
                         }
                       }}
                       disabled={isLoading}
-                      className="flex-1 py-3 px-4 bg-red-500 text-white text-sm font-bold rounded-lg hover:bg-red-600 disabled:bg-gray-400 transition-all shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
+                      className="btn-danger-soft flex-1 py-2.5"
                     >
-                      Annulla Ordine
+                      Annulla ordine
                     </button>
                   </div>
                 )}
 
                 {/* Messaggio quando il tempo per modificare è scaduto */}
                 {isPast && (
-                  <div className="mt-5 p-4 bg-orange-100 border-l-4 border-orange-500 rounded-lg text-left">
-                    <p className="text-sm text-orange-900 font-bold">⚠️ Modifica non più disponibile</p>
-                    <p className="text-xs text-orange-800 mt-2 font-semibold leading-relaxed">
+                  <div className="alert-warn mt-4">
+                    <p className="text-sm font-semibold">Modifica non più disponibile</p>
+                    <p className="text-xs mt-1.5 leading-relaxed">
                       Il tempo massimo per la modifica autonoma (ore 02:00 del giorno di consegna) è scaduto.
                     </p>
-                    <p className="text-xs text-orange-800 mt-1 leading-relaxed">
+                    <p className="text-xs mt-1 leading-relaxed">
                       Se hai bisogno di variazioni urgenti, contatta direttamente il titolare su WhatsApp:
                     </p>
                     <a
                       href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Salve, avrei bisogno di una modifica urgente al mio ordine.')}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-3 inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold py-2 px-3 rounded-lg transition-all"
+                      className="mt-3 inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1eb958] text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors active:scale-[0.98]"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 flex-shrink-0">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-                        <path d="M12 0C5.373 0 0 5.373 0 12c0 2.115.554 4.1 1.523 5.823L.057 23.486a.5.5 0 0 0 .612.612l5.663-1.466A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.502-5.176-1.381l-.372-.217-3.863 1 1-3.863-.217-.372A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
-                      </svg>
+                      <IconWhatsApp className="w-4 h-4 flex-shrink-0" />
                       Contatta il titolare su WhatsApp
                     </a>
                   </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../services/supabaseClient'
 import { createProdotto, updateProdotto, updateProdottoStatus, deleteProdotto } from '../services/prodottiService'
 import { parseTipologie, capitalize } from '../utils/constants'
+import { IconPlus, IconPencil, IconTrash, IconRefresh, IconSearch, IconPackage, IconX } from '../components/icons'
 
 export function Prodotti() {
   const [prodotti, setProdotti] = useState([])
@@ -185,65 +186,64 @@ export function Prodotti() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-12">
-        <div className="animate-spin">
-          <div className="h-12 w-12 border-4 border-verde-orto-600 border-t-transparent rounded-full"></div>
-        </div>
+      <div className="flex justify-center py-16">
+        <div className="spinner"></div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4 md:space-y-8 overflow-x-hidden">
+    <div className="space-y-4 md:space-y-6 overflow-x-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-4 shadow-xl">
-        <h1 className="text-2xl sm:text-4xl font-black mb-2">🛒 Gestione Prodotti</h1>
-        <p className="text-green-100 text-sm sm:text-lg font-semibold">Aggiungi, modifica o elimina i prodotti del tuo catalogo</p>
+      <div>
+        <h1 className="page-title">Gestione prodotti</h1>
+        <p className="page-subtitle">Aggiungi, modifica o elimina i prodotti del tuo catalogo</p>
       </div>
 
       {error && (
-        <div className="p-5 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-900 text-sm font-semibold">
-          ⚠️ {error}
+        <div className="alert-error">
+          {error}
         </div>
       )}
 
       {success && (
-        <div className="p-5 bg-green-100 border-l-4 border-green-500 rounded-lg text-green-900 text-sm font-semibold">
-          ✅ {success}
+        <div className="alert-success">
+          {success}
         </div>
       )}
 
       {/* Tab mobile */}
-      <div className="flex md:hidden rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm">
+      <div className="flex md:hidden rounded-lg overflow-hidden border border-slate-200 bg-white shadow-sm p-1 gap-1">
         <button
           onClick={() => setMobileTab('aggiungi')}
-          className={`flex-1 py-3 font-bold text-sm transition-all ${
+          className={`flex-1 py-2.5 rounded-md font-semibold text-sm transition-colors ${
             mobileTab === 'aggiungi'
-              ? 'bg-green-600 text-white'
-              : 'bg-white text-gray-500 hover:bg-gray-50'
+              ? 'bg-verde-orto-600 text-white shadow-sm'
+              : 'text-slate-500 hover:bg-slate-50'
           }`}
         >
-          ➕ {isModifying ? 'Modifica' : 'Aggiungi'}
+          {isModifying ? 'Modifica' : 'Aggiungi'}
         </button>
         <button
           onClick={() => setMobileTab('lista')}
-          className={`flex-1 py-3 font-bold text-sm transition-all ${
+          className={`flex-1 py-2.5 rounded-md font-semibold text-sm transition-colors ${
             mobileTab === 'lista'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-500 hover:bg-gray-50'
+              ? 'bg-verde-orto-600 text-white shadow-sm'
+              : 'text-slate-500 hover:bg-slate-50'
           }`}
         >
-          📦 Lista ({prodotti.length})
+          Lista ({prodotti.length})
         </button>
       </div>
 
       {/* Layout Bicolonna */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {/* Sezione Sinistra: Form */}
-        <div className={`${mobileTab === 'aggiungi' ? 'block' : 'hidden'} md:block min-w-0 bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl shadow-lg p-4 sm:p-8`}>
-          <div className="flex justify-between items-center mb-4 sm:mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2">
-              <span className="text-2xl sm:text-3xl">➕</span> Aggiungi Prodotto
+        <div className={`${mobileTab === 'aggiungi' ? 'block' : 'hidden'} md:block min-w-0 card p-4 sm:p-6`}>
+          <div className="flex justify-between items-center mb-5 gap-2">
+            <h2 className="section-title flex items-center gap-2">
+              <IconPlus className="w-5 h-5 text-verde-orto-600" />
+              {isModifying ? 'Modifica prodotto' : 'Nuovo prodotto'}
             </h2>
             <div className="flex gap-2">
               {isModifying && (
@@ -251,40 +251,40 @@ export function Prodotti() {
                   type="button"
                   onClick={() => { resetForm(); setMobileTab('lista') }}
                   disabled={isSubmitting}
-                  className="px-3 sm:px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300 disabled:opacity-50 transition-all shadow-md hover:scale-105 disabled:hover:scale-100 text-sm sm:text-base"
+                  className="btn-secondary px-3 py-2 text-sm"
                 >
-                  ✖ Annulla
+                  Annulla
                 </button>
               )}
               <button
                 type="submit"
                 form="form-nuovo-prodotto"
                 disabled={isSubmitting}
-                className="px-3 sm:px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 transition-all shadow-md hover:scale-105 disabled:hover:scale-100 text-sm sm:text-base"
+                className="btn-primary px-3 sm:px-4 py-2 text-sm"
               >
-                {isSubmitting ? '⏳ Salvando...' : isModifying ? '📝 Modifica' : '✅ Aggiungi'}
+                {isSubmitting ? 'Salvando...' : isModifying ? 'Salva modifiche' : 'Aggiungi'}
               </button>
             </div>
           </div>
 
-          <form id="form-nuovo-prodotto" onSubmit={handleSubmit} className="space-y-5">
+          <form id="form-nuovo-prodotto" onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-black mb-2 text-left">
-                📦 Nome Prodotto
+              <label className="label">
+                Nome prodotto
               </label>
               <input
                 type="text"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none text-black font-semibold text-base"
+                className="input"
                 placeholder="es. Pomodori"
                 disabled={isSubmitting}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-black mb-2 text-left">
-                🏷️ Tipologia
+              <label className="label">
+                Tipologia
               </label>
               <div className="flex gap-2 items-center">
                 <input
@@ -297,7 +297,7 @@ export function Prodotti() {
                       handleAggiungiTipologia()
                     }
                   }}
-                  className="flex-1 min-w-0 px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-600 outline-none text-black font-semibold text-base"
+                  className="input flex-1 min-w-0"
                   placeholder="es. kg"
                   disabled={isSubmitting}
                 />
@@ -305,10 +305,10 @@ export function Prodotti() {
                   type="button"
                   onClick={handleAggiungiTipologia}
                   disabled={isSubmitting}
-                  className="flex-none flex items-center justify-center bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold text-2xl hover:from-green-700 hover:to-green-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md active:scale-95"
+                  className="btn-icon flex-none bg-verde-orto-600 text-white shadow-sm hover:bg-verde-orto-700 disabled:opacity-50"
                   style={{ minWidth: '48px', minHeight: '48px', width: '48px', height: '48px' }}
                 >
-                  +
+                  <IconPlus className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -316,23 +316,23 @@ export function Prodotti() {
             {/* Lista Tipologie Aggiunte */}
             {tipologieArray.length > 0 && (
               <div>
-                <label className="block text-sm font-bold text-black mb-3 text-left">
-                  ✅ Tipologie ({tipologieArray.length})
+                <label className="label">
+                  Tipologie aggiunte ({tipologieArray.length})
                 </label>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {tipologieArray.map((tip, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-3 bg-white border-2 border-green-300 rounded-lg shadow-sm hover:shadow-md transition"
+                      className="flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg"
                     >
-                      <span className="text-sm text-black font-bold">{capitalize(tip)}</span>
+                      <span className="text-sm text-slate-800 font-semibold">{capitalize(tip)}</span>
                       <button
                         type="button"
                         onClick={() => handleRimuoviTipologia(index)}
                         disabled={isSubmitting}
-                        className="px-3 py-1 bg-red-500 text-white rounded text-sm font-bold hover:bg-red-600 transition disabled:bg-gray-400 hover:scale-110"
+                        className="btn-icon w-8 h-8 min-w-[32px] min-h-[32px] text-slate-400 hover:text-red-600 hover:bg-red-50"
                       >
-                        ✕
+                        <IconX className="w-4 h-4" />
                       </button>
                     </div>
                   ))}
@@ -343,31 +343,35 @@ export function Prodotti() {
         </div>
 
         {/* Sezione Destra: Lista Prodotti */}
-        <div className={`${mobileTab === 'lista' ? 'block' : 'hidden'} md:block min-w-0 bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl shadow-lg p-4 sm:p-8`}>
-          <div className="flex justify-between items-center mb-4 sm:mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-black flex items-center gap-2">
-              <span className="text-2xl sm:text-3xl">📦</span> Prodotti ({prodotti.length})
+        <div className={`${mobileTab === 'lista' ? 'block' : 'hidden'} md:block min-w-0 card p-4 sm:p-6`}>
+          <div className="flex justify-between items-center mb-5 gap-2">
+            <h2 className="section-title flex items-center gap-2">
+              <IconPackage className="w-5 h-5 text-verde-orto-600" />
+              Catalogo ({prodotti.length})
             </h2>
             <button
               onClick={() => fetchProdotti()}
               disabled={listLoading}
-              className="px-3 sm:px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 transition disabled:from-gray-400 disabled:to-gray-500 shadow-md hover:scale-105 disabled:hover:scale-100 flex items-center gap-1"
+              className="btn-secondary px-3 py-2 text-sm"
             >
-              <span className={listLoading ? 'animate-spin inline-block' : ''}>🔄</span>
+              <IconRefresh className={`w-4 h-4 ${listLoading ? 'animate-spin' : ''}`} />
               {listLoading ? 'Aggiornamento...' : 'Aggiorna'}
             </button>
           </div>
 
           {/* Filtro di Ricerca */}
-          <div className="mb-4 space-y-2">
-            <input
-              type="text"
-              placeholder="🔍 Cerca prodotto..."
-              value={searchFilter}
-              onChange={(e) => setSearchFilter(e.target.value)}
-              className="w-full px-4 py-2 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-black font-semibold"
-            />
-            <div className="flex gap-1 flex-wrap">
+          <div className="mb-4 space-y-2.5">
+            <div className="relative">
+              <IconSearch className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Cerca prodotto..."
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.target.value)}
+                className="input pl-9 py-2"
+              />
+            </div>
+            <div className="flex gap-1.5 flex-wrap">
               {[
                 { value: 'tutti', label: `Tutti (${prodotti.length})` },
                 { value: 'attivi', label: `Solo attivi (${prodotti.filter(p => p.attivo).length})` },
@@ -376,10 +380,10 @@ export function Prodotti() {
                 <button
                   key={value}
                   onClick={() => setStatusFilter(value)}
-                  className={`px-3 py-1.5 rounded-lg border-2 text-xs font-bold transition-all ${
+                  className={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors ${
                     statusFilter === value
-                      ? 'bg-blue-600 border-blue-600 text-white'
-                      : 'bg-white border-blue-300 text-blue-700 hover:bg-blue-50'
+                      ? 'bg-verde-orto-600 border-verde-orto-600 text-white'
+                      : 'bg-white border-slate-300 text-slate-600 hover:border-verde-orto-400 hover:text-verde-orto-700'
                   }`}
                 >
                   {label}
@@ -390,12 +394,12 @@ export function Prodotti() {
           </div>
 
           {listLoading ? (
-            <div className="flex items-center gap-2 text-blue-700 font-semibold py-4">
-              <div className="h-5 w-5 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin flex-shrink-0" />
+            <div className="flex items-center gap-2.5 text-slate-500 font-medium py-4">
+              <div className="spinner-sm flex-shrink-0" />
               Aggiornamento lista...
             </div>
           ) : prodotti.length === 0 ? (
-            <div className="text-black font-semibold italic">❌ Nessun prodotto presente</div>
+            <div className="text-slate-500 font-medium italic">Nessun prodotto presente</div>
           ) : (
             <>
               {(() => {
@@ -422,21 +426,19 @@ export function Prodotti() {
                 return (
                   <>
                     {filteredProdotti.length === 0 && searchFilter ? (
-                      <div className="text-black font-semibold italic">❌ Nessun prodotto corrisponde alla ricerca</div>
+                      <div className="text-slate-500 font-medium italic">Nessun prodotto corrisponde alla ricerca</div>
                     ) : (
-                      <div className="space-y-3 max-h-[62vh] overflow-y-auto md:max-h-96 overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+                      <div className="space-y-2 max-h-[62vh] overflow-y-auto md:max-h-96 overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
                         {filteredProdotti.map((p) => (
                 <div
                   key={p.id}
-                  className="p-3 bg-gray-50 rounded-lg border border-gray-200"
+                  className="p-3 bg-white rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <p className="font-semibold text-gray-900 text-left truncate uppercase">{p.nome}</p>
-                        <span className={`px-2 py-0.5 text-xs rounded-full font-bold whitespace-nowrap flex-shrink-0 ${
-                          p.attivo ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                        }`}>
+                      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                        <p className="font-semibold text-slate-900 text-sm text-left truncate uppercase">{p.nome}</p>
+                        <span className={p.attivo ? 'badge-green flex-shrink-0' : 'badge-red flex-shrink-0'}>
                           {p.attivo ? 'Attivo' : 'Non attivo'}
                         </span>
                       </div>
@@ -444,7 +446,7 @@ export function Prodotti() {
                         {parseTipologie(p.tipologie_possibili).map((tip, idx) => (
                           <span
                             key={idx}
-                            className="px-2 py-1 text-xs bg-verde-orto-100 text-verde-orto-700 rounded"
+                            className="px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600 rounded"
                           >
                             {capitalize(tip)}
                           </span>
@@ -458,29 +460,31 @@ export function Prodotti() {
                         style={{ minWidth: '44px', minHeight: '44px' }}
                         title={p.attivo ? 'Disattiva prodotto' : 'Attiva prodotto'}
                       >
-                        <div className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors pointer-events-none ${
-                          p.attivo ? 'bg-green-500' : 'bg-gray-300'
+                        <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors pointer-events-none ${
+                          p.attivo ? 'bg-verde-orto-600' : 'bg-slate-300'
                         }`}>
                           <span
-                            className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-                              p.attivo ? 'translate-x-7' : 'translate-x-1'
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                              p.attivo ? 'translate-x-6' : 'translate-x-1'
                             }`}
                           />
                         </div>
                       </button>
                       <button
                         onClick={() => handleModificaProdotto(p)}
-                        className="bg-blue-100 text-blue-600 rounded text-sm font-semibold hover:bg-blue-200 transition flex items-center justify-center"
+                        className="btn-icon text-slate-400 hover:text-blue-600 hover:bg-blue-50"
                         style={{ minWidth: '44px', minHeight: '44px' }}
+                        title="Modifica prodotto"
                       >
-                        ✏️
+                        <IconPencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(p.id)}
-                        className="bg-red-100 text-red-600 rounded text-sm font-semibold hover:bg-red-200 transition flex items-center justify-center"
+                        className="btn-icon text-slate-400 hover:text-red-600 hover:bg-red-50"
                         style={{ minWidth: '44px', minHeight: '44px' }}
+                        title="Elimina prodotto"
                       >
-                        🗑️
+                        <IconTrash className="w-4 h-4" />
                       </button>
                     </div>
                   </div>

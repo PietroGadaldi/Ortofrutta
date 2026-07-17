@@ -4,6 +4,7 @@ import { it } from 'date-fns/locale'
 import { AdminOrderCard } from './AdminOrderCard'
 import { PDFPreviewModal } from './PDFPreviewModal'
 import { generateDayOrdersPDF, generateDaySummaryPDF } from '../utils/pdfGenerator'
+import { IconSearch, IconPrinter, IconChevronDown, IconCheckCircle, IconDocument, IconStar } from './icons'
 
 /**
  * OrdersForDayList component
@@ -135,34 +136,39 @@ export function OrdersForDayList({
 
   return (
     <>
-    <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-300 rounded-xl p-4 sm:p-6 shadow-lg">
+    <div className="card p-4 sm:p-6">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-5">
 
         {/* Filter Input + Stampa Tutti */}
-        <div className="mt-4 flex gap-2">
-          <input
-            type="text"
-            placeholder="🔍 Filtra cliente..."
-            value={filterName}
-            onChange={(e) => setFilterName(e.target.value)}
-            className="flex-1 min-w-0 px-3 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-600 text-gray-800 placeholder-gray-500 text-sm font-semibold"
-          />
+        <div className="flex gap-2">
+          <div className="relative flex-1 min-w-0">
+            <IconSearch className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Filtra cliente..."
+              value={filterName}
+              onChange={(e) => setFilterName(e.target.value)}
+              className="input pl-9 py-2 text-sm"
+            />
+          </div>
           {filteredOrdini.length > 0 && (
             ordiniDaStampare.length > 0 ? (
               <button
                 onClick={handleStampaTutti}
                 disabled={isPrintingAll}
-                className="flex-shrink-0 px-3 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition text-sm whitespace-nowrap"
+                className="btn-primary flex-shrink-0 px-3 py-2 text-sm whitespace-nowrap"
               >
-                {isPrintingAll ? '⏳ Generando...' : `🖨️ Stampa (${ordiniDaStampare.length})`}
+                <IconPrinter className="w-4 h-4" />
+                {isPrintingAll ? 'Generando...' : `Stampa (${ordiniDaStampare.length})`}
               </button>
             ) : (
               <button
                 onClick={() => setShowReprintConfirm(true)}
-                className="flex-shrink-0 px-3 py-2 bg-green-100 text-green-700 font-bold rounded-lg text-sm whitespace-nowrap border-2 border-green-300 hover:bg-green-200 transition"
+                className="btn flex-shrink-0 px-3 py-2 text-sm whitespace-nowrap bg-verde-orto-50 text-verde-orto-700 border border-verde-orto-200 hover:bg-verde-orto-100"
               >
-                ✅ Tutti stampati
+                <IconCheckCircle className="w-4 h-4" />
+                Tutti stampati
               </button>
             )
           )}
@@ -170,21 +176,22 @@ export function OrdersForDayList({
 
         {/* Conferma ristampa */}
         {showReprintConfirm && (
-          <div className="mt-3 p-3 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
-            <p className="text-yellow-900 font-bold text-sm mb-2">
-              ⚠️ Tutti gli ordini di questa giornata sono già stati stampati. Vuoi ristamparli tutti?
+          <div className="alert-warn mt-3">
+            <p className="font-semibold text-sm mb-2.5">
+              Tutti gli ordini di questa giornata sono già stati stampati. Vuoi ristamparli tutti?
             </p>
             <div className="flex gap-2">
               <button
                 onClick={handleRistampaTutti}
                 disabled={isPrintingAll}
-                className="px-3 py-1.5 bg-yellow-500 text-white font-bold rounded-lg hover:bg-yellow-600 disabled:bg-gray-400 transition text-sm"
+                className="btn bg-amber-600 text-white hover:bg-amber-700 px-3 py-1.5 text-sm"
               >
-                {isPrintingAll ? '⏳ Generando...' : '🖨️ Ristampa tutti'}
+                <IconPrinter className="w-4 h-4" />
+                {isPrintingAll ? 'Generando...' : 'Ristampa tutti'}
               </button>
               <button
                 onClick={() => setShowReprintConfirm(false)}
-                className="px-3 py-1.5 bg-white text-yellow-800 font-bold rounded-lg border-2 border-yellow-400 hover:bg-yellow-100 transition text-sm"
+                className="btn-secondary px-3 py-1.5 text-sm"
               >
                 Annulla
               </button>
@@ -194,20 +201,20 @@ export function OrdersForDayList({
 
         {/* Toggle: solo da stampare */}
         {filteredOrdini.length > 0 && (
-          <div className="mt-3 flex items-center gap-2">
+          <div className="mt-3 flex items-center gap-2 flex-wrap">
             <button
               onClick={() => setShowOnlyDaStampare((v) => !v)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors ${
                 showOnlyDaStampare
-                  ? 'bg-orange-500 border-orange-500 text-white'
-                  : 'bg-white border-orange-300 text-orange-700 hover:bg-orange-50'
+                  ? 'bg-verde-orto-600 border-verde-orto-600 text-white'
+                  : 'bg-white border-slate-300 text-slate-600 hover:border-verde-orto-400 hover:text-verde-orto-700'
               }`}
             >
               <span>{showOnlyDaStampare ? '✓' : '○'}</span>
               Solo da stampare ({ordiniDaStampare.length})
             </button>
             {showOnlyDaStampare && (
-              <span className="text-xs text-gray-500 font-semibold">
+              <span className="text-xs text-slate-400 font-medium">
                 — {filteredOrdini.length - ordiniDaStampare.length} già stampati nascosti
               </span>
             )}
@@ -217,39 +224,41 @@ export function OrdersForDayList({
 
       {/* Riepilogo Prodotti */}
       {filteredOrdini.length > 0 && (
-        <div className="mb-4 border-2 border-amber-300 rounded-lg overflow-hidden">
+        <div className="mb-4 border border-slate-200 rounded-lg overflow-hidden">
           <button
             onClick={() => setIsRiepilogoOpen(!isRiepilogoOpen)}
-            className="w-full flex items-center justify-between px-4 py-3 bg-amber-50 hover:bg-amber-100 transition-colors"
+            className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
           >
-            <span className="font-bold text-amber-900 text-sm">
-              📊 Riepilogo Prodotti ({riepilogoProdotti.length} voci)
+            <span className="font-semibold text-slate-800 text-sm">
+              Riepilogo prodotti ({riepilogoProdotti.length} voci)
             </span>
-            <span className="text-amber-700 text-lg">{isRiepilogoOpen ? '▲' : '▼'}</span>
+            <IconChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${isRiepilogoOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {isRiepilogoOpen && (
-            <div className="p-4 bg-white">
-              <div className="overflow-x-auto mb-3">
+            <div className="p-4 bg-white border-t border-slate-200">
+              <div className="overflow-x-auto mb-3 rounded-lg border border-slate-200">
                 <table className="w-full text-sm border-collapse">
                   <thead>
-                    <tr className="bg-amber-100">
-                      <th className="text-left px-3 py-2 font-bold text-amber-900 border border-amber-200">Prodotto</th>
-                      <th className="text-right px-3 py-2 font-bold text-amber-900 border border-amber-200">Totale</th>
-                      <th className="text-left px-3 py-2 font-bold text-amber-900 border border-amber-200">Unità</th>
+                    <tr className="bg-slate-50 border-b border-slate-200">
+                      <th className="text-left px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Prodotto</th>
+                      <th className="text-right px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Totale</th>
+                      <th className="text-left px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Unità</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-slate-100">
                     {riepilogoProdotti.map((item, i) => (
-                      <tr key={i} className={item.custom ? 'bg-yellow-100' : i % 2 === 0 ? 'bg-white' : 'bg-amber-50'}>
-                        <td className="px-3 py-1.5 border border-amber-200 text-gray-800 font-medium">
+                      <tr key={i} className={item.custom ? 'bg-yellow-50' : 'bg-white'}>
+                        <td className="px-3 py-2 text-slate-800 font-medium text-left">
                           {item.nome}
                           {item.custom && (
-                            <span className="block text-[10px] font-bold text-yellow-800">⭐ Fuori catalogo</span>
+                            <span className="flex items-center gap-1 text-[10px] font-bold text-yellow-800">
+                              <IconStar className="w-3 h-3" /> Fuori catalogo
+                            </span>
                           )}
                         </td>
-                        <td className="px-3 py-1.5 border border-amber-200 text-gray-800 text-right font-bold">{item.totale}</td>
-                        <td className="px-3 py-1.5 border border-amber-200 text-gray-600">{item.tipologia}</td>
+                        <td className="px-3 py-2 text-slate-900 text-right font-semibold tabular-nums">{item.totale}</td>
+                        <td className="px-3 py-2 text-slate-500 text-left">{item.tipologia}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -258,9 +267,10 @@ export function OrdersForDayList({
               <button
                 onClick={handleGeneraRiepilogoPDF}
                 disabled={isGeneratingRiepilogo}
-                className="w-full py-2 bg-amber-600 text-white font-bold rounded-lg hover:bg-amber-700 disabled:bg-gray-400 transition text-sm"
+                className="btn-secondary w-full py-2 text-sm"
               >
-                {isGeneratingRiepilogo ? '⏳ Generando...' : '📄 Genera PDF Riepilogo'}
+                <IconDocument className="w-4 h-4" />
+                {isGeneratingRiepilogo ? 'Generando...' : 'Genera PDF riepilogo'}
               </button>
             </div>
           )}
@@ -269,22 +279,22 @@ export function OrdersForDayList({
 
       {/* Empty State */}
       {isEmpty || totalOrders === 0 ? (
-        <div className="p-8 text-center bg-blue-100 border-l-4 border-blue-500 rounded-lg">
-          <p className="text-black font-semibold">
-            ❌ Nessun ordine per il {dayName.toLowerCase()} {formatDate(selectedDate.toISOString())}
+        <div className="p-8 text-center rounded-lg border border-dashed border-slate-300 bg-slate-50">
+          <p className="text-slate-500 font-medium">
+            Nessun ordine per il {dayName.toLowerCase()} {formatDate(selectedDate.toISOString())}
           </p>
         </div>
       ) : displayOrdini.length === 0 ? (
-        <div className="p-8 text-center bg-yellow-100 border-l-4 border-yellow-500 rounded-lg">
-          <p className="text-black font-semibold">
+        <div className="p-8 text-center rounded-lg border border-dashed border-slate-300 bg-slate-50">
+          <p className="text-slate-500 font-medium">
             {showOnlyDaStampare
-              ? '✅ Tutti gli ordini sono già stati stampati'
-              : `⚠️ Nessun ordine corrisponde al filtro "${filterName}"`}
+              ? 'Tutti gli ordini sono già stati stampati'
+              : `Nessun ordine corrisponde al filtro "${filterName}"`}
           </p>
         </div>
       ) : (
         /* Orders List */
-        <div className="space-y-4 max-h-[600px] overflow-y-auto">
+        <div className="space-y-3 max-h-[600px] overflow-y-auto overscroll-contain pr-1" style={{ WebkitOverflowScrolling: 'touch' }}>
           {displayOrdini.map((ordine) => (
             <AdminOrderCard
               key={ordine.id}

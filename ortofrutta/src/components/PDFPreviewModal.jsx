@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { downloadOrderPDF } from '../services/pdfStorageService'
 import { downloadPDFBlob } from '../utils/pdfGenerator'
+import { IconX, IconPrinter, IconDownload, IconExternalLink, IconDocument } from './icons'
 
 const isIOS = typeof navigator !== 'undefined' &&
   /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window)
@@ -88,48 +89,48 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
   return (
     <>
       {/* Modal backdrop */}
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
 
       {/* Modal content */}
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-2">
-        <div className="modal-safe-height bg-white rounded-t-2xl sm:rounded-lg shadow-2xl w-full sm:w-[95vw] flex flex-col">
+        <div className="modal-safe-height bg-white rounded-t-2xl sm:rounded-xl shadow-2xl w-full sm:w-[95vw] flex flex-col overflow-hidden">
           {/* Modal header */}
-          <div className="flex-shrink-0 flex justify-between items-center p-4 sm:p-6 border-b border-gray-200">
-            <h2 className="text-lg sm:text-2xl font-bold text-gray-800">Anteprima Ricevuta</h2>
+          <div className="flex-shrink-0 flex justify-between items-center px-4 py-3.5 sm:px-6 sm:py-4 border-b border-slate-200">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900">Anteprima ricevuta</h2>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 text-2xl font-bold transition p-1"
+              className="btn-icon w-9 h-9 min-w-[36px] min-h-[36px] text-slate-400 hover:text-slate-600 hover:bg-slate-100"
               aria-label="Close modal"
             >
-              ✕
+              <IconX className="w-5 h-5" />
             </button>
           </div>
 
           {/* PDF viewer */}
-          <div className="flex-1 overflow-hidden bg-gray-100 flex flex-col">
+          <div className="flex-1 overflow-hidden bg-slate-100 flex flex-col">
             {error ? (
               <div className="flex items-center justify-center h-full m-4">
-                <div className="bg-red-50 border-2 border-red-300 text-red-700 px-6 py-4 rounded-lg text-center max-w-md">
-                  <p className="font-semibold mb-2">⚠️ Errore</p>
+                <div className="alert-error text-center max-w-md">
+                  <p className="font-semibold mb-2">Errore</p>
                   <p>{error}</p>
                 </div>
               </div>
             ) : loading ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                  <div className="animate-spin mb-4">
-                    <div className="h-12 w-12 border-4 border-blue-300 border-t-blue-600 rounded-full mx-auto"></div>
-                  </div>
-                  <p className="text-gray-600 font-semibold">Caricamento PDF...</p>
+                  <div className="spinner mx-auto mb-4"></div>
+                  <p className="text-slate-500 font-medium">Caricamento PDF...</p>
                 </div>
               </div>
             ) : isIOS && iframeUrl ? (
               /* iOS Safari non supporta PDF inline in iframe — mostra link diretto */
-              <div className="flex flex-col items-center justify-center h-full p-8 gap-5 text-center bg-gray-50">
-                <div className="text-6xl">📄</div>
+              <div className="flex flex-col items-center justify-center h-full p-8 gap-5 text-center bg-slate-50">
+                <div className="w-16 h-16 rounded-2xl bg-verde-orto-50 text-verde-orto-600 flex items-center justify-center">
+                  <IconDocument className="w-8 h-8" />
+                </div>
                 <div>
-                  <p className="text-gray-800 font-bold text-lg mb-1">PDF pronto</p>
-                  <p className="text-gray-500 text-sm leading-relaxed">
+                  <p className="text-slate-900 font-bold text-lg mb-1">PDF pronto</p>
+                  <p className="text-slate-500 text-sm leading-relaxed">
                     Su iPhone/iPad il PDF non può essere mostrato qui.<br />
                     Usa il pulsante <strong>Apri</strong> per vederlo nel browser.
                   </p>
@@ -138,9 +139,10 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
                   href={iframeUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-xl transition text-base shadow-md active:scale-95"
+                  className="btn-primary py-3 px-8 text-base"
                 >
-                  🔗 Apri PDF
+                  <IconExternalLink className="w-5 h-5" />
+                  Apri PDF
                 </a>
               </div>
             ) : iframeUrl ? (
@@ -160,12 +162,12 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
 
           {/* Modal footer with action buttons */}
           <div
-            className="flex-shrink-0 flex flex-wrap gap-2 sm:gap-3 justify-end p-3 sm:p-6 border-t border-gray-200 bg-gray-50"
+            className="flex-shrink-0 flex flex-wrap gap-2 sm:gap-3 justify-end p-3 sm:p-5 border-t border-slate-200 bg-slate-50"
             style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
           >
             <button
               onClick={onClose}
-              className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 bg-gray-300 text-gray-800 rounded-lg font-semibold hover:bg-gray-400 transition text-sm sm:text-base"
+              className="btn-secondary flex-1 sm:flex-none px-4 sm:px-6 py-2.5 text-sm"
             >
               Chiudi
             </button>
@@ -174,26 +176,29 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
                 href={iframeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-600 transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
+                className="btn-secondary flex-1 sm:flex-none px-4 sm:px-6 py-2.5 text-sm"
               >
-                🔗 Apri
+                <IconExternalLink className="w-4 h-4" />
+                Apri
               </a>
             )}
             {showDownload && (
               <button
                 onClick={handleDownload}
                 disabled={loading || !!error}
-                className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 disabled:bg-gray-400 transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
+                className="btn-secondary flex-1 sm:flex-none px-4 sm:px-6 py-2.5 text-sm"
               >
-                💾 Scarica
+                <IconDownload className="w-4 h-4" />
+                Scarica
               </button>
             )}
             <button
               onClick={handlePrint}
               disabled={loading || !!error}
-              className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 disabled:bg-gray-400 transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
+              className="btn-primary flex-1 sm:flex-none px-4 sm:px-6 py-2.5 text-sm"
             >
-              🖨️ Stampa
+              <IconPrinter className="w-4 h-4" />
+              Stampa
             </button>
           </div>
         </div>

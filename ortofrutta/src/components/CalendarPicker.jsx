@@ -15,6 +15,7 @@ import {
   startOfDay,
 } from 'date-fns'
 import { it } from 'date-fns/locale'
+import { IconCalendar, IconChevronLeft, IconChevronRight } from './icons'
 
 /**
  * CalendarPicker component
@@ -31,23 +32,23 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
     const capitalizedMonth = monthText.charAt(0).toUpperCase() + monthText.slice(1)
 
     return (
-      <div className="flex items-center justify-between mb-6 px-2">
+      <div className="flex items-center justify-between mb-5 px-1">
         <button
           onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-          className="p-2 bg-white border-2 border-green-300 hover:bg-green-200 rounded-lg transition-all hover:scale-110"
+          className="btn-icon border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 shadow-sm"
           title="Mese precedente"
         >
-          <span className="text-green-700 font-bold text-lg">{'<<'}</span>
+          <IconChevronLeft className="w-5 h-5" />
         </button>
-        <h2 className="text-xl font-bold text-green-900">
+        <h2 className="text-base sm:text-lg font-semibold text-slate-900">
           {capitalizedMonth}
         </h2>
         <button
           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-          className="p-2 bg-white border-2 border-green-300 hover:bg-green-200 rounded-lg transition-all hover:scale-110"
+          className="btn-icon border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 shadow-sm"
           title="Mese prossimo"
         >
-          <span className="text-green-700 font-bold text-lg">{'>>'}</span>
+          <IconChevronRight className="w-5 h-5" />
         </button>
       </div>
     )
@@ -56,11 +57,11 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
   const renderDays = () => {
     const days = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom']
     return (
-      <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-3">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2">
         {days.map((day) => (
           <div
             key={day}
-            className="text-center text-xs sm:text-sm font-bold text-green-700 py-2 bg-green-100 rounded-lg"
+            className="text-center text-[11px] sm:text-xs font-semibold uppercase tracking-wide text-slate-400 py-2"
           >
             {day}
           </div>
@@ -100,12 +101,12 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
             onClick={() => !isDisabled && onSelectDate(cloneDay)}
             disabled={isDisabled}
             className={`
-              min-h-[44px] p-1 sm:p-2 text-sm font-semibold rounded-lg transition-colors
-              ${!isSameMonth(day, monthStart) ? 'text-gray-300' : ''}
-              ${isDisabled && isSameMonth(day, monthStart) ? 'text-gray-400 cursor-not-allowed' : ''}
-              ${isSelected ? 'bg-green-600 text-white' : ''}
-              ${!isDisabled && !isSelected && isSameMonth(day, monthStart) ? 'hover:bg-green-100 text-green-800 cursor-pointer' : ''}
-              ${isTodayDate && !isSelected ? 'ring-2 ring-green-400' : ''}
+              min-h-[44px] p-1 sm:p-2 text-sm font-medium rounded-lg transition-colors text-center
+              ${!isSameMonth(day, monthStart) ? 'text-slate-200' : ''}
+              ${isDisabled && isSameMonth(day, monthStart) ? 'text-slate-300 cursor-not-allowed' : ''}
+              ${isSelected ? 'bg-verde-orto-600 text-white font-semibold shadow-sm' : ''}
+              ${!isDisabled && !isSelected && isSameMonth(day, monthStart) ? 'hover:bg-verde-orto-50 text-slate-700 cursor-pointer' : ''}
+              ${isTodayDate && !isSelected ? 'ring-1 ring-inset ring-verde-orto-500 text-verde-orto-700 font-semibold' : ''}
             `}
           >
             {formattedDate}
@@ -125,19 +126,20 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
   }
 
   return (
-    <div className="bg-gradient-to-br from-white to-green-50 border-2 border-green-300 rounded-xl p-4 sm:p-6 shadow-lg">
-      <h3 className="text-lg sm:text-xl font-bold text-green-900 mb-3 sm:mb-4 flex items-center gap-2">
-        <span className="text-xl sm:text-2xl">📅</span> Seleziona Data Ordine
+    <div className="card card-pad">
+      <h3 className="section-title mb-4 flex items-center gap-2">
+        <IconCalendar className="w-5 h-5 text-verde-orto-600" />
+        Data di consegna
       </h3>
       {renderHeader()}
       {renderDays()}
       {renderCells()}
       {selectedDate && (
-        <div className="mt-6 p-4 bg-gradient-to-r from-green-100 to-green-50 border-l-4 border-green-500 rounded-lg">
-          <p className="text-sm text-green-900 font-semibold">
-            Data selezionata:
+        <div className="mt-5 rounded-lg bg-verde-orto-50 border border-verde-orto-200 px-4 py-3 text-left">
+          <p className="text-xs font-semibold uppercase tracking-wide text-verde-orto-700">
+            Data selezionata
           </p>
-          <p className="text-lg text-green-700 font-bold mt-1">
+          <p className="text-[15px] text-verde-orto-900 font-semibold mt-0.5">
             {format(selectedDate, 'EEEE, dd MMMM yyyy', { locale: it })}
           </p>
         </div>

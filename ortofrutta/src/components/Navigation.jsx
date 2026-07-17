@@ -1,11 +1,20 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { RUOLI } from '../utils/constants'
 import { signOut } from '../services/authService'
+import { IconHome, IconClipboard, IconPackage, IconUsers, IconLogout } from './icons'
+
+const NAV_ITEMS_TITOLARE = [
+  { to: '/admin', label: 'Dashboard', Icon: IconHome },
+  { to: '/ordini', label: 'Ordini', Icon: IconClipboard },
+  { to: '/prodotti', label: 'Prodotti', Icon: IconPackage },
+  { to: '/utenti', label: 'Utenti', Icon: IconUsers },
+]
 
 export default function Navigation() {
   const navigate = useNavigate()
-  const { user, role, loading } = useAuth()
+  const location = useLocation()
+  const { user, role, profile, loading } = useAuth()
 
   const handleLogout = async () => {
     const { error } = await signOut()
@@ -17,17 +26,20 @@ export default function Navigation() {
   // Se l'autenticazione è in caricamento, non mostriamo nulla
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-4 bg-verde-orto-600">
-        <div className="animate-spin">
-          <div className="h-8 w-8 border-2 border-white/30 border-t-white rounded-full"></div>
-        </div>
+      <div
+        className="flex justify-center items-center py-4 bg-verde-orto-900"
+        style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}
+      >
+        <div className="h-7 w-7 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
       </div>
     )
   }
 
+  const isTitolare = role === RUOLI.TITOLARE
+
   return (
     <nav
-      className="bg-gradient-to-r from-verde-orto-600 to-verde-orto-700 shadow-lg"
+      className="sticky top-0 z-40 bg-verde-orto-900 shadow-md"
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
       <div
@@ -37,49 +49,70 @@ export default function Navigation() {
           paddingRight: 'max(1rem, env(safe-area-inset-right))',
         }}
       >
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo - Porta sempre alla Home */}
-          <Link to="/" className="flex items-center gap-2">
-            <img src="/Ortofrutta.png" alt="Logo" className="h-9 w-9 sm:h-12 sm:w-12 flex-shrink-0" />
-            <span className="text-sm sm:text-2xl font-bold text-white leading-tight">Ortofrutta Brescia</span>
+          <Link to="/" className="flex items-center gap-2.5 min-w-0">
+            <img src="/Ortofrutta.png" alt="Logo" className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" />
+            <span className="min-w-0 text-left leading-tight">
+              <span className="block text-sm sm:text-base font-bold text-white truncate">
+                Ortofrutta Brescia
+              </span>
+              <span className="hidden sm:block text-[11px] font-medium text-verde-orto-200 tracking-wide uppercase">
+                Gestione ordini
+              </span>
+            </span>
           </Link>
 
-          <div className="flex items-center gap-3 sm:gap-6">
+          <div className="flex items-center gap-2 sm:gap-3">
             {user ? (
               <>
-                <div className="flex gap-4">
-                  {/* Link Admin visibile solo al Titolare */}
-                  {role === RUOLI.TITOLARE && (
-                    <Link
-                      to="/admin"
-                      className="text-white hover:text-green-100 transition"
-                    >
-                      Home
-                    </Link>
-                  )}
-                  
-                  {/* 2. RIMOZIONE TASTO DASHBOARD PER CLIENTE:
-                      Abbiamo rimosso il blocco che mostrava il link '/dashboard' 
-                      se il ruolo era 'cliente'. */}
-                </div>
+                {/* Ruolo utente (solo desktop) */}
+                <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-verde-orto-100 text-xs font-semibold uppercase tracking-wide">
+                  {isTitolare ? 'Titolare' : 'Cliente'}
+                  {profile?.nome ? ` · ${profile.nome}` : ''}
+                </span>
 
                 <button
                   onClick={handleLogout}
-                  className="px-3 py-1.5 sm:px-4 sm:py-2 bg-white text-verde-orto-600 rounded-lg font-semibold hover:bg-gray-100 transition text-sm sm:text-base"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 rounded-lg border border-white/25 text-white text-sm font-semibold hover:bg-white/10 transition-colors active:scale-[0.98]"
                 >
-                  Logout
+                  <IconLogout className="w-4 h-4" />
+                  <span>Esci</span>
                 </button>
               </>
             ) : (
               <Link
                 to="/login"
-                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-white text-verde-orto-600 rounded-lg font-semibold hover:bg-gray-100 transition text-sm sm:text-base"
+                className="inline-flex items-center px-4 py-2 rounded-lg bg-white text-verde-orto-800 text-sm font-semibold hover:bg-verde-orto-50 transition-colors active:scale-[0.98]"
               >
-                Login
+                Accedi
               </Link>
             )}
           </div>
         </div>
+
+        {/* Barra di navigazione sezioni (solo titolare) */}
+        {user && isTitolare && (
+          <div className="-mx-1 flex items-center gap-1 overflow-x-auto pb-2 pt-0.5" style={{ WebkitOverflowScrolling: 'touch' }}>
+            {NAV_ITEMS_TITOLARE.map(({ to, label, Icon }) => {
+              const isActive = location.pathname === to
+              return (
+                <Link
+                  key={to}
+                  to={to}
+                  className={`flex-shrink-0 inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+                    isActive
+                      ? 'bg-white text-verde-orto-900 shadow-sm'
+                      : 'text-verde-orto-100 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </Link>
+              )
+            })}
+          </div>
+        )}
       </div>
     </nav>
   )

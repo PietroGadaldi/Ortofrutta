@@ -159,17 +159,17 @@ export function AdminOrdersPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 sm:space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-xl p-4 shadow-xl">
-        <h1 className="text-2xl sm:text-4xl font-black mb-2">🏪 Gestione Ordini (Titolare)</h1>
-        <p className="text-amber-100 text-sm sm:text-lg font-semibold">Visualizza e gestisci gli ordini dei tuoi clienti</p>
+      <div>
+        <h1 className="page-title">Gestione ordini</h1>
+        <p className="page-subtitle">Visualizza e gestisci gli ordini dei tuoi clienti</p>
       </div>
 
       {/* Error Alert */}
       {error && (
-        <div className="p-5 bg-red-100 border-l-4 border-red-500 rounded-lg shadow-md">
-          <p className="text-red-900 font-bold">⚠️ {error}</p>
+        <div className="alert-error">
+          {error}
         </div>
       )}
 
@@ -177,19 +177,19 @@ export function AdminOrdersPage() {
       <HorizontalWeekSelector selectedDate={selectedDate} onSelectDate={setSelectedDate} />
 
       {/* Titolo Formattato e Riquadri Statistiche */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 bg-white p-4 sm:p-6 rounded-xl border-2 border-amber-200 shadow-sm">
-        <h2 className="text-base sm:text-2xl font-black text-amber-900 uppercase">
-          ORDINI DI {format(selectedDate, "EEEE d MMMM yyyy", { locale: it })}
+      <div className="card flex flex-col md:flex-row justify-between items-start md:items-center gap-3 p-4 sm:p-5">
+        <h2 className="text-sm sm:text-lg font-bold text-slate-900 uppercase tracking-tight text-left">
+          Ordini di {format(selectedDate, "EEEE d MMMM yyyy", { locale: it })}
         </h2>
 
         <div className="flex gap-3 w-full md:w-auto">
-          <div className="flex-1 md:flex-none bg-amber-50 border-2 border-amber-300 p-3 rounded-lg text-center">
-            <p className="text-xs font-bold text-amber-700 uppercase">Totale ordini</p>
-            <p className="text-xl sm:text-2xl font-black text-amber-900">{stats.totale}</p>
+          <div className="flex-1 md:flex-none md:min-w-[120px] rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-center">
+            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Totale ordini</p>
+            <p className="text-xl font-bold text-slate-900 tabular-nums">{stats.totale}</p>
           </div>
-          <div className="flex-1 md:flex-none bg-orange-50 border-2 border-orange-300 p-3 rounded-lg text-center">
-            <p className="text-xs font-bold text-orange-700 uppercase">Da stampare</p>
-            <p className="text-xl sm:text-2xl font-black text-orange-900">{stats.daStampare}</p>
+          <div className="flex-1 md:flex-none md:min-w-[120px] rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-center">
+            <p className="text-[11px] font-semibold text-amber-700 uppercase tracking-wide">Da stampare</p>
+            <p className="text-xl font-bold text-amber-800 tabular-nums">{stats.daStampare}</p>
           </div>
         </div>
       </div>
@@ -200,10 +200,8 @@ export function AdminOrdersPage() {
         {loading && ordini.length === 0 ? (
           <div className="flex justify-center items-center py-12">
             <div className="text-center">
-              <div className="animate-spin mb-4">
-                <div className="h-12 w-12 border-4 border-amber-300 border-t-amber-600 rounded-full mx-auto"></div>
-              </div>
-              <p className="text-amber-700 font-bold">Caricamento ordini...</p>
+              <div className="spinner mx-auto mb-4"></div>
+              <p className="text-slate-500 font-medium">Caricamento ordini...</p>
             </div>
           </div>
         ) : (

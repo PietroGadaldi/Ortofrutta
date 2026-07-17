@@ -18,10 +18,10 @@ export default function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-slate-100">
           <Navigation />
           <main
-            className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8"
+            className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8"
             style={{
               paddingBottom: 'max(2rem, env(safe-area-inset-bottom))',
               paddingLeft: 'max(0.75rem, env(safe-area-inset-left))',
