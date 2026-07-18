@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { validateEmail } from '../utils/validators'
 import { getClientList } from '../services/profiliService'
+import { lockBodyScroll, unlockBodyScroll } from '../utils/scrollLock'
 import { IconPlus, IconPencil, IconTrash, IconRefresh, IconSearch, IconUsers, IconEye, IconEyeOff, IconAlertTriangle } from '../components/icons'
 
 export function Utenti() {
@@ -28,15 +29,12 @@ export function Utenti() {
   const [mobileTab, setMobileTab] = useState('lista')
   const [filterNome, setFilterNome] = useState('')
 
-  // Blocca scroll del body quando il modal di eliminazione è aperto (iOS fix)
+  // Blocca scroll del body quando il modal di eliminazione è aperto (iOS fix:
+  // position:fixed sul body, altrimenti su iPhone la pagina dietro scorre)
   useEffect(() => {
     if (showDeleteModal) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
+      lockBodyScroll()
+      return () => unlockBodyScroll()
     }
   }, [showDeleteModal])
 

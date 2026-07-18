@@ -108,6 +108,17 @@
   .spinner-sm {
     @apply h-5 w-5 rounded-full border-2 border-slate-200 border-t-verde-orto-600 animate-spin;
   }
+
+  /* Pannello modale a schermo intero su mobile.
+     Catena di fallback per iOS Safari: vh (vecchi browser) → svh → dvh.
+     dvh segue la barra dinamica di Safari, evitando che i pulsanti in fondo
+     finiscano fuori dallo schermo. Su sm+ viene sovrascritta dalle utility
+     Tailwind (es. sm:h-[90vh]) perché dichiarata nel layer components. */
+  .modal-mobile-full {
+    height: 100vh;
+    height: 100svh;
+    height: 100dvh;
+  }
 }
 
 body {
@@ -124,13 +135,6 @@ body {
 
 button, a {
   touch-action: manipulation;
-}
-
-/* iOS Safari: vh include la chrome del browser, svh no.
-   Due righe per garantire il fallback su browser più vecchi. */
-.modal-safe-height {
-  height: 92vh;
-  height: 92svh;
 }
 
 #root {

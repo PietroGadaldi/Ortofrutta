@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
-import { format, parseISO } from 'date-fns'
+import { useState, useEffect, useRef } from 'react'
+import { format } from 'date-fns'
 import { AddProductForm } from './AddProductForm'
 import { OrderItemCard } from './OrderItemCard'
 import { CalendarPicker } from './CalendarPicker'
@@ -7,6 +7,7 @@ import { updateOrdineDettagli } from '../services/ordiniService'
 import { generateOrderPDF } from '../utils/pdfGenerator'
 import { uploadOrderPDF } from '../services/pdfStorageService'
 import { supabase } from '../services/supabaseClient'
+import { lockBodyScroll, unlockBodyScroll } from '../utils/scrollLock'
 import { IconX, IconPencil } from './icons'
 
 /**
@@ -46,13 +47,12 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
     }, 60)
   }
 
-  // Blocca scroll del body quando il modal è aperto (iOS fix)
+  // Blocca scroll del body quando il modal è aperto (iOS fix:
+  // position:fixed sul body, altrimenti su iPhone la pagina dietro scorre)
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    }
-    return () => {
-      document.body.style.overflow = ''
+      lockBodyScroll()
+      return () => unlockBodyScroll()
     }
   }, [isOpen])
 
@@ -203,10 +203,13 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden">
-      <div className="bg-white rounded-t-2xl sm:rounded-xl shadow-2xl max-w-2xl w-full h-[95vh] sm:h-[90vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-stretch sm:items-center justify-center p-0 sm:p-4 overflow-hidden">
+      <div className="modal-mobile-full bg-white shadow-2xl w-full sm:max-w-2xl sm:h-[90vh] sm:max-h-[900px] sm:rounded-xl flex flex-col overflow-hidden">
         {/* Header - Sticky */}
-        <div className="bg-verde-orto-900 px-4 sm:px-6 py-3.5 sm:py-4 flex-shrink-0">
+        <div
+          className="bg-verde-orto-900 px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0"
+          style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
+        >
           <div className="flex items-center justify-between">
             <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
               <IconPencil className="w-5 h-5" />
@@ -215,7 +218,7 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
             <button
               onClick={onClose}
               disabled={isSubmitting}
-              className="btn-icon w-9 h-9 min-w-[36px] min-h-[36px] text-white/70 hover:text-white hover:bg-white/10 disabled:opacity-50"
+              className="btn-icon w-11 h-11 text-white/70 hover:text-white hover:bg-white/10 disabled:opacity-50"
             >
               <IconX className="w-5 h-5" />
             </button>
@@ -223,7 +226,11 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
         </div>
 
         {/* Content - Scrollable */}
-        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-slate-50">
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 min-h-0 overflow-y-auto overscroll-contain bg-slate-50"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
           <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
             {/* Order Info - Client and Date Selection */}
             {ordine && selectedDate && (
@@ -300,21 +307,21 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
           <button
             onClick={handleClearOrder}
             disabled={isSubmitting || productsInOrder.length === 0}
-            className="btn-danger-soft flex-1 py-2.5 px-3 text-sm"
+            className="btn-danger-soft flex-1 min-h-[48px] px-2 text-sm"
           >
             Svuota
           </button>
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="btn-secondary flex-1 py-2.5 px-3 text-sm"
+            className="btn-secondary flex-1 min-h-[48px] px-2 text-sm"
           >
             Annulla
           </button>
           <button
             onClick={handleSaveOrder}
             disabled={isSubmitting || productsInOrder.length === 0}
-            className="btn-primary flex-1 py-2.5 px-3 text-sm"
+            className="btn-primary flex-[1.4] min-h-[48px] px-2 text-sm"
           >
             {isSubmitting ? 'Salvataggio...' : 'Salva modifiche'}
           </button>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { downloadOrderPDF } from '../services/pdfStorageService'
 import { downloadPDFBlob } from '../utils/pdfGenerator'
+import { lockBodyScroll, unlockBodyScroll } from '../utils/scrollLock'
 import { IconX, IconPrinter, IconDownload, IconExternalLink, IconDocument } from './icons'
 
 const isIOS = typeof navigator !== 'undefined' &&
@@ -11,13 +12,12 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Blocca lo scroll del body quando il modal è aperto (iOS fix)
+  // Blocca lo scroll del body quando il modal è aperto (iOS fix:
+  // position:fixed sul body, altrimenti su iPhone la pagina dietro scorre)
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    }
-    return () => {
-      document.body.style.overflow = ''
+      lockBodyScroll()
+      return () => unlockBodyScroll()
     }
   }, [isOpen])
 
@@ -89,17 +89,24 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
   return (
     <>
       {/* Modal backdrop */}
-      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
+      <div
+        className="fixed inset-0 bg-black/50 z-50"
+        onClick={onClose}
+        style={{ touchAction: 'none' }}
+      />
 
-      {/* Modal content */}
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-2">
-        <div className="modal-safe-height bg-white rounded-t-2xl sm:rounded-xl shadow-2xl w-full sm:w-[95vw] flex flex-col overflow-hidden">
+      {/* Modal content: schermo intero su mobile, dialog centrato su sm+ */}
+      <div className="fixed inset-0 z-50 flex items-stretch justify-center sm:items-center sm:p-3 pointer-events-none">
+        <div className="modal-mobile-full pointer-events-auto bg-white shadow-2xl w-full sm:w-[95vw] sm:h-[90vh] sm:max-h-[900px] sm:rounded-xl flex flex-col overflow-hidden">
           {/* Modal header */}
-          <div className="flex-shrink-0 flex justify-between items-center px-4 py-3.5 sm:px-6 sm:py-4 border-b border-slate-200">
+          <div
+            className="flex-shrink-0 flex justify-between items-center px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-200"
+            style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
+          >
             <h2 className="text-base sm:text-lg font-bold text-slate-900">Anteprima ricevuta</h2>
             <button
               onClick={onClose}
-              className="btn-icon w-9 h-9 min-w-[36px] min-h-[36px] text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              className="btn-icon w-11 h-11 text-slate-400 hover:text-slate-600 hover:bg-slate-100"
               aria-label="Close modal"
             >
               <IconX className="w-5 h-5" />
@@ -124,7 +131,10 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
               </div>
             ) : isIOS && iframeUrl ? (
               /* iOS Safari non supporta PDF inline in iframe — mostra link diretto */
-              <div className="flex flex-col items-center justify-center h-full p-8 gap-5 text-center bg-slate-50">
+              <div
+                className="flex flex-col items-center justify-center h-full p-8 gap-5 text-center bg-slate-50 overflow-y-auto overscroll-contain"
+                style={{ WebkitOverflowScrolling: 'touch' }}
+              >
                 <div className="w-16 h-16 rounded-2xl bg-verde-orto-50 text-verde-orto-600 flex items-center justify-center">
                   <IconDocument className="w-8 h-8" />
                 </div>
@@ -160,14 +170,16 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
             ) : null}
           </div>
 
-          {/* Modal footer with action buttons */}
+          {/* Modal footer with action buttons.
+              Su mobile: flex-wrap con basis 40% → max 2 pulsanti per riga,
+              l'eventuale pulsante spaiato occupa l'intera riga. */}
           <div
-            className="flex-shrink-0 flex flex-wrap gap-2 sm:gap-3 justify-end p-3 sm:p-5 border-t border-slate-200 bg-slate-50"
+            className="flex-shrink-0 flex flex-wrap gap-2 sm:gap-3 sm:justify-end p-3 sm:p-5 border-t border-slate-200 bg-slate-50"
             style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
           >
             <button
               onClick={onClose}
-              className="btn-secondary flex-1 sm:flex-none px-4 sm:px-6 py-2.5 text-sm"
+              className="btn-secondary flex-[1_1_40%] sm:flex-none min-h-[48px] px-4 sm:px-6 text-sm"
             >
               Chiudi
             </button>
@@ -176,7 +188,7 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
                 href={iframeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-secondary flex-1 sm:flex-none px-4 sm:px-6 py-2.5 text-sm"
+                className="btn-secondary flex-[1_1_40%] sm:flex-none min-h-[48px] px-4 sm:px-6 text-sm"
               >
                 <IconExternalLink className="w-4 h-4" />
                 Apri
@@ -186,7 +198,7 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
               <button
                 onClick={handleDownload}
                 disabled={loading || !!error}
-                className="btn-secondary flex-1 sm:flex-none px-4 sm:px-6 py-2.5 text-sm"
+                className="btn-secondary flex-[1_1_40%] sm:flex-none min-h-[48px] px-4 sm:px-6 text-sm"
               >
                 <IconDownload className="w-4 h-4" />
                 Scarica
@@ -195,7 +207,7 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
             <button
               onClick={handlePrint}
               disabled={loading || !!error}
-              className="btn-primary flex-1 sm:flex-none px-4 sm:px-6 py-2.5 text-sm"
+              className="btn-primary flex-[1_1_40%] sm:flex-none min-h-[48px] px-4 sm:px-6 text-sm"
             >
               <IconPrinter className="w-4 h-4" />
               Stampa
