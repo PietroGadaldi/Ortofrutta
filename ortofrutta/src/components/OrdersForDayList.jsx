@@ -294,7 +294,7 @@ export function OrdersForDayList({
         </div>
       ) : (
         /* Orders List */
-        <div className="space-y-3 max-h-[600px] overflow-y-auto overscroll-contain pr-1" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="space-y-3 max-h-[600px] overflow-y-auto overscroll-contain pr-1">
           {displayOrdini.map((ordine) => (
             <AdminOrderCard
               key={ordine.id}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { downloadOrderPDF } from '../services/pdfStorageService'
 import { downloadPDFBlob } from '../utils/pdfGenerator'
 import { lockBodyScroll, unlockBodyScroll } from '../utils/scrollLock'
@@ -86,7 +87,11 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
     }
   }
 
-  return (
+  // Portal su document.body: il modale DEVE uscire da qualsiasi contenitore
+  // scrollabile/overflow (es. la lista ordini), altrimenti su iOS Safari
+  // position:fixed viene agganciato al contenitore e il modale appare
+  // "dentro la pagina" invece che sopra a tutto.
+  return createPortal(
     <>
       {/* Modal backdrop */}
       <div
@@ -215,6 +220,7 @@ export function PDFPreviewModal({ pdfData, fileName = 'ricevuta', onClose, isOpe
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   )
 }

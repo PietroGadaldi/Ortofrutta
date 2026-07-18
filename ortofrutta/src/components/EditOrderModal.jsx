@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { format } from 'date-fns'
 import { AddProductForm } from './AddProductForm'
 import { OrderItemCard } from './OrderItemCard'
@@ -202,7 +203,11 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
 
   if (!isOpen) return null
 
-  return (
+  // Portal su document.body: il modale DEVE uscire da qualsiasi contenitore
+  // scrollabile/overflow (es. la lista ordini), altrimenti su iOS Safari
+  // position:fixed viene agganciato al contenitore e il modale appare
+  // "dentro la pagina" invece che sopra a tutto.
+  return createPortal(
     <div className="fixed inset-0 bg-black/50 z-50 flex items-stretch sm:items-center justify-center p-0 sm:p-4 overflow-hidden">
       <div className="modal-mobile-full bg-white shadow-2xl w-full sm:max-w-2xl sm:h-[90vh] sm:max-h-[900px] sm:rounded-xl flex flex-col overflow-hidden">
         {/* Header - Sticky */}
@@ -327,6 +332,7 @@ export function EditOrderModal({ ordine, isOpen, onClose, onSave, onDateChanged,
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
