@@ -6,13 +6,14 @@ import { AddProductForm } from '../components/AddProductForm'
 import { OrderSummary } from '../components/OrderSummary'
 import { OrdersHistory } from '../components/OrdersHistory'
 import { ReorderWarningModal } from '../components/ReorderWarningModal'
+import { NoticeModal } from '../components/NoticeModal'
 import { createOrdine, updateOrdineDettagli, updateOrdineStatus, deleteOrdine, getAllOrdini } from '../services/ordiniService'
 import { generateOrderPDF } from '../utils/pdfGenerator'
 import { uploadOrderPDF } from '../services/pdfStorageService'
 import { capitalize, WHATSAPP_NUMBER } from '../utils/constants'
-import { format, addDays, startOfDay, isSameDay } from 'date-fns'
+import { format, addDays, startOfDay, isSameDay, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { IconWhatsApp, IconPencil } from '../components/icons'
+import { IconWhatsApp } from '../components/icons'
 
 export function Dashboard() {
   const { user } = useAuth()
@@ -23,13 +24,14 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
-  const [success, setSuccess] = useState(null)
-  const [lastCreatedOrderId, setLastCreatedOrderId] = useState(null)
   const [expandedOrderId, setExpandedOrderId] = useState(null)
   const [reorderWarning, setReorderWarning] = useState(null)
+  // Popup avvisi dinamici: { variant, title, message, primaryLabel?, onPrimary?, closeLabel?, afterClose? }
+  const [notice, setNotice] = useState(null)
 
   const historyRef = useRef(null)
   const summaryRef = useRef(null)
+  const calendarRef = useRef(null)
   
   // State for new/editing order
   const [selectedDate, setSelectedDate] = useState(new Date())
@@ -76,12 +78,6 @@ export function Dashboard() {
   useEffect(() => {
     fetchData()
   }, [user])
-
-  useEffect(() => {
-    if (!success) return
-    const t = setTimeout(() => setSuccess(null), 3500)
-    return () => clearTimeout(t)
-  }, [success])
 
   const fetchData = async () => {
     setLoading(true)
@@ -142,9 +138,6 @@ export function Dashboard() {
       // Add new item
       setProductsInOrder([...productsInOrder, product])
     }
-    setError(null)
-    setSuccess(null)
-    setLastCreatedOrderId(null)
   }
 
   // Edit product in order summary
@@ -165,41 +158,110 @@ export function Dashboard() {
     setSelectedDate(new Date())
   }
 
+  // Chiude il popup avvisi; l'eventuale azione post-chiusura (es. scroll) parte
+  // dopo che unlockBodyScroll ha ripristinato la posizione, altrimenti verrebbe annullata
+  const closeNotice = () => {
+    const afterClose = notice?.afterClose
+    setNotice(null)
+    if (afterClose) setTimeout(afterClose, 100)
+  }
+
+  // Esegue l'azione principale del popup avvisi (stesso differimento di closeNotice)
+  const runNoticePrimary = () => {
+    const onPrimary = notice?.onPrimary
+    setNotice(null)
+    if (onPrimary) setTimeout(onPrimary, 100)
+  }
+
+  // Popup "hai già un ordine per questa data": propone di modificarlo o cambiare data
+  const openExistingOrderNotice = (ordineEsistente) => {
+    const dataConsegna = format(parseISO(ordineEsistente.data_ordine), 'EEEE dd MMMM yyyy', { locale: it })
+    setNotice({
+      variant: 'warn',
+      title: 'Hai già un ordine per questa data',
+      message: `Hai già un ordine per ${dataConsegna}. Per aggiungere o cambiare prodotti modifica l'ordine esistente, oppure scegli un'altra data dal calendario.`,
+      primaryLabel: 'Modifica ordine esistente',
+      onPrimary: () => handleEditOrder(ordineEsistente),
+      closeLabel: 'Cambia data',
+      afterClose: () => calendarRef.current?.scrollIntoView({ behavior: 'smooth' }),
+    })
+  }
+
+  // Selezione della data (dal calendario o da "Ordina per domani"):
+  // avvisa subito col popup se per quel giorno esiste già un ordine
+  const handleSelectDate = (date) => {
+    setSelectedDate(date)
+    if (editingOrderId) return
+    const dateStr = format(date, 'yyyy-MM-dd')
+    const esistente = ordini.find((o) => o.data_ordine === dateStr)
+    if (esistente) openExistingOrderNotice(esistente)
+  }
+
   // Create or update order
   const handleConfirmOrder = async () => {
     if (productsInOrder.length === 0) {
-      setError('Aggiungi almeno un prodotto prima di confermare')
+      setNotice({
+        variant: 'warn',
+        title: 'Nessun prodotto nell\'ordine',
+        message: 'Aggiungi almeno un prodotto prima di confermare l\'ordine.',
+        closeLabel: 'Ho capito',
+      })
       return
     }
 
     if (!editingOrderId && existingOrderForDate) {
-      setError('Hai già un ordine per questa data. Modifica quello esistente nella cronologia per aggiungere o cambiare prodotti.')
+      openExistingOrderNotice(existingOrderForDate)
       return
     }
 
     if (!editingOrderId && isTodayAfter2AM) {
-      setError('Non è più possibile creare ordini per oggi: il termine delle 02:00 è scaduto. Contatta il titolare su WhatsApp.')
+      setNotice({
+        variant: 'warn',
+        title: 'Cambia la data di consegna',
+        message: 'Non è più possibile ordinare per oggi: il termine delle 02:00 è scaduto. Scegli un altro giorno dal calendario per inviare l\'ordine, oppure contatta il titolare su WhatsApp per le urgenze.',
+        closeLabel: 'Scegli un\'altra data',
+        afterClose: () => calendarRef.current?.scrollIntoView({ behavior: 'smooth' }),
+      })
       return
     }
 
     setSubmitting(true)
-    setError(null)
-    setSuccess(null)
 
     try {
       // Format date as YYYY-MM-DD string for database
       const dateString = format(selectedDate, 'yyyy-MM-dd')
-      
+      const dataConsegna = format(selectedDate, 'EEEE dd MMMM yyyy', { locale: it })
+
+      // Popup di conferma con scorciatoia per visualizzare l'ordine in cronologia
+      const openSuccessNotice = (title, message, ordineId) => {
+        setNotice({
+          variant: 'success',
+          title,
+          message,
+          primaryLabel: 'Visualizza ordine',
+          onPrimary: () => {
+            setExpandedOrderId(ordineId)
+            historyRef.current?.scrollIntoView({ behavior: 'smooth' })
+          },
+          closeLabel: 'Chiudi',
+        })
+      }
+
       if (editingOrderId) {
         // Update existing order
+        const updatedOrderId = editingOrderId
         const { error: updateError } = await updateOrdineDettagli(
           editingOrderId,
           productsInOrder
         )
         if (updateError) throw updateError
-        
-        setSuccess('Ordine aggiornato con successo!')
+
         setEditingOrderId(null)
+        openSuccessNotice(
+          'Ordine aggiornato!',
+          `Le modifiche al tuo ordine per ${dataConsegna} sono state salvate con successo.`,
+          updatedOrderId
+        )
       } else {
         // Create new order
         const { data: newOrdine, error: createError } = await createOrdine(
@@ -209,8 +271,11 @@ export function Dashboard() {
         )
         if (createError) throw createError
 
-        setSuccess('Ordine inviato con successo!')
-        setLastCreatedOrderId(newOrdine.id)
+        openSuccessNotice(
+          'Ordine inviato!',
+          `Il tuo ordine per ${dataConsegna} è stato inviato con successo.`,
+          newOrdine.id
+        )
 
         // Generate and upload PDF (non-blocking, error doesn't interrupt flow)
         if (newOrdine && user) {
@@ -257,26 +322,19 @@ export function Dashboard() {
       await fetchData()
       setSubmitting(false)
     } catch (err) {
-      setError('Errore durante il salvataggio: ' + err.message)
+      setNotice({
+        variant: 'error',
+        title: 'Errore durante il salvataggio',
+        message: 'Non è stato possibile salvare l\'ordine: ' + err.message,
+        closeLabel: 'Chiudi',
+      })
       console.error(err)
       setSubmitting(false)
     }
   }
 
-  // View last order: scroll to bottom and open details
-  const handleViewLastOrder = () => {
-    if (lastCreatedOrderId) {
-      setExpandedOrderId(lastCreatedOrderId)
-      setTimeout(() => {
-        historyRef.current?.scrollIntoView({ behavior: 'smooth' })
-      }, 100)
-    }
-  }
-
   // Load order for editing
   const handleEditOrder = (ordine) => {
-    setSuccess(null)
-    setLastCreatedOrderId(null)
     setEditingOrderId(ordine.id)
     
     // Parse date from ordine
@@ -302,17 +360,14 @@ export function Dashboard() {
     summaryRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  // Imposta la data dell'ordine a domani
+  // Imposta la data dell'ordine a domani; se domani ha già un ordine, avvisa col popup
   const handleSetTomorrow = () => {
-    setSelectedDate(addDays(startOfDay(new Date()), 1))
+    handleSelectDate(addDays(startOfDay(new Date()), 1))
   }
 
   // Carica i prodotti di un ordine passato nel riepilogo per creare un nuovo ordine
   const handleReorder = (ordine) => {
-    setSuccess(null)
-    setError(null)
     setReorderWarning(null)
-    setLastCreatedOrderId(null)
     setEditingOrderId(null) // Fondamentale: non stiamo modificando il vecchio ordine, ma creandone uno nuovo
 
     // Un prodotto di catalogo è riordinabile solo se esiste ancora ED è attivo;
@@ -393,7 +448,12 @@ export function Dashboard() {
       await fetchData()
       setSubmitting(false)
     } catch (err) {
-      setError('Errore durante la cancellazione: ' + err.message)
+      setNotice({
+        variant: 'error',
+        title: 'Errore durante la cancellazione',
+        message: 'Non è stato possibile annullare l\'ordine: ' + err.message,
+        closeLabel: 'Chiudi',
+      })
       console.error(err)
       setSubmitting(false)
     }
@@ -425,49 +485,13 @@ export function Dashboard() {
         </div>
       )}
 
-      {/* Success alert */}
-      {success && (
-        <div className="alert-success flex justify-between items-center gap-3">
-          <span>{success}</span>
-          {success === 'Ordine inviato con successo!' && lastCreatedOrderId && (
-            <button
-              onClick={handleViewLastOrder}
-              className="flex-shrink-0 font-semibold text-verde-orto-700 underline hover:text-verde-orto-900 transition-colors"
-            >
-              Visualizza
-            </button>
-          )}
-        </div>
-      )}
-
       {/* Calendar Picker Section */}
-      <div>
+      <div ref={calendarRef}>
         <CalendarPicker
           selectedDate={selectedDate}
-          onSelectDate={setSelectedDate}
+          onSelectDate={handleSelectDate}
         />
       </div>
-
-      {/* Banner: ordine già presente per la data selezionata */}
-      {!editingOrderId && existingOrderForDate && (
-        <div className="alert-warn">
-          <p className="font-semibold text-sm">
-            Hai già un ordine per {format(selectedDate, 'EEEE dd MMMM yyyy', { locale: it })}.
-          </p>
-          <p className="text-sm mt-1">
-            Per aggiungere o modificare i prodotti, usa il tasto <strong>"Modifica ordine"</strong> presente nella cronologia qui sotto.
-          </p>
-          <button
-            onClick={() => {
-              handleEditOrder(existingOrderForDate)
-            }}
-            className="mt-3 inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors active:scale-[0.98]"
-          >
-            <IconPencil className="w-4 h-4" />
-            Vai all'ordine esistente
-          </button>
-        </div>
-      )}
 
       {/* Banner: oggi ma oltre le 02:00 */}
       {!editingOrderId && isTodayAfter2AM && !existingOrderForDate && (
@@ -506,7 +530,7 @@ export function Dashboard() {
             onSetTomorrow={handleSetTomorrow}
             disabledMessage={
               !editingOrderId && existingOrderForDate
-                ? 'Hai già un ordine per questa giornata. Per aggiungere o modificare i prodotti, usa il tasto "Vai all\'ordine esistente" qui sopra oppure "Modifica ordine" nella cronologia.'
+                ? 'Hai già un ordine per questa giornata. Per aggiungere o modificare i prodotti usa il tasto "Modifica ordine" nella cronologia qui sotto, oppure scegli un\'altra data dal calendario.'
                 : !editingOrderId && isTodayAfter2AM
                 ? 'Il termine per ordinare per oggi è scaduto alle 02:00. Puoi usare i tasti qui sotto per riordinare o selezionare un altro giorno.'
                 : null
@@ -555,6 +579,18 @@ export function Dashboard() {
         onClose={handleCloseReorderWarning}
         prodottiEsclusi={reorderWarning?.prodottiEsclusi || []}
         riordinoEseguito={reorderWarning?.riordinoEseguito ?? true}
+      />
+
+      {/* Popup avvisi dinamici (ordine esistente, termine 02:00, esiti, errori) */}
+      <NoticeModal
+        isOpen={!!notice}
+        onClose={closeNotice}
+        variant={notice?.variant}
+        title={notice?.title}
+        message={notice?.message}
+        primaryLabel={notice?.primaryLabel}
+        onPrimary={notice?.onPrimary ? runNoticePrimary : undefined}
+        closeLabel={notice?.closeLabel}
       />
     </div>
   )
