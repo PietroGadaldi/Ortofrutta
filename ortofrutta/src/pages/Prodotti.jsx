@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../services/supabaseClient'
 import { createProdotto, updateProdotto, updateProdottoStatus, deleteProdotto } from '../services/prodottiService'
 import { parseTipologie, capitalize } from '../utils/constants'
+import { NoticeModal } from '../components/NoticeModal'
 import { IconPlus, IconPencil, IconTrash, IconRefresh, IconSearch, IconPackage, IconX } from '../components/icons'
 
 export function Prodotti() {
   const [prodotti, setProdotti] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [success, setSuccess] = useState(null)
+  // Popup di conferma operazioni riuscite: { title, message }
+  const [notice, setNotice] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [nome, setNome] = useState('')
   const [tipologieArray, setTipologieArray] = useState([])
@@ -24,12 +26,6 @@ export function Prodotti() {
   useEffect(() => {
     fetchProdotti(true)
   }, [])
-
-  useEffect(() => {
-    if (!success) return
-    const t = setTimeout(() => setSuccess(null), 3500)
-    return () => clearTimeout(t)
-  }, [success])
 
   useEffect(() => {
     if (!error) return
@@ -99,7 +95,6 @@ export function Prodotti() {
     setIsModifying(true)
     setModifyingProdottoId(prodotto.id)
     setError(null)
-    setSuccess(null)
     setMobileTab('aggiungi')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -107,7 +102,6 @@ export function Prodotti() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError(null)
-    setSuccess(null)
 
     if (!nome.trim()) {
       setError('Inserisci il nome del prodotto')
@@ -129,8 +123,11 @@ export function Prodotti() {
         const { error: err } = await updateProdotto(modifyingProdottoId, nomeLower, tipologieStr)
 
         if (err) throw err
-        setSuccess('Prodotto modificato con successo!')
-        
+        setNotice({
+          title: 'Prodotto modificato!',
+          message: `Le modifiche a "${nomeLower.toUpperCase()}" sono state salvate con successo.`,
+        })
+
         // Aggiorna solo il prodotto locale senza refetch
         setProdotti(prodotti.map(p => 
           p.id === modifyingProdottoId 
@@ -142,8 +139,11 @@ export function Prodotti() {
         const { error: err } = await createProdotto(nomeLower, tipologieStr)
 
         if (err) throw err
-        setSuccess('Prodotto aggiunto con successo!')
-        
+        setNotice({
+          title: 'Prodotto aggiunto!',
+          message: `"${nomeLower.toUpperCase()}" è stato aggiunto al catalogo con successo.`,
+        })
+
         // Ricarica per ottenere il nuovo prodotto con ID
         await fetchProdotti()
       }
@@ -161,10 +161,16 @@ export function Prodotti() {
     if (!window.confirm('Sei sicuro di voler eliminare questo prodotto?')) return
 
     try {
+      const nomeProdotto = prodotti.find((p) => p.id === prodottoId)?.nome || ''
       const { error: err } = await deleteProdotto(prodottoId)
 
       if (err) throw err
-      setSuccess('Prodotto eliminato!')
+      setNotice({
+        title: 'Prodotto eliminato!',
+        message: nomeProdotto
+          ? `"${nomeProdotto.toUpperCase()}" è stato eliminato dal catalogo.`
+          : 'Il prodotto è stato eliminato dal catalogo.',
+      })
       await fetchProdotti()
     } catch (err) {
       setError('Errore: ' + err.message)
@@ -177,7 +183,10 @@ export function Prodotti() {
     try {
       const { error: err } = await updateProdottoStatus(prodotto.id, !prodotto.attivo)
       if (err) throw err
-      setSuccess(`Prodotto ${!prodotto.attivo ? 'attivato' : 'disattivato'} con successo!`)
+      setNotice({
+        title: `Prodotto ${!prodotto.attivo ? 'attivato' : 'disattivato'}!`,
+        message: `"${prodotto.nome.toUpperCase()}" ${!prodotto.attivo ? 'è di nuovo visibile ai clienti nel catalogo.' : 'non è più visibile ai clienti nel catalogo.'}`,
+      })
       setProdotti(prodotti.map(p => p.id === prodotto.id ? { ...p, attivo: !p.attivo } : p))
     } catch (err) {
       setError('Errore: ' + err.message)
@@ -203,12 +212,6 @@ export function Prodotti() {
       {error && (
         <div className="alert-error">
           {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="alert-success">
-          {success}
         </div>
       )}
 
@@ -499,6 +502,16 @@ export function Prodotti() {
           )}
         </div>
       </div>
+
+      {/* Popup di conferma operazioni riuscite */}
+      <NoticeModal
+        isOpen={!!notice}
+        onClose={() => setNotice(null)}
+        variant="success"
+        title={notice?.title}
+        message={notice?.message}
+        closeLabel="Chiudi"
+      />
     </div>
   )
 }

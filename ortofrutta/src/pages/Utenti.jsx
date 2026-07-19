@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { validateEmail } from '../utils/validators'
 import { getClientList } from '../services/profiliService'
 import { lockBodyScroll, unlockBodyScroll } from '../utils/scrollLock'
+import { NoticeModal } from '../components/NoticeModal'
 import { IconPlus, IconPencil, IconTrash, IconRefresh, IconSearch, IconUsers, IconEye, IconEyeOff, IconAlertTriangle } from '../components/icons'
 
 export function Utenti() {
@@ -11,7 +12,8 @@ export function Utenti() {
   const [ruolo, setRuolo] = useState('cliente')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  // Popup di conferma operazioni riuscite: { title, message }
+  const [notice, setNotice] = useState(null)
   const [isModifying, setIsModifying] = useState(false)
   const [modifyingUserId, setModifyingUserId] = useState(null)
   
@@ -122,7 +124,10 @@ export function Utenti() {
 
       if (!response.ok) throw new Error(data?.error || 'Errore durante l\'eliminazione')
 
-      setSuccess(`Utente ${userToDelete.nome} eliminato correttamente`)
+      setNotice({
+        title: 'Utente eliminato!',
+        message: `L'account di ${userToDelete.nome} e tutti i suoi ordini sono stati eliminati.`,
+      })
       setShowDeleteModal(false)
       setUserToDelete(null)
       fetchClienti(viewingRole)
@@ -143,7 +148,6 @@ export function Utenti() {
     setIsModifying(true)
     setModifyingUserId(cliente.id)
     setError('')
-    setSuccess('')
     setMobileTab('form')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -173,7 +177,6 @@ export function Utenti() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    setSuccess('')
 
     // Validation
     if (!nome.trim()) {
@@ -226,7 +229,11 @@ export function Utenti() {
         throw new Error(data.error || 'Errore nel salvataggio account')
       }
 
-      setSuccess(isModifying ? `Account di ${nome} aggiornato con successo` : `Account creato per ${nome}`)
+      setNotice(
+        isModifying
+          ? { title: 'Account aggiornato!', message: `Le modifiche all'account di ${nome} sono state salvate con successo.` }
+          : { title: 'Account creato!', message: `L'account per ${nome} è stato creato con successo.` }
+      )
       resetForm()
       setMobileTab('lista')
 
@@ -311,12 +318,6 @@ export function Utenti() {
           {error && (
             <div className="alert-error mb-4">
               {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="alert-success mb-4">
-              {success}
             </div>
           )}
 
@@ -550,6 +551,16 @@ export function Utenti() {
           </div>
         </div>
       )}
+
+      {/* Popup di conferma operazioni riuscite */}
+      <NoticeModal
+        isOpen={!!notice}
+        onClose={() => setNotice(null)}
+        variant="success"
+        title={notice?.title}
+        message={notice?.message}
+        closeLabel="Chiudi"
+      />
     </div>
   )
 }
