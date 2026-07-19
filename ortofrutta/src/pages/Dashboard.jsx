@@ -5,6 +5,7 @@ import { CalendarPicker } from '../components/CalendarPicker'
 import { AddProductForm } from '../components/AddProductForm'
 import { OrderSummary } from '../components/OrderSummary'
 import { OrdersHistory } from '../components/OrdersHistory'
+import { ReorderWarningModal } from '../components/ReorderWarningModal'
 import { createOrdine, updateOrdineDettagli, updateOrdineStatus, deleteOrdine, getAllOrdini } from '../services/ordiniService'
 import { generateOrderPDF } from '../utils/pdfGenerator'
 import { uploadOrderPDF } from '../services/pdfStorageService'
@@ -25,6 +26,7 @@ export function Dashboard() {
   const [success, setSuccess] = useState(null)
   const [lastCreatedOrderId, setLastCreatedOrderId] = useState(null)
   const [expandedOrderId, setExpandedOrderId] = useState(null)
+  const [reorderWarning, setReorderWarning] = useState(null)
 
   const historyRef = useRef(null)
   const summaryRef = useRef(null)
@@ -309,17 +311,22 @@ export function Dashboard() {
   const handleReorder = (ordine) => {
     setSuccess(null)
     setError(null)
+    setReorderWarning(null)
     setLastCreatedOrderId(null)
     setEditingOrderId(null) // Fondamentale: non stiamo modificando il vecchio ordine, ma creandone uno nuovo
-    
-    // Manteniamo i prodotti fuori catalogo (prodotto_id null) e quelli ancora
-    // presenti nel catalogo corrente; formattiamo i nomi (iniziale maiuscola)
-    const validItems = (ordine.dettagli_ordine || [])
-      .filter((dettaglio) =>
-        dettaglio.prodotto_id
-          ? prodotti.some((p) => p.id === dettaglio.prodotto_id)
-          : !!dettaglio.nome_custom
-      )
+
+    // Un prodotto di catalogo è riordinabile solo se esiste ancora ED è attivo;
+    // i prodotti fuori catalogo (prodotto_id null) restano sempre riordinabili
+    const isDisponibile = (dettaglio) =>
+      dettaglio.prodotto_id
+        ? prodotti.some((p) => p.id === dettaglio.prodotto_id && p.attivo !== false)
+        : !!dettaglio.nome_custom
+
+    const dettagli = ordine.dettagli_ordine || []
+
+    // Manteniamo i prodotti disponibili; formattiamo i nomi (iniziale maiuscola)
+    const validItems = dettagli
+      .filter(isDisponibile)
       .map((dettaglio) => {
         if (!dettaglio.prodotto_id) {
           // Prodotto fuori catalogo: riportiamo il nome custom così com'è
@@ -340,20 +347,40 @@ export function Dashboard() {
         }
       })
 
+    const prodottiEsclusi = dettagli
+      .filter((dettaglio) => !isDisponibile(dettaglio))
+      .map((dettaglio) => (dettaglio.prodotti?.nome || dettaglio.nome_custom || 'prodotto rimosso').toUpperCase())
+
     if (validItems.length === 0) {
-      setError("Nessuno dei prodotti di questo ordine è attualmente disponibile nel catalogo.")
+      // Nessun prodotto disponibile: il riordino viene annullato, avvisiamo col popup
+      setReorderWarning({ prodottiEsclusi, riordinoEseguito: false })
       return
     }
 
-    if (validItems.length < (ordine.dettagli_ordine?.length || 0)) {
-      setError("Nota: alcuni prodotti non più disponibili nel catalogo sono stati esclusi dal riordino.")
-    }
-    
     setProductsInOrder(validItems)
     setEditingItemIndex(null)
 
-    // Scorre fino alla sezione del riepilogo/form
-    summaryRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (prodottiEsclusi.length > 0) {
+      // Il popup avvisa dei prodotti esclusi; lo scroll al riepilogo
+      // avviene alla sua chiusura (vedi handleCloseReorderWarning)
+      setReorderWarning({ prodottiEsclusi, riordinoEseguito: true })
+    } else {
+      // Scorre fino alla sezione del riepilogo/form
+      summaryRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  // Chiusura del popup riordino: dopo "Ho capito" scorre al riepilogo del nuovo ordine
+  const handleCloseReorderWarning = () => {
+    const riordinoEseguito = reorderWarning?.riordinoEseguito
+    setReorderWarning(null)
+    if (riordinoEseguito) {
+      // Attende che unlockBodyScroll ripristini la posizione salvata
+      // prima di scorrere, altrimenti lo scroll verrebbe annullato
+      setTimeout(() => {
+        summaryRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    }
   }
 
   // Delete order
@@ -521,6 +548,14 @@ export function Dashboard() {
           onToggleExpanded={setExpandedOrderId}
         />
       </div>
+
+      {/* Popup prodotti non disponibili dopo "Ripeti ordine" */}
+      <ReorderWarningModal
+        isOpen={!!reorderWarning}
+        onClose={handleCloseReorderWarning}
+        prodottiEsclusi={reorderWarning?.prodottiEsclusi || []}
+        riordinoEseguito={reorderWarning?.riordinoEseguito ?? true}
+      />
     </div>
   )
 }
