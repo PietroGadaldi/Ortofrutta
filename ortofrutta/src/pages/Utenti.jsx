@@ -9,6 +9,7 @@ export function Utenti() {
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [provenienza, setProvenienza] = useState('')
   const [ruolo, setRuolo] = useState('cliente')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -144,6 +145,7 @@ export function Utenti() {
     const realEmail = cliente.email && !cliente.email.endsWith('@noreply.internal') ? cliente.email : ''
     setEmail(realEmail)
     setPassword('') // La password rimane vuota in modifica
+    setProvenienza(cliente.provenienza || '')
     setRuolo(cliente.ruolo)
     setIsModifying(true)
     setModifyingUserId(cliente.id)
@@ -168,6 +170,7 @@ export function Utenti() {
     setNome('')
     setEmail('')
     setPassword('')
+    setProvenienza('')
     setRuolo('cliente')
     setIsModifying(false)
     setModifyingUserId(null)
@@ -219,6 +222,7 @@ export function Utenti() {
             password: password || undefined, // Invia la password solo se scritta
             nome,
             ruolo,
+            provenienza,
           }),
         }
       )
@@ -335,21 +339,6 @@ export function Utenti() {
             </div>
 
             <div>
-              <label className="label">
-                Email
-                <span className="ml-2 text-[11px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">facoltativa</span>
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input"
-                placeholder="Può essere aggiunta in seguito"
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div>
               <label className="label">Password</label>
               <div className="relative">
                 <input
@@ -369,6 +358,36 @@ export function Utenti() {
                   {showPassword ? <IconEyeOff className="w-5 h-5" /> : <IconEye className="w-5 h-5" />}
                 </button>
               </div>
+            </div>
+
+            <div>
+              <label className="label">
+                Email
+                <span className="ml-2 text-[11px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">facoltativa</span>
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input"
+                placeholder="Può essere aggiunta in seguito"
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
+              <label className="label">
+                Provenienza
+                <span className="ml-2 text-[11px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">facoltativa</span>
+              </label>
+              <input
+                type="text"
+                value={provenienza}
+                onChange={(e) => setProvenienza(e.target.value)}
+                className="input"
+                placeholder="Luogo di consegna (via, paese...)"
+                disabled={isSubmitting}
+              />
             </div>
 
             <div>
@@ -478,6 +497,11 @@ export function Utenti() {
                           {visiblePasswords.has(cliente.id) ? <IconEyeOff className="w-3.5 h-3.5" /> : <IconEye className="w-3.5 h-3.5" />}
                         </button>
                       </div>
+                    )}
+                    {cliente.provenienza && (
+                      <p className="text-xs text-slate-500 mt-0.5 font-medium text-left truncate" title={cliente.provenienza}>
+                        📍 {cliente.provenienza}
+                      </p>
                     )}
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">

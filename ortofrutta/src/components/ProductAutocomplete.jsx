@@ -35,7 +35,9 @@ export function ProductAutocomplete({
       return
     }
 
-    const term = value.toLowerCase()
+    // Ripulisce gli spazi iniziali/finali così "insalata " trova comunque "insalata"
+    // (evita falsi "fuori catalogo" per prodotti già presenti nel catalogo)
+    const term = value.trim().toLowerCase()
     const filtered = prodotti
       .filter((p) => p.nome.toLowerCase().includes(term))
       .sort((a, b) => {

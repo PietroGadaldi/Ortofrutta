@@ -406,7 +406,8 @@ export function Prodotti() {
           ) : (
             <>
               {(() => {
-                const searchLower = searchFilter.toLowerCase()
+                // Ripulisce gli spazi iniziali/finali dal termine di ricerca
+                const searchLower = searchFilter.trim().toLowerCase()
                 const filteredProdotti = prodotti
                   .filter((p) => {
                     const nomeMatch = p.nome.toLowerCase().includes(searchLower)

@@ -43,7 +43,7 @@ export async function handler(event) {
     }
 
     // 3. Analisi dei dati in ingresso
-    const { userId, email, password, nome, ruolo } = JSON.parse(event.body)
+    const { userId, email, password, nome, ruolo, provenienza } = JSON.parse(event.body)
 
     if (!userId) return errorResponse(400, 'ID utente mancante')
 
@@ -80,6 +80,10 @@ export async function handler(event) {
     const profileUpdate = { nome: nome.trim(), ruolo }
     if (password && password.trim() !== '') {
       profileUpdate.password_plain = encrypt(password)
+    }
+    // Aggiorna la provenienza solo se il campo è stato inviato (stringa vuota => null)
+    if (provenienza !== undefined) {
+      profileUpdate.provenienza = provenienza?.trim() || null
     }
 
     const { error: profileError } = await supabaseAdmin

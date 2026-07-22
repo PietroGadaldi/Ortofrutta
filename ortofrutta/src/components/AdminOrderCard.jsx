@@ -3,7 +3,6 @@ import { format, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { PDFPreviewModal } from './PDFPreviewModal'
 import { EditOrderModal } from './EditOrderModal'
-import { getOrderPDFUrl } from '../services/pdfStorageService'
 import { generateOrderPDF } from '../utils/pdfGenerator'
 import { IconChevronDown, IconEye, IconPencil, IconTrash, IconStar, IconCheck } from './icons'
 
@@ -64,23 +63,13 @@ export function AdminOrderCard({
   const handleViewPDF = async () => {
     setPdfLoading(true)
     setPdfError(null)
-    
+
     try {
-      // Try to get PDF from storage first
-      const { exists, url } = await getOrderPDFUrl(
-        ordine.cliente_id || ordine.profili?.id,
-        ordine.id
-      )
-
-      if (exists && url) {
-        // PDF exists in storage, use URL
-        setPdfData(url)
-      } else {
-        // Generate PDF on the fly
-        const pdfBlob = generateOrderPDF(ordine)
-        setPdfData(pdfBlob)
-      }
-
+      // Genera sempre il PDF al volo dai dati aggiornati dell'ordine.
+      // Il PDF salvato in storage risale alla creazione e non riflette le
+      // modifiche successive (es. provenienza aggiunta dopo, o prodotti modificati).
+      const pdfBlob = generateOrderPDF(ordine)
+      setPdfData(pdfBlob)
       setShowPDFModal(true)
     } catch (error) {
       console.error('Error loading PDF:', error)

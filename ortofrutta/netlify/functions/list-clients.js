@@ -87,7 +87,7 @@ export async function handler(event) {
             data_ordine,
             completato,
             cliente_id,
-            profili:cliente_id(nome),
+            profili:cliente_id(nome, provenienza),
             dettagli_ordine (
               id,
               quantita,
@@ -108,7 +108,9 @@ export async function handler(event) {
         // Format response to match expected structure
         const formattedOrdini = (ordini || []).map(ordine => ({
           ...ordine,
-          profili: ordine.profili ? { nome: ordine.profili.nome } : null
+          profili: ordine.profili
+            ? { nome: ordine.profili.nome, provenienza: ordine.profili.provenienza }
+            : null
         }))
 
         return successResponse(200, {
@@ -122,7 +124,7 @@ export async function handler(event) {
       // Fetch profiles based on role
       const { data: profiles, error: profilesError } = await supabaseAdmin
         .from('profili')
-        .select('id, nome, ruolo, password_plain')
+        .select('id, nome, ruolo, password_plain, provenienza')
         .eq('ruolo', role)
         .order('nome', { ascending: true })
 

@@ -58,7 +58,7 @@ export async function handler(event) {
     }
 
     // Parse body
-    const { email, password, nome, ruolo } = JSON.parse(event.body)
+    const { email, password, nome, ruolo, provenienza } = JSON.parse(event.body)
 
     // Validate required fields (email is optional)
     if (!password || !nome || !ruolo) {
@@ -114,6 +114,7 @@ export async function handler(event) {
         nome,
         ruolo,
         password_plain: encrypt(password),
+        provenienza: provenienza?.trim() || null,
       })
       .select()
 
