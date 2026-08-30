@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import Navigation from './components/Navigation'
 import ProtectedRoute from './components/ProtectedRoute'
+import Footer from './components/Footer'
+import CookieBanner from './components/CookieBanner'
 import { RUOLI } from './utils/constants'
 
 // Pages - will be created in Fase 4, 5, 6
@@ -10,6 +12,7 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminOrdersPage from './pages/AdminOrdersPage'
+import Privacy from './pages/Privacy'
 import Prodotti from './pages/Prodotti'
 import Utenti from './pages/Utenti'
 import NotFound from './pages/NotFound'
@@ -18,10 +21,10 @@ export default function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="min-h-screen bg-slate-100">
+        <div className="min-h-screen flex flex-col bg-slate-100">
           <Navigation />
           <main
-            className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8"
+            className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 flex-1"
             style={{
               paddingBottom: 'max(2rem, env(safe-area-inset-bottom))',
               paddingLeft: 'max(0.75rem, env(safe-area-inset-left))',
@@ -32,6 +35,7 @@ export default function App() {
               {/* Public routes */}
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/privacy" element={<Privacy />} />
 
               {/* Protected routes - Cliente */}
               <Route
@@ -81,6 +85,8 @@ export default function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
+          <Footer />
+          <CookieBanner />
         </div>
       </AuthProvider>
     </Router>
