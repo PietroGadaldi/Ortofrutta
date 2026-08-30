@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { PDFPreviewModal } from './PDFPreviewModal'
-import { EditOrderModal } from './EditOrderModal'
+import { OrderFormModal } from './OrderFormModal'
 import { generateOrderPDF } from '../utils/pdfGenerator'
 import { IconChevronDown, IconEye, IconPencil, IconTrash, IconStar, IconCheck } from './icons'
 
@@ -220,7 +220,8 @@ export function AdminOrderCard({
         />
 
         {/* Edit Order Modal */}
-        <EditOrderModal
+        <OrderFormModal
+          mode="edit"
           ordine={ordine}
           isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}

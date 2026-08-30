@@ -121,16 +121,31 @@ export async function handler(event) {
         return errorResponse(400, 'Formato data non valido. Usa YYYY-MM-DD')
       }
     } else {
+      // fields=basic: solo i dati necessari a identificare il cliente
+      // (niente password né email) — usato dalla creazione ordini del titolare
+      const basicOnly = params.fields === 'basic'
+
       // Fetch profiles based on role
       const { data: profiles, error: profilesError } = await supabaseAdmin
         .from('profili')
-        .select('id, nome, ruolo, password_plain, provenienza')
+        .select(
+          basicOnly
+            ? 'id, nome, ruolo, provenienza'
+            : 'id, nome, ruolo, password_plain, provenienza'
+        )
         .eq('ruolo', role)
         .order('nome', { ascending: true })
 
       if (profilesError) {
         console.error('Profiles fetch error:', profilesError)
         return errorResponse(500, `Errore nel caricamento profili: ${profilesError.message}`)
+      }
+
+      if (basicOnly) {
+        return successResponse(200, {
+          clients: profiles || [],
+          count: (profiles || []).length,
+        })
       }
 
       // Recupera tutti gli utenti dall'Auth di Supabase per ottenere le email

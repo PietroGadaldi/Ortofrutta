@@ -3,9 +3,12 @@ import { startOfDay, format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { HorizontalWeekSelector } from '../components/HorizontalWeekSelector'
 import { OrdersForDayList } from '../components/OrdersForDayList'
+import { OrderFormModal } from '../components/OrderFormModal'
 import { updateOrdineStatus, deleteOrdine } from '../services/ordiniService'
+import { getClientListBasic } from '../services/profiliService'
 import { supabase } from '../services/supabaseClient'
 import { useAuth } from '../hooks/useAuth'
+import { IconPlus } from '../components/icons'
 
 /**
  * AdminOrdersPage component
@@ -20,6 +23,10 @@ export function AdminOrdersPage() {
   const [error, setError] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [clienti, setClienti] = useState([])
+  const [loadingClienti, setLoadingClienti] = useState(false)
+  const [errorClienti, setErrorClienti] = useState('')
+  const [showCreateModal, setShowCreateModal] = useState(false)
 
   // Filtro per nome cliente
   const filteredOrdini = useMemo(() => {
@@ -36,6 +43,24 @@ export function AdminOrdersPage() {
       daStampare: ordini.filter(o => !o.completato).length
     }
   }, [ordini])
+
+  // Lista clienti: caricata alla prima apertura del modale "Nuovo ordine",
+  // che è l'unico punto in cui serve scegliere l'intestatario dell'ordine
+  const fetchClienti = async () => {
+    setLoadingClienti(true)
+    setErrorClienti('')
+    try {
+      const { data, error: clientiError } = await getClientListBasic()
+      if (clientiError) throw new Error(clientiError.message)
+      setClienti(data || [])
+    } catch (err) {
+      console.error('Error fetching clients:', err)
+      setErrorClienti('Impossibile caricare la lista clienti. Chiudi la finestra e riprova.')
+      setClienti([])
+    } finally {
+      setLoadingClienti(false)
+    }
+  }
 
   // Fetch orders when date changes
   useEffect(() => {
@@ -153,6 +178,14 @@ export function AdminOrdersPage() {
     await fetchOrders()
   }
 
+  // Apre il modale di creazione, ricaricando i clienti se il primo tentativo era fallito
+  const handleOpenCreateModal = () => {
+    if (!loadingClienti && (errorClienti || clienti.length === 0)) {
+      fetchClienti()
+    }
+    setShowCreateModal(true)
+  }
+
   const handleDateChanged = async (newDate) => {
     // Change the selected date to the new order date
     setSelectedDate(startOfDay(newDate))
@@ -161,9 +194,18 @@ export function AdminOrdersPage() {
   return (
     <div className="space-y-5 sm:space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="page-title">Gestione ordini</h1>
-        <p className="page-subtitle">Visualizza e gestisci gli ordini dei tuoi clienti</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="page-title">Gestione ordini</h1>
+          <p className="page-subtitle">Crea, visualizza e gestisci gli ordini dei tuoi clienti</p>
+        </div>
+        <button
+          onClick={handleOpenCreateModal}
+          className="btn-primary w-full sm:w-auto min-h-[44px] flex-shrink-0"
+        >
+          <IconPlus className="w-4 h-4" />
+          Nuovo ordine
+        </button>
       </div>
 
       {/* Error Alert */}
@@ -220,6 +262,20 @@ export function AdminOrdersPage() {
           />
         )}
       </div>
+
+      {/* Modale creazione nuovo ordine per un cliente */}
+      <OrderFormModal
+        mode="create"
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSave={handleOrderModified}
+        onDateChanged={handleDateChanged}
+        prodotti={prodotti}
+        clienti={clienti}
+        clientiLoading={loadingClienti}
+        clientiError={errorClienti}
+        defaultDate={selectedDate}
+      />
     </div>
   )
 }

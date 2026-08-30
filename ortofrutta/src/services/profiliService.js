@@ -109,6 +109,42 @@ export const getClientList = async () => {
   }
 }
 
+/**
+ * Get client profiles with basic fields only (id, nome, provenienza).
+ * Usata dove serve solo identificare il cliente (es. creazione ordine dal
+ * titolare): non trasferisce password né email.
+ * @returns {Promise<{data, error}>}
+ */
+export const getClientListBasic = async () => {
+  try {
+    const response = await fetch(
+      (import.meta.env.VITE_NETLIFY_FUNCTIONS_URL || '/.netlify/functions') +
+        '/list-clients?role=cliente&fields=basic',
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await getAuthToken()}`,
+        },
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      return {
+        data: null,
+        error: { message: data.message || data.error || 'Errore nel caricamento clienti' },
+      }
+    }
+
+    return { data: data.clients || [], error: null }
+  } catch (err) {
+    console.error('getClientListBasic error:', err)
+    return { data: null, error: { message: err.message } }
+  }
+}
+
 // Helper to get auth token
 const getAuthToken = async () => {
   const { data } = await supabase.auth.getSession()
@@ -122,4 +158,5 @@ export default {
   createProfile,
   updateProfile,
   getClientList,
+  getClientListBasic,
 }

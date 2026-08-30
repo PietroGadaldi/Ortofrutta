@@ -235,27 +235,31 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
           </>
         )}
 
-        {/* Quick Actions — sempre visibili */}
-        <div className="pt-2 flex gap-2.5">
-          {onReorderLast && (
-            <button
-              type="button"
-              onClick={onReorderLast}
-              className="btn-secondary flex-1 h-11 px-2 text-xs"
-            >
-              <IconRefresh className="w-4 h-4 flex-shrink-0" />
-              Ripeti ultimo ordine
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={onSetTomorrow}
-            className="btn-secondary flex-1 h-11 px-2 text-xs"
-          >
-            <IconCalendar className="w-4 h-4 flex-shrink-0" />
-            Ordina per domani
-          </button>
-        </div>
+        {/* Quick Actions — solo quelle effettivamente collegate a un'azione */}
+        {(onReorderLast || onSetTomorrow) && (
+          <div className="pt-2 flex gap-2.5">
+            {onReorderLast && (
+              <button
+                type="button"
+                onClick={onReorderLast}
+                className="btn-secondary flex-1 h-11 px-2 text-xs"
+              >
+                <IconRefresh className="w-4 h-4 flex-shrink-0" />
+                Ripeti ultimo ordine
+              </button>
+            )}
+            {onSetTomorrow && (
+              <button
+                type="button"
+                onClick={onSetTomorrow}
+                className="btn-secondary flex-1 h-11 px-2 text-xs"
+              >
+                <IconCalendar className="w-4 h-4 flex-shrink-0" />
+                Ordina per domani
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Error message */}
