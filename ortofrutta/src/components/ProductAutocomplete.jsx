@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { parseTipologie, capitalize } from '../utils/constants'
+import { focusAdjacentField, focusAdjacentFieldDeferred } from '../utils/fieldNav'
 
 /**
  * ProductAutocomplete component
@@ -9,6 +10,7 @@ import { parseTipologie, capitalize } from '../utils/constants'
  * @param {string} value - Current input value
  * @param {Function} onInputChange - Callback for input changes
  * @param {boolean} isAdminMode - When true, hides WhatsApp fallback (for titolare)
+ * @param {Object} inputRef - Ref esterno per l'input (es. ritorno del focus dopo l'aggiunta)
  */
 export function ProductAutocomplete({
   prodotti = [],
@@ -16,13 +18,15 @@ export function ProductAutocomplete({
   value,
   onInputChange,
   isAdminMode = false,
+  inputRef: inputRefProp = null,
 }) {
   const [isOpen, setIsOpen] = useState(false)
   // Avviso "fuori catalogo": si nasconde con Invio/Esc o toccando fuori dall'input
   const [showNoMatchNotice, setShowNoMatchNotice] = useState(true)
   const [filteredProducts, setFilteredProducts] = useState([])
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
-  const inputRef = useRef(null)
+  const localInputRef = useRef(null)
+  const inputRef = inputRefProp || localInputRef
   const dropdownRef = useRef(null)
   const justSelectedRef = useRef(false)
   const itemRefs = useRef([])
@@ -110,33 +114,51 @@ export function ProductAutocomplete({
     if (filteredProducts.length === 0 && (e.key === 'Enter' || e.key === 'Escape')) {
       e.preventDefault()
       setShowNoMatchNotice(false)
+      // Invio su un prodotto fuori catalogo: prosegue verso la quantità
+      if (e.key === 'Enter' && value.trim()) {
+        focusAdjacentFieldDeferred(e.currentTarget, 1)
+      }
       return
     }
 
-    // Tab: navigazione nei prodotti
+    // Tab: conferma il prodotto evidenziato (o il primo attivo) e lascia
+    // proseguire il focus verso il campo quantità — inserimento rapido da tastiera
     if (e.key === 'Tab') {
-      // Filter only active products for selection
-      const activeProducts = filteredProducts.filter((p) => p.attivo !== false)
-      if (activeProducts.length > 0) {
-        e.preventDefault()
-        if (!isOpen) {
-          // Apri dropdown e evidenzia il primo
-          setIsOpen(true)
-          const firstActiveIndex = filteredProducts.findIndex((p) => p.attivo !== false)
-          setHighlightedIndex(firstActiveIndex)
+      if (isOpen && !e.shiftKey) {
+        const indexToSelect =
+          highlightedIndex >= 0 && filteredProducts[highlightedIndex]?.attivo !== false
+            ? highlightedIndex
+            : filteredProducts.findIndex((p) => p.attivo !== false)
+        if (indexToSelect >= 0) {
+          handleSelectProduct(filteredProducts[indexToSelect])
         } else {
-          // Naviga al prossimo elemento attivo
-          let nextIndex = highlightedIndex + 1
-          while (nextIndex < filteredProducts.length && filteredProducts[nextIndex].attivo === false) {
-            nextIndex++
-          }
-          if (nextIndex >= filteredProducts.length) {
-            nextIndex = filteredProducts.findIndex((p) => p.attivo !== false)
-          }
-          setHighlightedIndex(nextIndex)
+          setIsOpen(false)
         }
+      } else if (isOpen) {
+        setIsOpen(false)
       }
+      // Niente preventDefault: Tab passa al campo successivo
       return
+    }
+
+    // Lista chiusa: Invio e frecce su/giù spostano il focus tra i campi
+    // (freccia giù con del testo digitato riapre invece la lista, vedi sotto)
+    if (!isOpen) {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        focusAdjacentFieldDeferred(e.currentTarget, 1)
+        return
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        focusAdjacentField(e.currentTarget, -1)
+        return
+      }
+      if (e.key === 'ArrowDown' && !value.trim()) {
+        e.preventDefault()
+        focusAdjacentField(e.currentTarget, 1)
+        return
+      }
     }
 
     if (!isOpen && e.key !== 'ArrowDown') return
@@ -161,6 +183,10 @@ export function ProductAutocomplete({
         }
         if (nextUpIndex >= 0) {
           setHighlightedIndex(nextUpIndex)
+        } else if (highlightedIndex < 0) {
+          // Già in cima alla lista: chiudi e torna al campo precedente
+          setIsOpen(false)
+          focusAdjacentField(e.currentTarget, -1)
         } else {
           setHighlightedIndex(-1)
         }
@@ -172,6 +198,8 @@ export function ProductAutocomplete({
           const indexToSelect = highlightedIndex >= 0 ? highlightedIndex : 0
           if (filteredProducts[indexToSelect].attivo !== false) {
             handleSelectProduct(filteredProducts[indexToSelect])
+            // Invio: conferma e prosegue verso il campo quantità
+            focusAdjacentFieldDeferred(e.currentTarget, 1)
           }
         }
         break
@@ -196,6 +224,7 @@ export function ProductAutocomplete({
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         onFocus={() => value && setIsOpen(true)}
+        data-kbfield="prodotto"
         placeholder="Cerca un prodotto per nome..."
         className="input h-12"
       />

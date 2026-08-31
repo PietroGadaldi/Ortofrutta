@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { IconUser, IconChevronDown } from './icons'
+import { focusAdjacentFieldDeferred } from '../utils/fieldNav'
 
 /**
  * ClientSelect component
@@ -11,6 +12,7 @@ import { IconUser, IconChevronDown } from './icons'
  * @param {boolean} isLoading - Mostra lo stato di caricamento della lista
  * @param {string} loadError - Messaggio di errore nel caricamento della lista
  * @param {boolean} disabled - Disabilita il controllo
+ * @param {boolean} autoFocus - Focus sull'input all'apertura (uso da tastiera)
  */
 export function ClientSelect({
   clienti = [],
@@ -19,6 +21,7 @@ export function ClientSelect({
   isLoading = false,
   loadError = '',
   disabled = false,
+  autoFocus = false,
 }) {
   const [query, setQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
@@ -27,6 +30,14 @@ export function ClientSelect({
   const wrapperRef = useRef(null)
   const inputRef = useRef(null)
   const itemRefs = useRef([])
+  const didAutoFocus = useRef(false)
+
+  // Autofocus all'apertura del modale (una sola volta, appena la lista è pronta)
+  useEffect(() => {
+    if (!autoFocus || didAutoFocus.current || disabled || isLoading) return
+    didAutoFocus.current = true
+    inputRef.current?.focus()
+  }, [autoFocus, disabled, isLoading])
 
   const selected = useMemo(
     () => clienti.find((c) => c.id === value) || null,
@@ -75,14 +86,32 @@ export function ClientSelect({
     setIsOpen(true)
   }
 
-  const handleSelect = (cliente) => {
+  // keepFocus: da tastiera il focus resta sull'input, così Tab prosegue
+  // verso il calendario; da mouse/tap il blur chiude la tastiera su mobile
+  const handleSelect = (cliente, { keepFocus = false } = {}) => {
     onChange(cliente.id)
     setQuery('')
     setIsOpen(false)
-    inputRef.current?.blur()
+    if (!keepFocus) inputRef.current?.blur()
   }
 
   const handleKeyDown = (e) => {
+    // Tab: conferma il cliente evidenziato (o il primo filtrato) e lascia
+    // proseguire il focus verso il campo successivo
+    if (e.key === 'Tab') {
+      if (isOpen) {
+        if (!e.shiftKey) {
+          const index = highlightedIndex >= 0 ? highlightedIndex : query.trim() ? 0 : -1
+          if (index >= 0 && filtered[index]) {
+            onChange(filtered[index].id)
+          }
+        }
+        setIsOpen(false)
+        setQuery('')
+      }
+      return
+    }
+
     if (e.key === 'Escape') {
       e.preventDefault()
       setIsOpen(false)
@@ -107,11 +136,13 @@ export function ClientSelect({
     }
 
     if (e.key === 'Enter') {
-      // Evita l'invio del form quando si sta scegliendo dalla lista
-      if (!isOpen) return
       e.preventDefault()
-      const index = highlightedIndex >= 0 ? highlightedIndex : 0
-      if (filtered[index]) handleSelect(filtered[index])
+      if (isOpen) {
+        const index = highlightedIndex >= 0 ? highlightedIndex : 0
+        if (filtered[index]) handleSelect(filtered[index], { keepFocus: true })
+      }
+      // Invio: conferma e passa al campo successivo (calendario)
+      focusAdjacentFieldDeferred(e.currentTarget, 1)
     }
   }
 
@@ -142,6 +173,7 @@ export function ClientSelect({
           aria-controls="client-select-list"
           aria-autocomplete="list"
           autoComplete="off"
+          data-kbfield="cliente"
           value={inputValue}
           disabled={disabled || isLoading}
           placeholder={placeholder}

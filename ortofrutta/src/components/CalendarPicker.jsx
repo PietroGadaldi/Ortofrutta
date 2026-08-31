@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   format,
   startOfMonth,
@@ -16,6 +16,7 @@ import {
 } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { IconCalendar, IconChevronLeft, IconChevronRight } from './icons'
+import { focusAdjacentField } from '../utils/fieldNav'
 
 /**
  * CalendarPicker component
@@ -23,9 +24,47 @@ import { IconCalendar, IconChevronLeft, IconChevronRight } from './icons'
  * @param {Date} selectedDate - Currently selected date
  * @param {Function} onSelectDate - Callback when date is selected
  * @param {Array<Date>} disabledDates - Dates that cannot be selected (optional)
+ * @param {boolean} autoFocus - Focus del calendario all'apertura (uso da tastiera)
  */
-export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] }) {
-  const [currentMonth, setCurrentMonth] = useState(new Date())
+export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [], autoFocus = false }) {
+  const [currentMonth, setCurrentMonth] = useState(() => selectedDate || new Date())
+  const gridRef = useRef(null)
+
+  // Il mese visualizzato segue la data selezionata (es. navigazione con le frecce
+  // oltre il fine mese, o "Ordina per domani" a cavallo del mese)
+  useEffect(() => {
+    if (selectedDate) setCurrentMonth(selectedDate)
+  }, [selectedDate])
+
+  useEffect(() => {
+    if (autoFocus) gridRef.current?.focus()
+  }, [autoFocus])
+
+  const isDateDisabled = (date) =>
+    isBefore(startOfDay(date), startOfDay(new Date())) ||
+    disabledDates.some((d) => isSameDay(d, date))
+
+  // Frecce sinistra/destra: giorno precedente/successivo (il calendario è un
+  // unico tab stop, i singoli giorni hanno tabIndex -1).
+  // Invio e freccia giù passano al campo successivo, freccia su al precedente.
+  const handleGridKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === 'ArrowDown') {
+      e.preventDefault()
+      focusAdjacentField(e.currentTarget, 1)
+      return
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      focusAdjacentField(e.currentTarget, -1)
+      return
+    }
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
+    if (!selectedDate) return
+    e.preventDefault()
+    const candidate = addDays(selectedDate, e.key === 'ArrowRight' ? 1 : -1)
+    if (isDateDisabled(candidate)) return
+    onSelectDate(candidate)
+  }
 
   const renderHeader = () => {
     const monthText = format(currentMonth, 'MMMM yyyy', { locale: it })
@@ -35,6 +74,7 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
       <div className="flex items-center justify-between mb-5 px-1">
         <button
           onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+          tabIndex={-1}
           className="btn-icon border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 shadow-sm"
           title="Mese precedente"
         >
@@ -45,6 +85,7 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
         </h2>
         <button
           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+          tabIndex={-1}
           className="btn-icon border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 shadow-sm"
           title="Mese prossimo"
         >
@@ -100,6 +141,7 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
             key={day}
             onClick={() => !isDisabled && onSelectDate(cloneDay)}
             disabled={isDisabled}
+            tabIndex={-1}
             className={`
               min-h-[44px] p-1 sm:p-2 text-sm font-medium rounded-lg transition-colors text-center
               ${!isSameMonth(day, monthStart) ? 'text-slate-200' : ''}
@@ -131,9 +173,20 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [] 
         <IconCalendar className="w-5 h-5 text-verde-orto-600" />
         Data di consegna
       </h3>
-      {renderHeader()}
-      {renderDays()}
-      {renderCells()}
+      {/* Unico tab stop del calendario: da tastiera si cambia giorno con ← → */}
+      <div
+        ref={gridRef}
+        tabIndex={0}
+        role="group"
+        data-kbfield="calendario"
+        aria-label="Calendario data di consegna. Frecce sinistra e destra per cambiare giorno, Invio per passare al campo successivo"
+        onKeyDown={handleGridKeyDown}
+        className="rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-verde-orto-500 focus-visible:ring-offset-2"
+      >
+        {renderHeader()}
+        {renderDays()}
+        {renderCells()}
+      </div>
       {selectedDate && (
         <div className="mt-5 rounded-lg bg-verde-orto-50 border border-verde-orto-200 px-4 py-3 text-left">
           <p className="text-xs font-semibold uppercase tracking-wide text-verde-orto-700">

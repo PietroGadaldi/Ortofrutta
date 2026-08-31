@@ -1,6 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { ProductAutocomplete } from './ProductAutocomplete'
 import { parseTipologie, capitalize } from '../utils/constants'
+import { hasPointerFine } from '../utils/device'
+import { focusAdjacentField } from '../utils/fieldNav'
 import { IconPlus, IconMinus, IconRefresh, IconCalendar, IconPencil } from './icons'
 
 const parseQuantita = (val) => parseFloat(String(val).replace(',', '.'))
@@ -22,6 +24,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
   const [tipologia, setTipologia] = useState('')
   const [tipologieDisponibili, setTipologieDisponibili] = useState([])
   const [error, setError] = useState('')
+  const productInputRef = useRef(null)
 
   // Trasforma i prodotti per avere i nomi con l'iniziale maiuscola per l'autocomplete e la visualizzazione
   const formattedProdotti = useMemo(() => {
@@ -131,6 +134,12 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
     setQuantita('')
     setTipologia('')
     setTipologieDisponibili([])
+
+    // Da desktop il focus torna sul campo prodotto per l'inserimento rapido
+    // in sequenza (su mobile eviterebbe di riaprire la tastiera)
+    if (hasPointerFine()) {
+      productInputRef.current?.focus()
+    }
   }
 
   return (
@@ -162,6 +171,7 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
                 }
               }}
               isAdminMode={isAdminMode}
+              inputRef={productInputRef}
             />
 
             {/* Quantity Input */}
@@ -173,12 +183,24 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
                 <input
                   type="text"
                   inputMode="decimal"
+                  data-kbfield="quantita"
                   value={quantita}
                   onChange={(e) => setQuantita(e.target.value)}
                   onBlur={() => {
                     if (quantita === '') return;
                     const num = parseQuantita(quantita);
                     if (isNaN(num) || num <= 0) setQuantita('');
+                  }}
+                  onKeyDown={(e) => {
+                    // Invio e freccia giù: avanti alla tipologia; freccia su: torna al prodotto
+                    // (preventDefault su Invio evita l'invio anticipato del form)
+                    if (e.key === 'Enter' || e.key === 'ArrowDown') {
+                      e.preventDefault()
+                      focusAdjacentField(e.currentTarget, 1)
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault()
+                      focusAdjacentField(e.currentTarget, -1)
+                    }
                   }}
                   placeholder="es: 1 o 0,5"
                   className="input flex-1 min-w-0 h-12"
@@ -187,6 +209,8 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
                 <button
                   type="button"
                   onClick={handleDecrement}
+                  tabIndex={-1}
+                  aria-label="Diminuisci quantità"
                   disabled={(!selectedProduct && !isCustomProduct) || parseQuantita(quantita) <= 1}
                   className="btn-icon w-12 h-12 flex-shrink-0 bg-white border border-slate-300 text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
@@ -195,6 +219,8 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
                 <button
                   type="button"
                   onClick={handleIncrement}
+                  tabIndex={-1}
+                  aria-label="Aumenta quantità"
                   disabled={!selectedProduct && !isCustomProduct}
                   className="btn-icon w-12 h-12 flex-shrink-0 bg-white border border-slate-300 text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
@@ -211,15 +237,36 @@ export function AddProductForm({ prodotti = [], onAddProduct, editingItem = null
               {isCustomProduct ? (
                 <input
                   type="text"
+                  data-kbfield="tipologia"
                   value={tipologia}
                   onChange={(e) => setTipologia(e.target.value)}
+                  onKeyDown={(e) => {
+                    // Invio: aggiunge il prodotto al riepilogo; freccia su: torna alla quantità
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      e.currentTarget.form?.requestSubmit()
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault()
+                      focusAdjacentField(e.currentTarget, -1)
+                    }
+                  }}
                   placeholder="es: kg, pezzo, cassetta..."
                   className="input h-12"
                 />
               ) : (
+                // Da tastiera: frecce su/giù per scorrere le tipologie, Invio per aggiungere
                 <select
                   value={tipologia}
                   onChange={(e) => setTipologia(e.target.value)}
+                  data-kbfield="tipologia"
+                  onKeyDown={(e) => {
+                    // Invio: aggiunge il prodotto al riepilogo (l'invio implicito
+                    // del form da un <select> non è garantito su tutti i browser)
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      e.currentTarget.form?.requestSubmit()
+                    }
+                  }}
                   className="input h-12"
                   disabled={!selectedProduct}
                 >

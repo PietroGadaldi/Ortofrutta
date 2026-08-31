@@ -10,6 +10,7 @@ import { generateOrderPDF } from '../utils/pdfGenerator'
 import { uploadOrderPDF } from '../services/pdfStorageService'
 import { supabase } from '../services/supabaseClient'
 import { lockBodyScroll, unlockBodyScroll } from '../utils/scrollLock'
+import { hasPointerFine } from '../utils/device'
 import { IconX, IconPencil, IconPlus } from './icons'
 
 // Campi necessari alla generazione del PDF dell'ordine
@@ -71,7 +72,6 @@ export function OrderFormModal({
   const [success, setSuccess] = useState('')
 
   const formRef = useRef(null)
-  const productsListRef = useRef(null)
   const scrollContainerRef = useRef(null)
 
   const selectedCliente = useMemo(
@@ -181,7 +181,6 @@ export function OrderFormModal({
     }
     setError('')
     setSuccess('')
-    scrollTo(productsListRef)
   }
 
   // Edit product in order summary
@@ -378,6 +377,7 @@ export function OrderFormModal({
                     isLoading={clientiLoading}
                     loadError={clientiError}
                     disabled={isSubmitting}
+                    autoFocus={hasPointerFine()}
                   />
                 ) : (
                   <p className="text-sm font-medium text-slate-500 text-left">
@@ -396,6 +396,7 @@ export function OrderFormModal({
                 <CalendarPicker
                   selectedDate={selectedDate}
                   onSelectDate={setSelectedDate}
+                  autoFocus={!isCreate && hasPointerFine()}
                 />
               </div>
             )}
@@ -426,7 +427,7 @@ export function OrderFormModal({
           </div>
 
           {/* Products Summary */}
-          <div ref={productsListRef} className="card p-4 space-y-3">
+          <div className="card p-4 space-y-3">
             <h3 className="section-title flex items-center gap-2">
               Prodotti nell'ordine
               {productsInOrder.length > 0 && (
