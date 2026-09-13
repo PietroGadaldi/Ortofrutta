@@ -5,12 +5,16 @@ import { it } from 'date-fns/locale'
 import { supabase } from '../services/supabaseClient'
 import { getClientList } from '../services/profiliService'
 import { getOrdiniCountByDate } from '../services/ordiniService'
+import { useFooterReady } from '../context/FooterReadyContext'
 import { IconClipboard, IconPackage, IconUsers, IconChevronRight } from '../components/icons'
 
 export function AdminDashboard() {
   const [stats, setStats] = useState({ ordini: 0, clienti: 0, prodotti: 0 })
   const [loading, setLoading] = useState(true)
   const [todayDate] = useState(startOfDay(new Date()))
+
+  // Footer visibile solo a statistiche caricate (non sotto lo spinner)
+  useFooterReady(!loading)
 
   useEffect(() => {
     const fetchStats = async () => {

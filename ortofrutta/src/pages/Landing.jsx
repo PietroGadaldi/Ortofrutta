@@ -1,12 +1,17 @@
 import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useFooterReady } from '../context/FooterReadyContext'
 import { RUOLI } from '../utils/constants'
 import { IconLeaf, IconTruck, IconShield } from '../components/icons'
 
 export function Landing() {
   const navigate = useNavigate()
   const { user, role, loading } = useAuth()
+
+  // Footer visibile solo quando il caricamento è finito e non stiamo
+  // per essere reindirizzati alla dashboard
+  useFooterReady(!loading && !user)
 
   // Redirect if already logged in - use useEffect to avoid render issues
   useEffect(() => {

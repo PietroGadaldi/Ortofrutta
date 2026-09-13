@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { supabase } from '../services/supabaseClient'
 import { useAuth } from '../hooks/useAuth'
+import { useFooterReady } from '../context/FooterReadyContext'
 import { CalendarPicker } from '../components/CalendarPicker'
 import { AddProductForm } from '../components/AddProductForm'
 import { OrderSummary } from '../components/OrderSummary'
@@ -35,6 +36,9 @@ export function Dashboard() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
   const [expandedOrderId, setExpandedOrderId] = useState(null)
+
+  // Footer visibile solo a dashboard caricata (non sotto lo spinner)
+  useFooterReady(!loading)
   const [reorderWarning, setReorderWarning] = useState(null)
   // Popup avvisi dinamici: { variant, title, message, primaryLabel?, onPrimary?, closeLabel?, afterClose? }
   const [notice, setNotice] = useState(null)

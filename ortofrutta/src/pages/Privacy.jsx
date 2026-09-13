@@ -1,3 +1,5 @@
+import { useFooterReady } from '../context/FooterReadyContext'
+
 const SECTIONS = [
   {
     title: '1. Titolare del trattamento',
@@ -130,6 +132,9 @@ const SECTIONS = [
 ]
 
 export function Privacy() {
+  // Pagina statica: il footer può comparire subito
+  useFooterReady(true)
+
   return (
     <div className="max-w-3xl mx-auto">
       <div className="card card-pad">

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
+import { useIsFooterReady } from '../context/FooterReadyContext'
 import { IconMail, IconPhone, IconWhatsApp, IconInstagram } from './icons'
 
 // Il footer compare solo sulle pagine principali (landing e dashboard)
@@ -34,12 +34,13 @@ const socialLinks = [
 
 export function Footer() {
   const { pathname } = useLocation()
-  const { loading } = useAuth()
+  const pageReady = useIsFooterReady()
 
   if (!FOOTER_ROUTES.includes(pathname)) return null
 
-  // Non mostrare il footer mentre l'app sta ancora caricando la pagina
-  if (loading) return null
+  // Il footer compare solo quando la pagina corrente ha segnalato di aver
+  // finito di caricare (useFooterReady), mai sotto gli spinner di caricamento
+  if (!pageReady) return null
 
   return (
     <footer className="bg-white border-t border-slate-200">

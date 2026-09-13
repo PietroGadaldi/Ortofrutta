@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { FooterReadyProvider } from './context/FooterReadyContext'
 import Navigation from './components/Navigation'
 import ProtectedRoute from './components/ProtectedRoute'
 import Footer from './components/Footer'
@@ -21,6 +22,7 @@ export default function App() {
   return (
     <Router>
       <AuthProvider>
+        <FooterReadyProvider>
         <div className="min-h-screen flex flex-col bg-slate-100">
           <Navigation />
           <main
@@ -88,6 +90,7 @@ export default function App() {
           <Footer />
           <CookieBanner />
         </div>
+        </FooterReadyProvider>
       </AuthProvider>
     </Router>
   )
