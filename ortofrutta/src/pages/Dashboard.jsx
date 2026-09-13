@@ -11,9 +11,19 @@ import { createOrdine, updateOrdineDettagli, updateOrdineStatus, deleteOrdine, g
 import { generateOrderPDF } from '../utils/pdfGenerator'
 import { uploadOrderPDF } from '../services/pdfStorageService'
 import { capitalize, WHATSAPP_NUMBER } from '../utils/constants'
-import { format, addDays, startOfDay, isSameDay, parseISO } from 'date-fns'
+import { format, addDays, startOfDay, isSameDay, isSunday, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { IconWhatsApp } from '../components/icons'
+
+// Chiave localStorage: avviso "ordini domenica sospesi" già mostrato al cliente
+const AVVISO_DOMENICA_KEY = 'ofb-avviso-domenica-v1'
+
+// Data di default per un nuovo ordine: oggi, oppure lunedì se oggi è domenica
+// (ordini per la domenica sospesi fino a data da definirsi)
+const getDefaultOrderDate = () => {
+  const oggi = new Date()
+  return isSunday(oggi) ? addDays(startOfDay(oggi), 1) : oggi
+}
 
 export function Dashboard() {
   const { user } = useAuth()
@@ -34,7 +44,7 @@ export function Dashboard() {
   const calendarRef = useRef(null)
   
   // State for new/editing order
-  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [selectedDate, setSelectedDate] = useState(getDefaultOrderDate)
   const [productsInOrder, setProductsInOrder] = useState([])
   const [editingOrderId, setEditingOrderId] = useState(null)
   const [editingItemIndex, setEditingItemIndex] = useState(null)
@@ -78,6 +88,37 @@ export function Dashboard() {
   useEffect(() => {
     fetchData()
   }, [user])
+
+  // Popup "ordini per la domenica sospesi": riusato al primo avvio,
+  // al tocco su una domenica nel calendario e come guardia alla conferma
+  const openSundayNotice = () => {
+    setNotice({
+      variant: 'warn',
+      title: 'Ordini per la domenica sospesi',
+      message:
+        'Non è più possibile fare ordini con consegna di domenica, fino a data da definirsi. Scegli un altro giorno dal calendario per il tuo ordine.',
+      closeLabel: 'Ho capito',
+    })
+  }
+
+  // Al primo avvio dopo la sospensione degli ordini domenicali mostra
+  // l'avviso una sola volta (flag in localStorage)
+  useEffect(() => {
+    let giaVisto = false
+    try {
+      giaVisto = localStorage.getItem(AVVISO_DOMENICA_KEY) === '1'
+    } catch {
+      // localStorage non disponibile (es. navigazione privata): mostra e basta
+    }
+    if (giaVisto) return
+    try {
+      localStorage.setItem(AVVISO_DOMENICA_KEY, '1')
+    } catch {
+      // Se non si può salvare il flag, l'avviso ricomparirà al prossimo avvio
+    }
+    openSundayNotice()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const fetchData = async () => {
     setLoading(true)
@@ -155,7 +196,7 @@ export function Dashboard() {
     setProductsInOrder([])
     setEditingOrderId(null)
     setEditingItemIndex(null)
-    setSelectedDate(new Date())
+    setSelectedDate(getDefaultOrderDate())
   }
 
   // Chiude il popup avvisi; l'eventuale azione post-chiusura (es. scroll) parte
@@ -190,6 +231,11 @@ export function Dashboard() {
   // Selezione della data (dal calendario o da "Ordina per domani"):
   // avvisa subito col popup se per quel giorno esiste già un ordine
   const handleSelectDate = (date) => {
+    // Domenica non selezionabile: avvisa senza cambiare la data
+    if (isSunday(date)) {
+      openSundayNotice()
+      return
+    }
     setSelectedDate(date)
     if (editingOrderId) return
     const dateStr = format(date, 'yyyy-MM-dd')
@@ -206,6 +252,12 @@ export function Dashboard() {
         message: 'Aggiungi almeno un prodotto prima di confermare l\'ordine.',
         closeLabel: 'Ho capito',
       })
+      return
+    }
+
+    // Guardia finale: nessun ordine con consegna di domenica, in nessun caso
+    if (isSunday(selectedDate)) {
+      openSundayNotice()
       return
     }
 
@@ -490,6 +542,8 @@ export function Dashboard() {
         <CalendarPicker
           selectedDate={selectedDate}
           onSelectDate={handleSelectDate}
+          disableSundays
+          onSundayClick={openSundayNotice}
         />
       </div>
 

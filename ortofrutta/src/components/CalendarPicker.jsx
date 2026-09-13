@@ -12,6 +12,7 @@ import {
   isSameDay,
   isToday,
   isBefore,
+  isSunday,
   startOfDay,
 } from 'date-fns'
 import { it } from 'date-fns/locale'
@@ -25,8 +26,17 @@ import { focusAdjacentField } from '../utils/fieldNav'
  * @param {Function} onSelectDate - Callback when date is selected
  * @param {Array<Date>} disabledDates - Dates that cannot be selected (optional)
  * @param {boolean} autoFocus - Focus del calendario all'apertura (uso da tastiera)
+ * @param {boolean} disableSundays - Le domeniche non sono selezionabili (ordini sospesi)
+ * @param {Function} onSundayClick - Callback quando si tocca una domenica disabilitata
  */
-export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [], autoFocus = false }) {
+export function CalendarPicker({
+  selectedDate,
+  onSelectDate,
+  disabledDates = [],
+  autoFocus = false,
+  disableSundays = false,
+  onSundayClick,
+}) {
   const [currentMonth, setCurrentMonth] = useState(() => selectedDate || new Date())
   const gridRef = useRef(null)
 
@@ -42,6 +52,7 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [],
 
   const isDateDisabled = (date) =>
     isBefore(startOfDay(date), startOfDay(new Date())) ||
+    (disableSundays && isSunday(date)) ||
     disabledDates.some((d) => isSameDay(d, date))
 
   // Frecce sinistra/destra: giorno precedente/successivo (il calendario è un
@@ -61,7 +72,10 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [],
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
     if (!selectedDate) return
     e.preventDefault()
-    const candidate = addDays(selectedDate, e.key === 'ArrowRight' ? 1 : -1)
+    const direction = e.key === 'ArrowRight' ? 1 : -1
+    let candidate = addDays(selectedDate, direction)
+    // Con le frecce le domeniche disabilitate vengono saltate
+    if (disableSundays && isSunday(candidate)) candidate = addDays(candidate, direction)
     if (isDateDisabled(candidate)) return
     onSelectDate(candidate)
   }
@@ -128,9 +142,13 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [],
 
         // Check if date is disabled or in the past
         const isPast = isBefore(startOfDay(cloneDay), startOfDay(new Date()))
+        // Domenica futura bloccata: resta grigia ma cliccabile per mostrare l'avviso
+        const isBlockedSunday =
+          disableSundays && isSunday(cloneDay) && !isPast && isSameMonth(day, monthStart)
         const isDisabled =
           !isSameMonth(day, monthStart) ||
           isPast ||
+          isBlockedSunday ||
           disabledDates.some((d) => isSameDay(d, cloneDay))
 
         const isSelected = selectedDate && isSameDay(cloneDay, selectedDate)
@@ -139,8 +157,15 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [],
         days.push(
           <button
             key={day}
-            onClick={() => !isDisabled && onSelectDate(cloneDay)}
-            disabled={isDisabled}
+            onClick={() => {
+              if (isBlockedSunday) {
+                onSundayClick?.(cloneDay)
+                return
+              }
+              if (!isDisabled) onSelectDate(cloneDay)
+            }}
+            disabled={isDisabled && !isBlockedSunday}
+            aria-disabled={isDisabled}
             tabIndex={-1}
             className={`
               min-h-[44px] p-1 sm:p-2 text-sm font-medium rounded-lg transition-colors text-center
@@ -148,7 +173,7 @@ export function CalendarPicker({ selectedDate, onSelectDate, disabledDates = [],
               ${isDisabled && isSameMonth(day, monthStart) ? 'text-slate-300 cursor-not-allowed' : ''}
               ${isSelected ? 'bg-verde-orto-600 text-white font-semibold shadow-sm' : ''}
               ${!isDisabled && !isSelected && isSameMonth(day, monthStart) ? 'hover:bg-verde-orto-50 text-slate-700 cursor-pointer' : ''}
-              ${isTodayDate && !isSelected ? 'ring-1 ring-inset ring-verde-orto-500 text-verde-orto-700 font-semibold' : ''}
+              ${isTodayDate && !isSelected && !isBlockedSunday ? 'ring-1 ring-inset ring-verde-orto-500 text-verde-orto-700 font-semibold' : ''}
             `}
           >
             {formattedDate}

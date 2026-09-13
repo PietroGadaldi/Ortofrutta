@@ -238,10 +238,12 @@ export function OrderFormModal({
   const handleCreateOrder = async () => {
     const dateString = format(selectedDate, 'yyyy-MM-dd')
 
+    // Il titolare può creare ordini anche di domenica (allowSunday)
     const { data: newOrdine, error: createError } = await createOrdine(
       clienteId,
       dateString,
-      productsInOrder
+      productsInOrder,
+      { allowSunday: true }
     )
     if (createError) throw createError
 

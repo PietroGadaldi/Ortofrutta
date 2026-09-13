@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import { format, isSunday, parseISO } from 'date-fns'
 import { supabase } from './supabaseClient'
 
 /**
@@ -41,12 +41,18 @@ export const getAllOrdini = async (userId, role) => {
 /**
  * Create new ordine
  * @param {string} clienteId
- * @param {Date} dataOrdine - Data for which order is being placed
+ * @param {string} dataOrdine - Data di consegna in formato 'yyyy-MM-dd'
  * @param {Array} dettagli - Array of {prodotto_id, quantita, tipologia}
+ * @param {Object} options - { allowSunday: true } solo per il titolare (OrderFormModal)
  * @returns {Promise<{data, error}>}
  */
-export const createOrdine = async (clienteId, dataOrdine, dettagli) => {
+export const createOrdine = async (clienteId, dataOrdine, dettagli, { allowSunday = false } = {}) => {
   try {
+    // Ordini per la domenica sospesi (fino a data da definirsi): blocco lato
+    // servizio per i clienti; il titolare può forzare con allowSunday
+    if (!allowSunday && isSunday(parseISO(dataOrdine))) {
+      throw new Error('Non è possibile creare ordini con consegna di domenica.')
+    }
     // Create ordine
     const { data: ordineData, error: ordineError } = await supabase
       .from('ordini')

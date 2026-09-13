@@ -88,13 +88,19 @@ FOR SELECT
 TO anon, authenticated 
 USING (true);
 
--- Tabella Ordini: ogni cliente gestisce solo i propri ordini
+-- Tabella Ordini: ogni cliente gestisce solo i propri ordini.
+-- Il WITH CHECK blocca anche gli ordini con consegna di domenica
+-- (EXTRACT(DOW) = 0): ordini domenicali sospesi fino a data da definirsi.
+-- Il titolare non è toccato dal vincolo (passa dalla policy dedicata sotto).
 CREATE POLICY "Ordini del cliente"
 ON public.ordini
 FOR ALL
 TO authenticated
 USING (cliente_id = auth.uid())
-WITH CHECK (cliente_id = auth.uid());
+WITH CHECK (
+  cliente_id = auth.uid()
+  AND EXTRACT(DOW FROM data_ordine) <> 0
+);
 
 -- Tabella Ordini: il titolare vede e gestisce tutti gli ordini
 -- (vale anche per le query dirette al client Supabase dal frontend, es. conteggi dashboard)
