@@ -6,16 +6,17 @@ import { useLocation } from 'react-router-dom'
  * Il footer deve comparire solo quando la pagina corrente ha finito di
  * caricare (niente footer sotto gli spinner, soprattutto da mobile).
  * Ogni pagina segnala di essere pronta con useFooterReady(isReady);
- * memorizziamo il pathname pronto, così a ogni cambio pagina il footer
- * torna automaticamente nascosto senza bisogno di reset espliciti.
+ * memorizziamo la chiave della navigazione (location.key, unica per ogni
+ * spostamento, anche verso una pagina già visitata): così tornando su una
+ * pagina il footer resta nascosto finché quella non ha ricaricato i dati.
  */
-const FooterReadyContext = createContext({ readyPath: null, setReadyPath: () => {} })
+const FooterReadyContext = createContext({ readyKey: null, setReadyKey: () => {} })
 
 export function FooterReadyProvider({ children }) {
-  const [readyPath, setReadyPath] = useState(null)
+  const [readyKey, setReadyKey] = useState(null)
 
   return (
-    <FooterReadyContext.Provider value={{ readyPath, setReadyPath }}>
+    <FooterReadyContext.Provider value={{ readyKey, setReadyKey }}>
       {children}
     </FooterReadyContext.Provider>
   )
@@ -27,17 +28,17 @@ export function FooterReadyProvider({ children }) {
  *   (per le pagine statiche passare direttamente true)
  */
 export function useFooterReady(isReady) {
-  const { pathname } = useLocation()
-  const { setReadyPath } = useContext(FooterReadyContext)
+  const { key } = useLocation()
+  const { setReadyKey } = useContext(FooterReadyContext)
 
   useEffect(() => {
-    if (isReady) setReadyPath(pathname)
-  }, [isReady, pathname, setReadyPath])
+    if (isReady) setReadyKey(key)
+  }, [isReady, key, setReadyKey])
 }
 
-/** True se la pagina corrente ha segnalato di essere pronta */
+/** True se la pagina della navigazione corrente ha segnalato di essere pronta */
 export function useIsFooterReady() {
-  const { pathname } = useLocation()
-  const { readyPath } = useContext(FooterReadyContext)
-  return readyPath === pathname
+  const { key } = useLocation()
+  const { readyKey } = useContext(FooterReadyContext)
+  return readyKey === key
 }
